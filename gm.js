@@ -2,37 +2,16 @@
 // GM PANEL — Crisis Cibernética Bancaria
 // Lógica de juego y datos de las 5 etapas
 // ══════════════════════════════════════════
+/**
+ * CORE LOGIC - BANCO MERIDIAN SIMULACRO
+ */
 
 const BUDGET_INIT = 5000000;
 const HOURS_LIMIT = 72;
 
-let G = {
-  stage: 0,
-  ctx: 'default',
-  budget: BUDGET_INIT,
-  costs: 0,
-  penalties: 0,
-  hours: 0,
-  chosen: null,
-  revealed: false,
-  log: [],
-  notifs: [],
-  unread: 0,
-  currentTab: 'info',
-  flags: {
-    backupsDestroyed: false,
-    openedMonday: false,
-    paidRansom: false,
-    laborLawsuit: false,
-    silentCorp: false,
-    licenseRevoked: false,
-    pendingPenalties: []
-  },
-  team: { name:'', ciso:'', legal:'', comms:'', ops:'', gm:'' }
-};
+let G = {}; 
 
 const fmt  = n => (n < 0 ? '-' : '') + '$' + Math.abs(Math.round(n)).toLocaleString('en-US');
-const role = k => G.team[k] || { ciso:'el CISO', legal:'Legal', comms:'Comunicaciones', ops:'Operaciones', gm:'el Gerente General' }[k];
 
 // ══════════════════════════════════════════
 // DATOS DEL JUEGO — 5 STAGES
@@ -170,7 +149,6 @@ const STAGES = [
     }
   ]
 },
-
 // ─── STAGE 3 ───────────────────────────────
 {
   num: 3, label: 'STAGE 3 DE 5', timestamp: 'Sábado, 14:00 PM',
@@ -385,26 +363,35 @@ const STAGES = [
     }
   ]
 }
-
-]; // end STAGES
+];
 
 // ══════════════════════════════════════════
 // INICIO DEL JUEGO
 // ══════════════════════════════════════════
 function startGame() {
-  G.team.name  = document.getElementById('iTeam').value.trim() || 'Equipo';
-  G.team.ciso  = document.getElementById('iCISO').value.trim();
-  G.team.legal = document.getElementById('iLegal').value.trim();
-  G.team.comms = document.getElementById('iComms').value.trim();
-  G.team.ops   = document.getElementById('iOps').value.trim();
-  G.team.gm    = document.getElementById('iGM').value.trim();
+  G = {
+    stage: 0,
+    ctx: 'default',
+    budget: BUDGET_INIT,
+    costs: 0,
+    penalties: 0,
+    hours: 0,
+    chosen: null,
+    revealed: false,
+    log: [],
+    notifs: [],
+    unread: 0,
+    currentTab: 'info',
+    team: {
+      name: document.getElementById('iTeam').value.trim() || 'Equipo',
+      ciso: document.getElementById('iCISO').value.trim(),
+      legal: document.getElementById('iLegal').value.trim(),
+      comms: document.getElementById('iComms').value.trim(),
+      ops: document.getElementById('iOps').value.trim(),
+      gm: document.getElementById('iGM').value.trim()
+    }
+  };
 
-  G.stage = 0;
-  G.ctx = 'default';
-  G.budget = BUDGET_INIT;
-  G.costs = 0; G.penalties = 0; G.hours = 0;
-  G.chosen = null; G.revealed = false;
-  G.log = []; G.notifs = []; G.unread = 0;
   G.flags = {
     backupsDestroyed: false, openedMonday: false, paidRansom: false,
     laborLawsuit: false, silentCorp: false, licenseRevoked: false,
@@ -419,9 +406,9 @@ function startGame() {
   addNotif('info', '🔐 Simulacro iniciado', `Equipo: ${G.team.name} · Budget: $5,000,000 · Tiempo: 72 horas`);
 }
 
-// ══════════════════════════════════════════
 // RENDER STAGE
 // ══════════════════════════════════════════
+/** Renderiza la etapa actual */
 function renderStage() {
   const s = STAGES[G.stage];
   const variant = s.variants[G.ctx] || s.variants['default'] || s.variants['A'];
@@ -443,10 +430,7 @@ function renderStage() {
         <h2 class="ic-title">${s.title}</h2>
         <p class="ic-narrative">${variant5.narrative}</p>
         ${variant5.update ? `<div class="ic-update"><div class="ic-update-label">// ALERTA GM</div>${variant5.update}</div>` : ''}
-        <div class="branch-ctx ctx-${G.ctx.toLowerCase()}">
-          <div class="branch-ctx-label">// ESTADO EVALUADO AUTOMÁTICAMENTE</div>
-          ${variant5.branchCtx}
-        </div>
+        <div class="branch-ctx ctx-${G.ctx.toLowerCase()}"><div class="branch-ctx-label">// ESTADO EVALUADO AUTOMÁTICAMENTE</div>${variant5.branchCtx}</div>
         <div style="margin-top:.75rem;padding:.65rem;background:var(--gold-light);border:1px solid #e0c880;border-radius:6px;font-size:.78rem;color:var(--gold);">
           <div style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.1em;margin-bottom:.2rem;">// GM: ESTADO CALCULADO</div>
           <strong>Estado: ${autoState.label}</strong> — ${autoState.reason}
@@ -510,6 +494,7 @@ function renderStage() {
   </div>`;
 
   main.innerHTML = html;
+  renderRoundIndicator();
 }
 
 function toggleGMInfo(i) {
@@ -519,11 +504,9 @@ function toggleGMInfo(i) {
 function selectOption(i) {
   if (G.revealed) return;
   G.chosen = i;
-
   document.querySelectorAll('.dec-opt').forEach((el, idx) => {
     el.classList.toggle('selected', idx === i);
   });
-
   const opt = STAGES[G.stage].options[i];
   const effectiveCost = (G.ctx === 'B' && opt.ctxBMultiplier) ? opt.cost * opt.ctxBMultiplier : opt.cost;
   document.getElementById('confirmHint').innerHTML = `Opción elegida: <strong>${opt.letter} — ${opt.text}</strong> · ${fmt(effectiveCost)}${opt.hours > 0 ? ` · +${opt.hours}h` : ''}`;
