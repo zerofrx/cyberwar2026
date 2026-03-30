@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Panel del Game Master para simulacro de crisis cibernética bancaria.">
+<title>GM PANEL — Crisis Cibernética Bancaria</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="gm.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     PANTALLA 1 — INTRO / CONFIGURACIÓN
+     ══════════════════════════════════════════ -->
+<div class="screen active" id="screenIntro">
+  <header class="topbar">
+    <div class="tb-brand">CRISIS BANCARIA <span>SIMULACRO</span></div>
+    <div class="tb-meta">
+      <span class="gm-badge">MODO GM</span>
+      <span>PRESUPUESTO: $5,000,000 USD</span>
+      <span>TIEMPO LÍMITE: 72 HORAS</span>
+    </div>
+  </header>
+
+  <main class="intro-layout">
+    <div class="intro-left">
+      <div class="il-eyebrow">// PANEL DE GAME MASTER · CRISIS CIBERNÉTICA</div>
+      <h2 class="il-title">Un viernes de<br>octubre. El<br>ransomware ya corre.</h2>
+      <p class="il-desc">Banco Meridian está siendo atacado. El malware se propaga en silencio mientras los empleados ven lentitud en sus equipos. El equipo tiene 72 horas —desde el viernes a las 10:00 AM hasta el lunes a las 10:00 AM— para contener la crisis y reabrir operaciones.</p>
+      <ul class="il-facts" style="list-style:none">
+        <li class="il-fact"><span class="il-fact-icon">▸</span>Presupuesto inicial: $5,000,000 USD</li>
+        <li class="il-fact"><span class="il-fact-icon">▸</span>Ventana operativa: 72 horas (viernes → lunes)</li>
+        <li class="il-fact"><span class="il-fact-icon">▸</span>5 etapas con bifurcaciones ocultas</li>
+        <li class="il-fact"><span class="il-fact-icon">▸</span>Solo el GM ve las consecuencias antes de revelarlas</li>
+      </ul>
+    </div>
+
+    <section class="intro-right">
+      <h3 class="ir-title">Configurar sesión</h3>
+      <article class="scenario-box">
+        <div class="sp-label">// BRIEFING INICIAL · VIERNES 10:00 AM</div>
+        Los sistemas de RRHH reportan lentitud inusual. Varios archivos tienen extensión <strong>.locked</strong>. El Core Bancario sigue operando. TI no encuentra la causa. No hay alertas en el SOC. La situación parece menor… pero no lo es.
+      </article>
+
+      <form onsubmit="event.preventDefault(); startGame();" style="display:flex;flex-direction:column;gap:.75rem;">
+        <div class="rf-field">
+          <div class="rf-field-label">NOMBRE DEL EQUIPO</div>
+          <input class="rf-input" id="iTeam" type="text" placeholder="ej. Equipo A, Los Tigres…" maxlength="30" style="width:100%" required>
+        </div>
+        <div class="rf-inputs">
+          <div class="rf-field">
+            <div class="rf-field-label">CISO <span style="color:var(--accent);font-weight:400;font-size:.6rem">líder</span></div>
+            <input class="rf-input" id="iCISO" type="text" placeholder="Nombre" maxlength="25">
+          </div>
+          <div class="rf-field">
+            <div class="rf-field-label">Legal / Compliance</div>
+            <input class="rf-input" id="iLegal" type="text" placeholder="Nombre" maxlength="25">
+          </div>
+          <div class="rf-field">
+            <div class="rf-field-label">Comunicaciones</div>
+            <input class="rf-input" id="iComms" type="text" placeholder="Nombre" maxlength="25">
+          </div>
+          <div class="rf-field">
+            <div class="rf-field-label">Operaciones</div>
+            <input class="rf-input" id="iOps" type="text" placeholder="Nombre" maxlength="25">
+          </div>
+        </div>
+        <div class="rf-field">
+          <div class="rf-field-label">Gerente General</div>
+          <input class="rf-input" id="iGM" type="text" placeholder="Nombre" maxlength="25" style="width:100%">
+        </div>
+        <div style="font-size:.68rem;color:var(--muted)">Campos opcionales. Los nombres aparecen en alertas y resultado final.</div>
+        <div style="margin-top:.5rem">
+          <button type="submit" class="btn btn-dark">INICIAR SIMULACRO →</button>
+        </div>
+      </form>
+    </section>
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANTALLA 2 — JUEGO
+     ══════════════════════════════════════════ -->
+<div class="screen" id="screenGame">
+  <div class="topbar">
+    <div class="tb-brand">BANCO MERIDIAN — <span>INCIDENTE ACTIVO</span></div>
+    <div class="tb-meta">
+      <span class="gm-badge">GM</span>
+      <span id="stageLabel">STAGE 1 DE 5</span>
+      <span id="teamLabel" style="color:#e5ddd5;font-weight:500"></span>
+      <div class="tb-budget">
+        <span class="tb-budget-label">BUDGET USD</span>
+        <span class="tb-budget-val" id="budgetVal">$5,000,000</span>
+      </div>
+      <span class="tb-timer" id="hoursLabel">72h restantes</span>
+    </div>
+  </div>
+
+  <div class="game-layout">
+    <!-- Área principal: narrativa + opciones -->
+    <div class="game-main" id="gameMain"></div>
+
+    <!-- Sidebar de control GM -->
+    <div class="game-sidebar">
+      <div class="sb-tabs">
+        <div class="sb-tab active" id="stab-info"  onclick="switchTab('info')">CONTROL GM</div>
+        <div class="sb-tab"        id="stab-notif" onclick="switchTab('notif')">ALERTAS<span class="notif-badge" id="notifBadge" style="display:none">0</span></div>
+        <div class="sb-tab"        id="stab-log"   onclick="switchTab('log')">REGISTRO</div>
+      </div>
+
+      <!-- Tab: Control GM -->
+      <div class="sb-panel active" id="sp-info">
+        <div>
+          <div class="sb-label">Progreso</div>
+          <div class="round-indicator" id="roundIndicator"></div>
+        </div>
+        <div>
+          <div class="sb-label">Tiempo de crisis</div>
+          <div class="hours-track">
+            <div class="ht-row">
+              <span class="ht-label">HORAS CONSUMIDAS</span>
+              <span class="ht-val" id="hoursConsumedVal">0h</span>
+            </div>
+            <div class="ht-bar-wrap">
+              <div class="ht-bar" id="hoursBar" style="width:0%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:.3rem;font-family:'DM Mono',monospace;font-size:.54rem;color:var(--muted)">
+              <span>VIE 10AM</span>
+              <span id="currentTimeStamp">VIE 10AM</span>
+              <span>LUN 10AM</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="sb-label">Budget en tiempo real</div>
+          <div class="budget-live">
+            <div class="bl-row"><span>Budget inicial</span><span class="bl-val bl-blue">$5,000,000</span></div>
+            <div class="bl-row"><span>Costos operativos</span><span class="bl-val bl-red" id="blCosts">$0</span></div>
+            <div class="bl-row"><span>Penalizaciones</span><span class="bl-val bl-red" id="blPenalties">$0</span></div>
+            <div class="bl-row total"><span>Disponible</span><span class="bl-val" id="blAvailable" style="color:var(--info)">$5,000,000</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="sb-label">Contexto actual</div>
+          <div id="contextBox" style="font-family:'DM Mono',monospace;font-size:.7rem;color:var(--muted);padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;">Sin bifurcación aún</div>
+        </div>
+        <div>
+          <div class="sb-label">Penalizaciones pendientes</div>
+          <div id="penaltiesList" style="font-size:.74rem;color:var(--muted);">Ninguna</div>
+        </div>
+      </div>
+
+      <!-- Tab: Alertas -->
+      <div class="sb-panel" id="sp-notif">
+        <div>
+          <div class="sb-label">Centro de alertas</div>
+          <div class="notif-feed" id="notifFeed"></div>
+        </div>
+      </div>
+
+      <!-- Tab: Registro -->
+      <div class="sb-panel" id="sp-log">
+        <div>
+          <div class="sb-label">Registro de decisiones</div>
+          <div class="decision-log" id="decisionLog">
+            <div style="font-size:.76rem;color:var(--muted)">Sin decisiones aún.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANTALLA 3 — GAME OVER
+     ══════════════════════════════════════════ -->
+<div class="screen" id="screenOver">
+  <div class="topbar">
+    <div class="tb-brand">BANCO MERIDIAN — <span>GAME OVER</span></div>
+    <div class="tb-meta"><span class="gm-badge">GM</span></div>
+  </div>
+  <div class="gameover-screen">
+    <div class="go-title" id="goTitle">Colapso total</div>
+    <p class="go-sub" id="goSub">La secuencia de decisiones llevó a un punto de no retorno.</p>
+    <button class="btn btn-accent" onclick="resetGame()" style="margin-top:1rem">Nueva sesión</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANTALLA 4 — RESULTADO FINAL
+     ══════════════════════════════════════════ -->
+<div class="screen" id="screenFinal">
+  <div class="topbar">
+    <div class="tb-brand">BANCO MERIDIAN · <span>RESULTADO FINAL</span></div>
+    <div class="tb-meta">
+      <span class="gm-badge">GM</span>
+      <span>SIMULACRO COMPLETADO</span>
+    </div>
+  </div>
+  <div class="final-screen">
+    <div class="fl">
+      <div class="fl-eyebrow" id="finalEyebrow" style="color:var(--success)">// RESULTADO DE GESTIÓN</div>
+      <div class="fl-title" id="finalTitle">Crisis<br>gestionada</div>
+      <div class="fl-sub" id="finalSub"></div>
+      <div class="score-big" id="finalBudget" style="color:var(--success)">$0</div>
+      <div class="score-big-label">PRESUPUESTO FINAL</div>
+      <div id="finalTeamLabel" style="font-family:'DM Mono',monospace;font-size:.72rem;color:#7a6e65;margin-bottom:1.5rem;margin-top:.3rem"></div>
+      <div class="final-stat-grid" id="finalStats"></div>
+      <button class="btn btn-outline" style="border-color:rgba(255,255,255,.2);color:#e5ddd5;margin-top:.5rem" onclick="resetGame()">Nueva sesión</button>
+    </div>
+    <div class="fr">
+      <div id="finalNarrativeArea"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast de presupuesto -->
+<div id="budgetToast"></div>
+
+<!-- Lógica del juego -->
+<script src="gm.js"></script>
+</body>
+</html>
