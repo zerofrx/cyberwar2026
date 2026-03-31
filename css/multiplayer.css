@@ -590,6 +590,9 @@ body {
   overflow: hidden;
 }
 
+/* min-height: 0 es necesario para que overflow-y: auto funcione en grid items */
+.game-main { min-height: 0; }
+
 .sidebar {
   border-left: 1px solid var(--border);
   background: var(--surface);
