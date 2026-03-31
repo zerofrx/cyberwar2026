@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crisis Cibernética Bancaria — Acceso</title>
+  <link rel="stylesheet" href="css/multiplayer.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+
+      <!-- Logo -->
+      <div class="login-logo">
+        Crisis Cibernética<br>Bancaria
+        <span>Simulacro Multijugador · Banco Meridian</span>
+      </div>
+
+      <!-- Formulario -->
+      <form id="loginForm" autocomplete="off">
+
+        <div class="login-field" style="margin-bottom:1rem">
+          <label class="login-label" for="inputCode">Código de acceso</label>
+          <input
+            id="inputCode"
+            class="login-input"
+            type="text"
+            maxlength="6"
+            placeholder="Ej: AB3X9K"
+            autocomplete="off"
+            spellcheck="false"
+            required
+          >
+        </div>
+
+        <div class="login-field" style="margin-bottom:1.5rem">
+          <label class="login-label" for="inputName">Tu nombre</label>
+          <input
+            id="inputName"
+            class="login-input login-name-input"
+            type="text"
+            maxlength="40"
+            placeholder="Nombre completo"
+            required
+          >
+        </div>
+
+        <div class="login-error" id="loginError"></div>
+
+        <button type="submit" class="login-btn" id="loginBtn" style="margin-top:.75rem">
+          Entrar al simulacro →
+        </button>
+
+      </form>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './js/supabase-client.js';
+
+    const form      = document.getElementById('loginForm');
+    const inputCode = document.getElementById('inputCode');
+    const inputName = document.getElementById('inputName');
+    const loginBtn  = document.getElementById('loginBtn');
+    const errorEl   = document.getElementById('loginError');
+
+    // Forzar mayúsculas en el código
+    inputCode.addEventListener('input', () => {
+      inputCode.value = inputCode.value.toUpperCase();
+    });
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const code = inputCode.value.trim().toUpperCase();
+      const name = inputName.value.trim();
+      if (!code || !name) return;
+
+      setLoading(true);
+      errorEl.textContent = '';
+
+      try {
+        // Buscar el jugador por su código de acceso
+        const { data: player, error } = await supabase
+          .from('players')
+          .select('id, role, group_id, session_id, groups(session_id)')
+          .eq('access_code', code)
+          .single();
+
+        if (error || !player) {
+          showError('Código no válido. Verifica con tu facilitador.');
+          return;
+        }
+
+        // Verificar que la sesión esté activa (no terminada)
+        const { data: session } = await supabase
+          .from('sessions')
+          .select('status')
+          .eq('id', player.session_id)
+          .single();
+
+        if (session?.status === 'finished') {
+          showError('Esta sesión ya ha finalizado.');
+          return;
+        }
+
+        // Actualizar nombre y marcar online
+        await supabase
+          .from('players')
+          .update({ display_name: name, is_online: true, last_seen: new Date().toISOString() })
+          .eq('id', player.id);
+
+        // Guardar datos de sesión en localStorage para reconexión
+        localStorage.setItem('cw_player_id',  player.id);
+        localStorage.setItem('cw_group_id',   player.group_id);
+        localStorage.setItem('cw_session_id', player.session_id);
+        localStorage.setItem('cw_role',       player.role);
+        localStorage.setItem('cw_name',       name);
+        localStorage.setItem('cw_code',       code);
+
+        // Redirigir a la pantalla del grupo
+        window.location.href =
+          `group.html?session=${player.session_id}&group=${player.group_id}&role=${player.role}`;
+
+      } catch (err) {
+        showError('Error de conexión. Intenta de nuevo.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    function setLoading(val) {
+      loginBtn.disabled = val;
+      loginBtn.textContent = val ? 'Verificando...' : 'Entrar al simulacro →';
+    }
+
+    function showError(msg) {
+      errorEl.textContent = msg;
+    }
+
+    // Si ya hay sesión guardada, intentar reconectar automáticamente
+    const savedCode = localStorage.getItem('cw_code');
+    if (savedCode) {
+      inputCode.value = savedCode;
+      const savedName = localStorage.getItem('cw_name');
+      if (savedName) inputName.value = savedName;
+    }
+  </script>
+</body>
+</html>

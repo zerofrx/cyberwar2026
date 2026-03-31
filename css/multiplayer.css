@@ -1,0 +1,521 @@
+/* ══════════════════════════════════════════
+   multiplayer.css — Estilos adicionales
+   para las pantallas multijugador.
+   Hereda los tokens de color de gm.css.
+   ══════════════════════════════════════════ */
+
+/* ── Fuentes (mismas que gm.css) ────────── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+/* ── Reset / base ───────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --dark:    #16120e;
+  --bg:      #1e1812;
+  --surface: #261f18;
+  --border:  #38302a;
+  --text:    #d4c9be;
+  --muted:   #7a6e65;
+  --accent:  #c0392b;
+  --success: #2e9e60;
+  --info:    #4a90d9;
+  --gold:    #c89a20;
+  --purple:  #8b52c8;
+
+  --accent-light:  rgba(192,57,43,.12);
+  --accent-border: rgba(192,57,43,.25);
+  --success-light: rgba(46,158,96,.12);
+  --gold-light:    rgba(200,154,32,.10);
+  --info-light:    rgba(74,144,217,.10);
+  --purple-light:  rgba(139,82,200,.12);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  min-height: 100vh;
+}
+
+/* ── Topbar compartido ──────────────────── */
+.mp-topbar {
+  background: var(--dark);
+  border-bottom: 1px solid var(--border);
+  padding: .6rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.mp-brand {
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  letter-spacing: .12em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.mp-topbar-right { margin-left: auto; display: flex; align-items: center; gap: .75rem; }
+
+/* ── Role badge ─────────────────────────── */
+.role-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .12em;
+  padding: .25rem .65rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.role-leader { background: var(--purple-light); color: var(--purple); border: 1px solid rgba(139,82,200,.3); }
+.role-ciso   { background: var(--info-light);   color: var(--info);   border: 1px solid rgba(74,144,217,.3); }
+.role-legal  { background: var(--gold-light);   color: var(--gold);   border: 1px solid rgba(200,154,32,.3); }
+.role-comms  { background: var(--success-light);color: var(--success);border: 1px solid rgba(46,158,96,.3); }
+.role-ops    { background: var(--accent-light); color: var(--accent); border: 1px solid rgba(192,57,43,.3); }
+
+/* ── Online indicators ──────────────────── */
+.online-dots { display: flex; gap: .3rem; align-items: center; }
+.online-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: background .3s;
+  position: relative;
+}
+.online-dot.active { background: var(--success); }
+.online-dot[data-role]::after {
+  content: attr(data-role);
+  position: absolute;
+  bottom: 110%; left: 50%;
+  transform: translateX(-50%);
+  background: var(--dark);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: .55rem;
+  padding: .15rem .4rem;
+  border-radius: 3px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+.online-dot:hover::after { opacity: 1; }
+
+/* ── Pantalla de espera ─────────────────── */
+.waiting-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 52px);
+  gap: 1.5rem;
+  text-align: center;
+  padding: 2rem;
+}
+.waiting-icon {
+  width: 56px; height: 56px;
+  border: 3px solid var(--border);
+  border-top-color: var(--info);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.waiting-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  color: var(--text);
+}
+.waiting-sub { color: var(--muted); font-size: .9rem; max-width: 360px; line-height: 1.6; }
+.room-code-display {
+  font-family: 'DM Mono', monospace;
+  font-size: 2.2rem;
+  letter-spacing: .25em;
+  color: var(--info);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: .5rem 1.5rem;
+  border-radius: 8px;
+}
+
+/* ── Overlay inter-etapa ────────────────── */
+.stage-wait-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(22,18,14,.88);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  z-index: 200;
+  backdrop-filter: blur(4px);
+}
+.stage-wait-overlay .waiting-title { font-size: 1.3rem; }
+
+/* ── Banner "solo el líder puede decidir" ── */
+.leader-only-banner {
+  background: var(--purple-light);
+  border: 1px solid rgba(139,82,200,.25);
+  border-radius: 6px;
+  padding: .55rem 1rem;
+  font-size: .78rem;
+  color: var(--purple);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: .06em;
+  text-align: center;
+  margin-bottom: .75rem;
+}
+
+/* ── Opciones bloqueadas (no-líder) ──────── */
+.dec-opts-locked .dec-opt {
+  pointer-events: none;
+  opacity: .75;
+}
+.dec-opts-locked .gm-info-toggle { display: none; }
+
+/* ── Panel de contexto por rol ───────────── */
+.role-panel {
+  border-radius: 6px;
+  padding: .65rem .85rem;
+  font-size: .8rem;
+  line-height: 1.55;
+  margin-top: .5rem;
+  border-left: 3px solid;
+}
+.role-panel-ciso  { background: var(--info-light);   border-color: var(--info);   color: var(--info); }
+.role-panel-legal { background: var(--gold-light);   border-color: var(--gold);   color: var(--gold); }
+.role-panel-comms { background: var(--success-light);border-color: var(--success);color: var(--success); }
+.role-panel-ops   { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+.role-panel-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .55rem;
+  letter-spacing: .12em;
+  margin-bottom: .3rem;
+  opacity: .8;
+}
+.role-panel-body { color: var(--text); }
+
+/* ── Opción seleccionada (sincronizada) ─── */
+.dec-opt.peer-selected {
+  border-color: var(--purple) !important;
+  background: var(--purple-light) !important;
+}
+
+/* ══════════════════════════════════════════
+   LOGIN (index.html)
+   ══════════════════════════════════════════ */
+.login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.login-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: var(--text);
+  text-align: center;
+}
+.login-logo span {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: .14em;
+  color: var(--muted);
+  margin-top: .2rem;
+  text-transform: uppercase;
+}
+.login-field { display: flex; flex-direction: column; gap: .45rem; }
+.login-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: .1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.login-input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: .95rem;
+  letter-spacing: .1em;
+  padding: .65rem .85rem;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color .2s;
+  text-transform: uppercase;
+}
+.login-input:focus { border-color: var(--info); }
+.login-input::placeholder { text-transform: none; color: var(--muted); opacity: .6; }
+.login-name-input {
+  text-transform: none;
+  letter-spacing: normal;
+  font-family: 'DM Sans', sans-serif;
+}
+.login-btn {
+  background: var(--info);
+  color: #fff;
+  border: none;
+  padding: .75rem 1rem;
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: .95rem;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.login-btn:hover { opacity: .88; }
+.login-btn:disabled { opacity: .4; cursor: not-allowed; }
+.login-error {
+  font-size: .82rem;
+  color: var(--accent);
+  text-align: center;
+  min-height: 1.2em;
+}
+
+/* ══════════════════════════════════════════
+   FACILITADOR (facilitator.html)
+   ══════════════════════════════════════════ */
+.fac-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: calc(100vh - 52px);
+}
+.fac-sidebar {
+  background: var(--dark);
+  border-right: 1px solid var(--border);
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  overflow-y: auto;
+}
+.fac-main {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+/* Sala info */
+.fac-room-code {
+  font-family: 'DM Mono', monospace;
+  font-size: 1.8rem;
+  letter-spacing: .2em;
+  color: var(--info);
+  text-align: center;
+  padding: .5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.fac-room-code:hover { border-color: var(--info); }
+.fac-room-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .58rem;
+  letter-spacing: .12em;
+  color: var(--muted);
+  text-align: center;
+  margin-top: .3rem;
+}
+
+/* Status pill */
+.fac-status {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .8rem;
+  padding: .4rem .75rem;
+  border-radius: 20px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: .08em;
+  justify-content: center;
+}
+.fac-status.lobby    { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+.fac-status.active   { background: var(--success-light); color: var(--success); border: 1px solid rgba(46,158,96,.3); }
+.fac-status.finished { background: var(--info-light); color: var(--info); border: 1px solid rgba(74,144,217,.3); }
+.fac-status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+/* Stage dots */
+.fac-stages { display: flex; gap: .4rem; justify-content: center; }
+.fac-stage-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  color: var(--muted);
+  transition: all .3s;
+}
+.fac-stage-dot.done    { background: var(--success); border-color: var(--success); color: #fff; }
+.fac-stage-dot.current { background: var(--info);    border-color: var(--info);    color: #fff; }
+
+/* Buttons */
+.fac-btn {
+  width: 100%;
+  padding: .7rem 1rem;
+  border-radius: 7px;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: .9rem;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.fac-btn:disabled { opacity: .35; cursor: not-allowed; }
+.fac-btn-start   { background: var(--success); color: #fff; }
+.fac-btn-advance { background: var(--info);    color: #fff; }
+.fac-btn-danger  { background: var(--accent);  color: #fff; }
+.fac-btn:hover:not(:disabled) { opacity: .88; }
+
+/* Override checkbox */
+.fac-override {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .78rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+.fac-override input { accent-color: var(--gold); }
+
+/* Groups grid */
+.fac-groups-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+.fac-group-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+  transition: border-color .3s;
+}
+.fac-group-card.decided   { border-color: var(--success); }
+.fac-group-card.selected  { border-color: var(--gold); }
+.fac-group-card.gameover  { border-color: var(--accent); opacity: .7; }
+
+.fac-group-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.fac-group-slot {
+  font-family: 'DM Mono', monospace;
+  font-size: .58rem;
+  color: var(--muted);
+  letter-spacing: .1em;
+}
+
+/* Barras de progreso */
+.fac-bar-row { display: flex; flex-direction: column; gap: .2rem; }
+.fac-bar-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .58rem;
+  letter-spacing: .08em;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+}
+.fac-bar-track {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.fac-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width .5s ease;
+}
+.fac-bar-budget { background: var(--info); }
+.fac-bar-hours  { background: var(--gold); }
+
+/* Estado de decisión */
+.fac-decision-state {
+  font-size: .78rem;
+  padding: .3rem .6rem;
+  border-radius: 4px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: .06em;
+}
+.fac-ds-waiting  { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+.fac-ds-selected { background: var(--gold-light);    color: var(--gold);    border: 1px solid rgba(200,154,32,.3); }
+.fac-ds-decided  { background: var(--success-light); color: var(--success); border: 1px solid rgba(46,158,96,.3); }
+.fac-ds-gameover { background: var(--accent-light);  color: var(--accent);  border: 1px solid rgba(192,57,43,.3); }
+
+/* Ctx badge */
+.fac-ctx-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: .58rem;
+  letter-spacing: .1em;
+  padding: .2rem .5rem;
+  border-radius: 3px;
+}
+.fac-ctx-a { background: var(--success-light); color: var(--success); }
+.fac-ctx-b { background: var(--gold-light);    color: var(--gold); }
+.fac-ctx-c { background: var(--accent-light);  color: var(--accent); }
+.fac-ctx-d { background: var(--accent-light);  color: var(--accent); }
+
+/* Members mini-log */
+.fac-members {
+  display: flex;
+  gap: .3rem;
+  flex-wrap: wrap;
+}
+.fac-member-chip {
+  font-size: .68rem;
+  padding: .15rem .45rem;
+  border-radius: 3px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: .04em;
+}
+.fac-member-chip.online { border-color: var(--success); color: var(--success); }
+
+/* Sección título facilitador */
+.fac-section-title {
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: .14em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: .65rem;
+}
+.fac-divider { border: none; border-top: 1px solid var(--border); }
+
+/* ── Utilidades ─────────────────────────── */
+.mp-hidden { display: none !important; }
+.mp-flex   { display: flex; }
+.mp-gap-sm { gap: .5rem; }
+.mp-mt-sm  { margin-top: .5rem; }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 900px) {
+  .fac-layout { grid-template-columns: 1fr; }
+  .fac-sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+}

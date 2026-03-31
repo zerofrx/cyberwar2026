@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facilitador — Crisis Cibernética Bancaria</title>
+  <link rel="stylesheet" href="css/multiplayer.css">
+</head>
+<body>
+
+  <!-- ── Topbar ─────────────────────────────── -->
+  <div class="mp-topbar">
+    <div class="mp-brand">CRISIS BANCARIA · PANEL FACILITADOR</div>
+    <div class="mp-topbar-right">
+      <div class="role-badge role-leader">FACILITADOR</div>
+    </div>
+  </div>
+
+  <!-- ── Pantalla: crear sesión ─────────────── -->
+  <div id="screenSetup" class="waiting-screen">
+    <div class="waiting-title" style="font-size:1.3rem">Panel del Facilitador</div>
+    <div class="waiting-sub">Crea una nueva sesión para comenzar el simulacro con tus grupos.</div>
+    <button id="btnCreateSession" class="login-btn" style="max-width:280px;margin-top:.5rem">
+      Crear nueva sesión →
+    </button>
+    <div class="login-error" id="setupError"></div>
+  </div>
+
+  <!-- ── Pantalla principal ─────────────────── -->
+  <div id="screenMain" class="mp-hidden">
+    <div class="fac-layout">
+
+      <!-- Sidebar izquierdo -->
+      <aside class="fac-sidebar">
+
+        <!-- Room code -->
+        <div>
+          <div class="fac-room-code" id="facRoomCode" title="Clic para copiar">----</div>
+          <div class="fac-room-label">Código de sala · clic para copiar</div>
+        </div>
+
+        <!-- Status -->
+        <div class="fac-status lobby" id="facStatus">
+          <div class="fac-status-dot"></div>
+          <span id="facStatusText">LOBBY — Esperando participantes</span>
+        </div>
+
+        <!-- Stage dots -->
+        <div>
+          <div class="fac-section-title">Progreso</div>
+          <div class="fac-stages" id="facStageDots"></div>
+        </div>
+
+        <hr class="fac-divider">
+
+        <!-- Controles -->
+        <div style="display:flex;flex-direction:column;gap:.65rem">
+          <button class="fac-btn fac-btn-start" id="btnStart">
+            Iniciar simulacro
+          </button>
+          <button class="fac-btn fac-btn-advance mp-hidden" id="btnAdvance" disabled>
+            Avanzar a etapa <span id="nextStageNum">2</span> →
+          </button>
+          <button class="fac-btn fac-btn-danger mp-hidden" id="btnFinish">
+            Finalizar sesión
+          </button>
+        </div>
+
+        <!-- Override -->
+        <label class="fac-override mp-hidden" id="overrideWrap">
+          <input type="checkbox" id="overrideCheck">
+          Avanzar aunque no todos hayan decidido
+        </label>
+
+        <!-- Progreso de decisiones -->
+        <div id="decisionProgress" class="mp-hidden">
+          <div class="fac-section-title">Decisiones</div>
+          <div id="decisionProgressBar" style="font-size:.82rem;color:var(--muted)">0 / 6 grupos han decidido</div>
+        </div>
+
+        <hr class="fac-divider">
+
+        <!-- Generar códigos -->
+        <div>
+          <div class="fac-section-title">Códigos de acceso</div>
+          <button class="fac-btn" id="btnGenCodes" style="background:var(--surface);color:var(--text);border:1px solid var(--border);font-size:.82rem;padding:.55rem">
+            Generar 30 códigos (6 grupos × 5)
+          </button>
+          <div id="codesOutput" style="margin-top:.75rem"></div>
+        </div>
+
+      </aside>
+
+      <!-- Área principal: grupos grid -->
+      <main class="fac-main">
+        <div class="fac-section-title" style="margin-bottom:1rem" id="mainAreaTitle">
+          Grupos — etapa actual: <span id="currentStageLabel">—</span>
+        </div>
+        <div class="fac-groups-grid" id="groupsGrid">
+          <div style="color:var(--muted);font-size:.85rem">Cargando grupos...</div>
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <script type="module" src="js/facilitator.js"></script>
+</body>
+</html>
