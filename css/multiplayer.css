@@ -639,6 +639,9 @@ body {
 /* ══════════════════════════════════════════
    GROUP.HTML — Hours tracker (aliases)
    ══════════════════════════════════════════ */
+/* Budget total row alias (gm.css usa .bl-row.total, group.html usa .bl-total) */
+.bl-row.bl-total { font-weight: 600; padding-top: .35rem; }
+
 .ht-bar-track {
   background: var(--border);
   border-radius: 4px;
