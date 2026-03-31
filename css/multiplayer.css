@@ -508,6 +508,64 @@ body {
 }
 .fac-divider { border: none; border-top: 1px solid var(--border); }
 
+/* ══════════════════════════════════════════
+   FACILITADOR — Resultados finales
+   ══════════════════════════════════════════ */
+.fac-results-grid {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+.fac-result-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  transition: border-color .3s;
+}
+.fac-result-rank {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 2rem;
+  text-align: center;
+  margin-top: .1rem;
+}
+.fac-result-body  { flex: 1; min-width: 0; }
+.fac-result-name  { font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: .2rem; }
+.fac-result-outcome {
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: .12em;
+  font-weight: 700;
+  margin-bottom: .55rem;
+}
+.fac-result-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem .75rem;
+  margin-bottom: .55rem;
+}
+.fac-result-stat {
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  color: var(--text);
+}
+.fac-result-log   { display: flex; flex-wrap: wrap; gap: .3rem; }
+.fac-log-chip {
+  font-family: 'DM Mono', monospace;
+  font-size: .55rem;
+  letter-spacing: .08em;
+  padding: .15rem .4rem;
+  border-radius: 3px;
+}
+.fac-log-correct { background: var(--success-light); color: var(--success); border: 1px solid #90c8a8; }
+.fac-log-trap    { background: var(--accent-light);  color: var(--accent);  border: 1px solid var(--accent-border); }
+.fac-log-ok      { background: var(--gold-light);    color: var(--gold);    border: 1px solid #e0c880; }
+
 /* ── Utilidades ─────────────────────────── */
 .mp-hidden { display: none !important; }
 .mp-flex   { display: flex; }
@@ -592,6 +650,11 @@ body {
 
 /* min-height: 0 es necesario para que overflow-y: auto funcione en grid items */
 .game-main { min-height: 0; }
+
+/* Los cards no deben encogerse (flex-shrink default=1); el scroll lo maneja game-main */
+.game-main .incident-card,
+.game-main .decision-card,
+.game-main .consequence-reveal { flex-shrink: 0; }
 
 .sidebar {
   border-left: 1px solid var(--border);

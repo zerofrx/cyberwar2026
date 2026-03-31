@@ -2,8 +2,8 @@
 // facilitator.js — Lógica del panel del facilitador
 // ══════════════════════════════════════════
 
-import { supabase }         from './supabase-client.js';
-import { STAGES, fmt }      from './game-data.js';
+import { supabase }                              from './supabase-client.js';
+import { STAGES, fmt, computeStage5State }       from './game-data.js';
 
 const NUM_GROUPS  = 6;
 const ROLES       = ['leader', 'ciso', 'legal', 'comms', 'ops'];
@@ -200,6 +200,7 @@ function renderAll() {
   renderGroupsGrid();
   renderControls();
   renderDecisionProgress();
+  renderResults();
 }
 
 function renderStatus() {
@@ -336,6 +337,76 @@ function buildGroupCard(g) {
 
     <div class="fac-decision-state ${dsClass}">${dsText}</div>
   </div>`;
+}
+
+// ── Resultados finales ───────────────────────
+function renderResults() {
+  const section = document.getElementById('resultsSection');
+  const grid    = document.getElementById('resultsGrid');
+  const isFinished = session.status === 'finished';
+
+  section.classList.toggle('mp-hidden', !isFinished);
+  document.getElementById('groupsGrid').classList.toggle('mp-hidden', isFinished);
+  document.getElementById('mainAreaTitle').classList.toggle('mp-hidden', isFinished);
+
+  if (!isFinished) return;
+
+  // Link de proyección
+  document.getElementById('btnProject').href =
+    `results.html?session=${sessionId}`;
+
+  // Calcular resultado de cada grupo
+  const ranked = groups.map(g => {
+    const flags = g.flags || {};
+    let budgetFinal = g.budget;
+    let penFinal    = g.penalties || 0;
+    (flags.pendingPenalties || []).forEach(p => { budgetFinal -= p.amount; penFinal += p.amount; });
+
+    const state   = g.final_state === 'game_over'
+      ? { ctx: 'X', label: 'ELIMINADO' }
+      : computeStage5State(flags, budgetFinal, penFinal);
+
+    const log     = g.decision_log || [];
+    const correct = log.filter(e => e.type === 'correct').length;
+    const traps   = log.filter(e => e.type === 'trap').length;
+
+    return { ...g, budgetFinal, penFinal, state, correct, traps, log };
+  }).sort((a, b) => {
+    const order = { A:0, B:1, C:2, D:3, X:4 };
+    const diff  = (order[a.state.ctx] ?? 4) - (order[b.state.ctx] ?? 4);
+    return diff !== 0 ? diff : b.budgetFinal - a.budgetFinal;
+  });
+
+  const ctxColors = { A:'var(--success)', B:'var(--info)', C:'var(--gold)', D:'var(--accent)', X:'var(--muted)' };
+  const ctxLabels = {
+    A: 'GESTIÓN EXITOSA',
+    B: 'GESTIÓN ACEPTABLE',
+    C: 'GESTIÓN DEFICIENTE',
+    D: 'COLAPSO INSTITUCIONAL',
+    X: 'ELIMINADO'
+  };
+  const medals = ['🥇','🥈','🥉','4°','5°','6°'];
+
+  grid.innerHTML = ranked.map((g, i) => {
+    const color = ctxColors[g.state.ctx] || 'var(--muted)';
+    return `
+    <div class="fac-result-card" style="border-color:${color}">
+      <div class="fac-result-rank">${medals[i]}</div>
+      <div class="fac-result-body">
+        <div class="fac-result-name">${g.name}</div>
+        <div class="fac-result-outcome" style="color:${color}">${ctxLabels[g.state.ctx]}</div>
+        <div class="fac-result-stats">
+          <span class="fac-result-stat">💰 ${fmt(g.budgetFinal)}</span>
+          <span class="fac-result-stat">⏱ ${g.hours}h usadas</span>
+          <span class="fac-result-stat" style="color:var(--success)">✓ ${g.correct} óptimas</span>
+          <span class="fac-result-stat" style="color:var(--accent)">✗ ${g.traps} trampas</span>
+        </div>
+        <div class="fac-result-log">
+          ${g.log.map(e => `<span class="fac-log-chip fac-log-${e.type}" title="${e.text}">S${e.stage} ${e.letter}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ── Generar códigos de acceso ─────────────────

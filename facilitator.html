@@ -103,6 +103,20 @@
         <div class="fac-groups-grid" id="groupsGrid">
           <div style="color:var(--muted);font-size:.85rem">Cargando grupos...</div>
         </div>
+
+        <!-- Resultados finales (visible solo cuando status=finished) -->
+        <div id="resultsSection" class="mp-hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+            <div class="fac-section-title" style="margin-bottom:0">Resultados finales</div>
+            <a id="btnProject" href="#" target="_blank"
+               style="font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.1em;
+                      background:var(--info);color:#fff;padding:.45rem 1rem;border-radius:6px;
+                      text-decoration:none">
+              ⊞ Proyectar en pantalla →
+            </a>
+          </div>
+          <div id="resultsGrid" class="fac-results-grid"></div>
+        </div>
       </main>
 
     </div>

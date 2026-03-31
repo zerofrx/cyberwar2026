@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultados — Crisis Cibernética Bancaria</title>
+  <link rel="stylesheet" href="gm.css">
+  <link rel="stylesheet" href="css/multiplayer.css">
+  <style>
+    body { background: var(--dark); }
+
+    .res-header {
+      text-align: center;
+      padding: 2rem 2rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .res-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .18em;
+      color: var(--muted);
+      margin-bottom: .4rem;
+    }
+    .res-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: #e5ddd5;
+    }
+
+    .res-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.25rem;
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .res-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color .3s;
+    }
+    .res-card-top {
+      padding: 1.1rem 1.3rem .9rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .res-medal {
+      font-size: 2.2rem;
+      flex-shrink: 0;
+    }
+    .res-card-info { flex: 1; min-width: 0; }
+    .res-card-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      color: #e5ddd5;
+      margin-bottom: .15rem;
+    }
+    .res-card-outcome {
+      font-family: 'DM Mono', monospace;
+      font-size: .62rem;
+      letter-spacing: .14em;
+      font-weight: 700;
+    }
+
+    .res-card-bar {
+      height: 4px;
+    }
+
+    .res-card-body {
+      padding: .85rem 1.3rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .65rem;
+    }
+
+    .res-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .4rem .75rem;
+    }
+    .res-stat {
+      display: flex;
+      flex-direction: column;
+      gap: .1rem;
+    }
+    .res-stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: .52rem;
+      letter-spacing: .1em;
+      color: var(--muted);
+    }
+    .res-stat-val {
+      font-family: 'DM Mono', monospace;
+      font-size: .88rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .res-decisions {
+      display: flex;
+      gap: .3rem;
+      flex-wrap: wrap;
+    }
+    .res-decision-chip {
+      font-family: 'DM Mono', monospace;
+      font-size: .58rem;
+      letter-spacing: .06em;
+      padding: .2rem .5rem;
+      border-radius: 4px;
+    }
+    .res-chip-correct { background: var(--success-light); color: var(--success); border: 1px solid #90c8a8; }
+    .res-chip-trap    { background: var(--accent-light);  color: var(--accent);  border: 1px solid var(--accent-border); }
+    .res-chip-ok      { background: var(--gold-light);    color: var(--gold);    border: 1px solid #e0c880; }
+
+    .res-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 1rem;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: .75rem;
+      letter-spacing: .1em;
+    }
+    .res-spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--info);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="res-header">
+    <div class="res-eyebrow">CRISIS CIBERNÉTICA BANCARIA · RESULTADOS FINALES</div>
+    <div class="res-title" id="resTitle">Resultados del Simulacro</div>
+  </div>
+
+  <div id="resLoading" class="res-loading">
+    <div class="res-spinner"></div>
+    CARGANDO RESULTADOS...
+  </div>
+
+  <div id="resGrid" class="res-grid" style="display:none"></div>
+
+  <script type="module">
+    import { supabase }              from './js/supabase-client.js';
+    import { fmt, computeStage5State } from './js/game-data.js';
+
+    const params    = new URLSearchParams(location.search);
+    const sessionId = params.get('session');
+
+    if (!sessionId) {
+      document.getElementById('resLoading').textContent = 'Falta el parámetro ?session=';
+    } else {
+      load();
+    }
+
+    async function load() {
+      const [{ data: ses }, { data: grps }] = await Promise.all([
+        supabase.from('sessions').select('room_code').eq('id', sessionId).single(),
+        supabase.from('groups').select('*').eq('session_id', sessionId).order('slot')
+      ]);
+
+      if (ses) {
+        document.getElementById('resTitle').textContent =
+          `Resultados — Sala ${ses.room_code}`;
+      }
+
+      render(grps || []);
+
+      // Realtime: actualizar si cambia algún grupo
+      supabase.channel(`results-${sessionId}`)
+        .on('postgres_changes', {
+          event: 'UPDATE', schema: 'public', table: 'groups',
+          filter: `session_id=eq.${sessionId}`
+        }, () => load())
+        .subscribe();
+    }
+
+    function render(groups) {
+      const ctxColors = { A:'var(--success)', B:'var(--info)', C:'var(--gold)', D:'var(--accent)', X:'var(--muted)' };
+      const ctxLabels = {
+        A: 'GESTIÓN EXITOSA',
+        B: 'GESTIÓN ACEPTABLE',
+        C: 'GESTIÓN DEFICIENTE',
+        D: 'COLAPSO INSTITUCIONAL',
+        X: 'ELIMINADO'
+      };
+      const medals = ['🥇','🥈','🥉','4°','5°','6°'];
+
+      const ranked = groups.map(g => {
+        const flags = g.flags || {};
+        let budgetFinal = g.budget;
+        let penFinal    = g.penalties || 0;
+        (flags.pendingPenalties || []).forEach(p => { budgetFinal -= p.amount; penFinal += p.amount; });
+
+        const state = g.final_state === 'game_over'
+          ? { ctx: 'X', label: 'ELIMINADO' }
+          : computeStage5State(flags, budgetFinal, penFinal);
+
+        const log     = g.decision_log || [];
+        const correct = log.filter(e => e.type === 'correct').length;
+        const traps   = log.filter(e => e.type === 'trap').length;
+        return { ...g, budgetFinal, penFinal, state, correct, traps, log };
+      }).sort((a, b) => {
+        const order = { A:0, B:1, C:2, D:3, X:4 };
+        const diff  = (order[a.state.ctx] ?? 4) - (order[b.state.ctx] ?? 4);
+        return diff !== 0 ? diff : b.budgetFinal - a.budgetFinal;
+      });
+
+      const grid = document.getElementById('resGrid');
+      grid.innerHTML = ranked.map((g, i) => {
+        const color = ctxColors[g.state.ctx] || 'var(--muted)';
+        const chips = g.log.map(e =>
+          `<span class="res-decision-chip res-chip-${e.type}" title="${e.text}">S${e.stage} ${e.letter}</span>`
+        ).join('');
+        return `
+        <div class="res-card" style="border-color:${color}">
+          <div class="res-card-top">
+            <div class="res-medal">${medals[i] || (i+1)+'°'}</div>
+            <div class="res-card-info">
+              <div class="res-card-name">${g.name}</div>
+              <div class="res-card-outcome" style="color:${color}">${ctxLabels[g.state.ctx]}</div>
+            </div>
+          </div>
+          <div class="res-card-bar" style="background:${color};opacity:.5"></div>
+          <div class="res-card-body">
+            <div class="res-stats">
+              <div class="res-stat">
+                <div class="res-stat-label">PRESUPUESTO FINAL</div>
+                <div class="res-stat-val" style="color:${g.budgetFinal >= 0 ? color : 'var(--accent)'}">
+                  ${fmt(g.budgetFinal)}
+                </div>
+              </div>
+              <div class="res-stat">
+                <div class="res-stat-label">HORAS USADAS</div>
+                <div class="res-stat-val">${g.hours}h / 72h</div>
+              </div>
+              <div class="res-stat">
+                <div class="res-stat-label">DECISIONES ÓPTIMAS</div>
+                <div class="res-stat-val" style="color:var(--success)">${g.correct} / ${g.log.length}</div>
+              </div>
+              <div class="res-stat">
+                <div class="res-stat-label">TRAMPAS CAÍDAS</div>
+                <div class="res-stat-val" style="color:var(--accent)">${g.traps}</div>
+              </div>
+            </div>
+            ${chips ? `<div class="res-decisions">${chips}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+
+      document.getElementById('resLoading').style.display = 'none';
+      grid.style.display = 'grid';
+    }
+  </script>
+</body>
+</html>
