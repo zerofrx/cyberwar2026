@@ -20,7 +20,7 @@
       <form id="loginForm" autocomplete="off">
 
         <div class="login-field" style="margin-bottom:1rem">
-          <label class="login-label" for="inputCode">Código de acceso</label>
+          <label class="login-label" for="inputCode">Código de grupo</label>
           <input
             id="inputCode"
             class="login-input"
@@ -33,7 +33,7 @@
           >
         </div>
 
-        <div class="login-field" style="margin-bottom:1.5rem">
+        <div class="login-field" style="margin-bottom:1rem">
           <label class="login-label" for="inputName">Tu nombre</label>
           <input
             id="inputName"
@@ -43,6 +43,18 @@
             placeholder="Nombre completo"
             required
           >
+        </div>
+
+        <div class="login-field" style="margin-bottom:1.5rem">
+          <label class="login-label" for="inputRole">Tu rol</label>
+          <select id="inputRole" class="login-input login-name-input" required style="cursor:pointer">
+            <option value="">— Selecciona tu rol —</option>
+            <option value="leader">Líder</option>
+            <option value="ciso">CISO</option>
+            <option value="legal">Legal</option>
+            <option value="comms">Comunicaciones</option>
+            <option value="ops">Operaciones</option>
+          </select>
         </div>
 
         <div class="login-error" id="loginError"></div>
@@ -59,11 +71,12 @@
   <script type="module">
     import { supabase } from './js/supabase-client.js';
 
-    const form      = document.getElementById('loginForm');
-    const inputCode = document.getElementById('inputCode');
-    const inputName = document.getElementById('inputName');
-    const loginBtn  = document.getElementById('loginBtn');
-    const errorEl   = document.getElementById('loginError');
+    const form       = document.getElementById('loginForm');
+    const inputCode  = document.getElementById('inputCode');
+    const inputName  = document.getElementById('inputName');
+    const inputRole  = document.getElementById('inputRole');
+    const loginBtn   = document.getElementById('loginBtn');
+    const errorEl    = document.getElementById('loginError');
 
     // Forzar mayúsculas en el código
     inputCode.addEventListener('input', () => {
@@ -74,29 +87,30 @@
       e.preventDefault();
       const code = inputCode.value.trim().toUpperCase();
       const name = inputName.value.trim();
-      if (!code || !name) return;
+      const role = inputRole.value;
+      if (!code || !name || !role) return;
 
       setLoading(true);
       errorEl.textContent = '';
 
       try {
-        // Buscar el jugador por su código de acceso
-        const { data: player, error } = await supabase
-          .from('players')
-          .select('id, role, group_id, session_id, groups(session_id)')
+        // Buscar el grupo por código compartido
+        const { data: group, error } = await supabase
+          .from('groups')
+          .select('id, session_id, name')
           .eq('access_code', code)
           .single();
 
-        if (error || !player) {
+        if (error || !group) {
           showError('Código no válido. Verifica con tu facilitador.');
           return;
         }
 
-        // Verificar que la sesión esté activa (no terminada)
+        // Verificar que la sesión no haya terminado
         const { data: session } = await supabase
           .from('sessions')
           .select('status')
-          .eq('id', player.session_id)
+          .eq('id', group.session_id)
           .single();
 
         if (session?.status === 'finished') {
@@ -104,23 +118,30 @@
           return;
         }
 
-        // Actualizar nombre y marcar online
-        await supabase
+        // Upsert del jugador: (group_id, role) es la clave única
+        const { data: player } = await supabase
           .from('players')
-          .update({ display_name: name, is_online: true, last_seen: new Date().toISOString() })
-          .eq('id', player.id);
+          .upsert({
+            session_id:   group.session_id,
+            group_id:     group.id,
+            role,
+            display_name: name,
+            is_online:    true,
+            last_seen:    new Date().toISOString()
+          }, { onConflict: 'group_id,role' })
+          .select()
+          .single();
 
-        // Guardar datos de sesión en localStorage para reconexión
+        // Guardar en localStorage para reconexión
         localStorage.setItem('cw_player_id',  player.id);
-        localStorage.setItem('cw_group_id',   player.group_id);
-        localStorage.setItem('cw_session_id', player.session_id);
-        localStorage.setItem('cw_role',       player.role);
+        localStorage.setItem('cw_group_id',   group.id);
+        localStorage.setItem('cw_session_id', group.session_id);
+        localStorage.setItem('cw_role',       role);
         localStorage.setItem('cw_name',       name);
         localStorage.setItem('cw_code',       code);
 
-        // Redirigir a la pantalla del grupo
         window.location.href =
-          `group.html?session=${player.session_id}&group=${player.group_id}&role=${player.role}`;
+          `group.html?session=${group.session_id}&group=${group.id}&role=${role}`;
 
       } catch (err) {
         showError('Error de conexión. Intenta de nuevo.');
@@ -139,12 +160,14 @@
       errorEl.textContent = msg;
     }
 
-    // Si ya hay sesión guardada, intentar reconectar automáticamente
+    // Reconexión automática si ya hay sesión guardada
     const savedCode = localStorage.getItem('cw_code');
     if (savedCode) {
       inputCode.value = savedCode;
       const savedName = localStorage.getItem('cw_name');
+      const savedRole = localStorage.getItem('cw_role');
       if (savedName) inputName.value = savedName;
+      if (savedRole) inputRole.value = savedRole;
     }
   </script>
 </body>

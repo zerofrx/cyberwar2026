@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS groups (
   member_comms  TEXT DEFAULT '',
   member_ops    TEXT DEFAULT '',
 
+  -- Código compartido por todos los miembros del grupo (generado por el facilitador)
+  access_code   TEXT UNIQUE,
+
   -- Estado del juego (espejo del objeto G)
   stage         INT    NOT NULL DEFAULT 0,
   ctx           TEXT   NOT NULL DEFAULT 'default',
@@ -64,16 +67,18 @@ CREATE TABLE IF NOT EXISTS groups (
 );
 
 -- players: una fila por persona conectada a un grupo
+-- Todos los miembros del grupo comparten el mismo access_code (en groups.access_code)
+-- La clave única es (group_id, role) — un rol por grupo
 CREATE TABLE IF NOT EXISTS players (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id   UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
   group_id     UUID NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
-  access_code  TEXT NOT NULL UNIQUE,             -- código único pre-generado por el facilitador
   role         TEXT NOT NULL,                    -- leader | ciso | legal | comms | ops
   display_name TEXT DEFAULT '',
   is_online    BOOLEAN NOT NULL DEFAULT false,
   last_seen    TIMESTAMPTZ DEFAULT now(),
-  created_at   TIMESTAMPTZ DEFAULT now()
+  created_at   TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(group_id, role)
 );
 
 -- ── Índices ─────────────────────────────────

@@ -263,6 +263,7 @@ function buildGroupCard(g) {
       </div>
     </div>
 
+    ${g.access_code ? `<div style="font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:.12em;color:var(--info)">${g.access_code}</div>` : ''}
     <div class="fac-members">${memberChips}</div>
 
     <div class="fac-bar-row">
@@ -290,39 +291,29 @@ function buildGroupCard(g) {
 }
 
 // ── Generar códigos de acceso ─────────────────
+// 1 código por grupo — todos los miembros del grupo comparten el mismo código
 async function generateCodes() {
   if (!session) return;
   const btn = document.getElementById('btnGenCodes');
   btn.disabled = true;
 
   try {
-    // Eliminar jugadores existentes de esta sesión
-    await supabase.from('players').delete().eq('session_id', sessionId);
-
-    const rows   = [];
     const output = [];
 
     for (const g of groups) {
-      output.push(`\n--- ${g.name} ---`);
-      for (const role of ROLES) {
-        const code = generateCode(6);
-        rows.push({
-          session_id:   sessionId,
-          group_id:     g.id,
-          access_code:  code,
-          role,
-          display_name: ''
-        });
-        output.push(`${ROLE_LABELS[role]}: ${code}`);
-      }
+      const code = generateCode(6);
+      // Asignar el código al grupo
+      await supabase.from('groups')
+        .update({ access_code: code })
+        .eq('id', g.id);
+      g.access_code = code;
+      output.push(`${g.name}: ${code}`);
     }
 
-    await supabase.from('players').insert(rows);
-
-    // Recargar players
-    const { data: plrs } = await supabase
-      .from('players').select('*').eq('session_id', sessionId);
-    players = plrs || [];
+    // Recargar groups con los códigos
+    const { data: grps } = await supabase
+      .from('groups').select('*').eq('session_id', sessionId).order('slot');
+    groups = grps || [];
     renderGroupsGrid();
 
     // Mostrar códigos
