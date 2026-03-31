@@ -23,6 +23,7 @@ async function init() {
   document.getElementById('btnStart').addEventListener('click', startSession);
   document.getElementById('btnAdvance').addEventListener('click', advanceStage);
   document.getElementById('btnFinish').addEventListener('click', finishSession);
+  document.getElementById('btnReset').addEventListener('click', resetSession);
   document.getElementById('btnGenCodes').addEventListener('click', generateCodes);
   document.getElementById('facRoomCode').addEventListener('click', copyRoomCode);
   document.getElementById('overrideCheck').addEventListener('change', updateAdvanceButton);
@@ -146,6 +147,52 @@ async function finishSession() {
     .eq('id', sessionId);
 }
 
+async function resetSession() {
+  if (!confirm('¿Reiniciar la sesión? Esto borrará todo el progreso de todos los grupos.')) return;
+
+  const btn = document.getElementById('btnReset');
+  btn.disabled = true;
+  btn.textContent = 'Reiniciando...';
+
+  try {
+    await supabase.from('sessions')
+      .update({ status: 'lobby', current_stage: 0, updated_at: new Date().toISOString() })
+      .eq('id', sessionId);
+
+    const groupIds = groups.map(g => g.id);
+    if (groupIds.length) {
+      await supabase.from('groups')
+        .update({
+          stage:         0,
+          ctx:           'default',
+          budget:        5000000,
+          costs:         0,
+          penalties:     0,
+          hours:         0,
+          flags:         { backupsDestroyed: false, openedMonday: false, paidRansom: false,
+                           silentCorp: false, laborLawsuit: false, licenseRevoked: false,
+                           pendingPenalties: [] },
+          decision_log:  [],
+          notif_log:     [],
+          chosen_option: null,
+          revealed:      false,
+          final_state:   null,
+          updated_at:    new Date().toISOString()
+        })
+        .in('id', groupIds);
+    }
+
+    await loadGroups();
+    renderAll();
+  } catch (err) {
+    console.error(err);
+    alert('Error al reiniciar la sesión.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '↺ Reiniciar sesión';
+  }
+}
+
 // ── Render ───────────────────────────────────
 function renderAll() {
   renderStatus();
@@ -186,6 +233,7 @@ function renderControls() {
   document.getElementById('btnStart').classList.toggle('mp-hidden', !isLobby);
   document.getElementById('btnAdvance').classList.toggle('mp-hidden', !isActive);
   document.getElementById('btnFinish').classList.toggle('mp-hidden', isLobby || isFinished);
+  document.getElementById('btnReset').classList.toggle('mp-hidden', isLobby && session.current_stage === 0);
   document.getElementById('overrideWrap').classList.toggle('mp-hidden', !isActive);
   document.getElementById('decisionProgress').classList.toggle('mp-hidden', !isActive);
 
