@@ -134,6 +134,7 @@ function render() {
   const waitingAdvance = group.revealed && (group.stage === session.current_stage);
   document.getElementById('stageWaitOverlay').classList.toggle('mp-hidden', !waitingAdvance);
   if (waitingAdvance && group.chosen_option !== null) {
+    const s = STAGES[group.stage];
     const opt = s?.options?.[group.chosen_option];
     if (opt) populateWaitOverlay(s, opt);
   } else {
