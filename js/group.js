@@ -133,6 +133,13 @@ function render() {
   // Si ya confirmó y espera al facilitador para avanzar
   const waitingAdvance = group.revealed && (group.stage === session.current_stage);
   document.getElementById('stageWaitOverlay').classList.toggle('mp-hidden', !waitingAdvance);
+  if (waitingAdvance && group.chosen_option !== null) {
+    const opt = s?.options?.[group.chosen_option];
+    if (opt) populateWaitOverlay(s, opt);
+  } else {
+    const el = document.getElementById('swoNarrative');
+    if (el) { el.dataset.filled = ''; el.innerHTML = ''; el.classList.add('mp-hidden'); }
+  }
 
   // Renderizar la etapa solo si es la etapa correcta
   if (group.stage === session.current_stage) {
@@ -247,14 +254,6 @@ function buildDecisionCard(s, ctx) {
               ? `<span class="opt-hours">+${opt.hours}h</span>`
               : '<span class="opt-hours" style="color:var(--success)">Sin tiempo</span>'}
           </div>
-          ${IS_LEADER ? `
-            <div class="gm-type-badge gm-${opt.type}">${opt.typeLabel}</div>
-            <button class="gm-info-toggle" onclick="event.stopPropagation();toggleGMInfo(${i})">▼ Ver consecuencia</button>
-            <div class="gm-info" id="gmi-${i}">
-              <div class="gm-consequence">${opt.consequence}</div>
-              <div class="gm-branch-note">📍 ${opt.branchNote}</div>
-            </div>
-          ` : rolePanelHtml}
         </div>
       </div>`;
   });
@@ -461,19 +460,10 @@ function appendConsequenceReveal(opt, effectiveCost) {
   const html = `
   <div class="consequence-reveal">
     <div class="cr2-header">
-      <div style="font-size:.65rem;opacity:.6">// CONSECUENCIA REVELADA — STAGE ${group.stage + 1}</div>
+      <div style="font-size:.65rem;opacity:.6">// DECISIÓN APLICADA — ETAPA ${group.stage + 1}</div>
       <div class="cr2-title">Opción ${opt.letter}: ${opt.text}</div>
-      <div class="gm-type-badge gm-${opt.type}" style="flex-shrink:0">${opt.typeLabel}</div>
     </div>
     <div class="cr2-body">
-      <div>
-        <div class="cr2-label">LO QUE OCURRIÓ</div>
-        <div class="cr2-text">${opt.consequence}</div>
-      </div>
-      <div class="cr2-branch">
-        <div class="cr2-branch-label">// BIFURCACIÓN</div>
-        ${opt.branchNote}
-      </div>
       <div class="cr2-budget-box">
         <div class="cr2-brow"><span>Costo de decisión</span><span class="cr2-val cr2-red">${effectiveCost > 0 ? '-'+fmt(effectiveCost) : '$0'}</span></div>
         ${opt.penalty && !opt.isPendingPenalty ? `<div class="cr2-brow"><span>Penalización inmediata</span><span class="cr2-val cr2-red">-${fmt(opt.penalty)}</span></div>` : ''}
@@ -485,6 +475,38 @@ function appendConsequenceReveal(opt, effectiveCost) {
   </div>`;
   main.insertAdjacentHTML('beforeend', html);
   main.scrollTop = 99999;
+}
+
+function populateWaitOverlay(s, opt) {
+  const el = document.getElementById('swoNarrative');
+  if (!el || el.dataset.filled === '1') return;
+  el.dataset.filled = '1';
+
+  const nextStage   = STAGES[group.stage + 1];
+  const nextCtx     = opt.nextCtx || 'A';
+  const nextVariant = nextStage?.variants?.[nextCtx];
+
+  let html = `
+    <div class="swo-divider"></div>
+    <div class="swo-section">
+      <div class="swo-label">// LO QUE OCURRIÓ EN BANCO MERIDIAN</div>
+      <div class="swo-text">${(opt.waitStory || opt.consequence).replace(/\n\n/g, '<br><br>')}</div>
+    </div>`;
+
+  if (nextStage) {
+    html += `
+    <div class="swo-divider"></div>
+    <div class="swo-section">
+      <div class="swo-label">// SE APROXIMA — ${nextStage.label}</div>
+      <div class="swo-next-time">${nextStage.timestamp}</div>
+      <div class="swo-next-title">${nextStage.title}</div>
+      <div class="swo-text">${nextStage.status}</div>
+      ${nextVariant ? `<div class="swo-text swo-variant">${nextVariant.narrative}</div>` : ''}
+    </div>`;
+  }
+
+  el.innerHTML = html;
+  el.classList.remove('mp-hidden');
 }
 
 // ── showFinal ────────────────────────────────

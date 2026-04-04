@@ -144,16 +144,77 @@ body {
 .stage-wait-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(22,18,14,.88);
+  background: rgba(22,18,14,.92);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
+  align-items: flex-start;
+  justify-content: flex-start;
+  overflow-y: auto;
+  padding: 2.5rem 1rem;
   z-index: 200;
   backdrop-filter: blur(4px);
 }
 .stage-wait-overlay .waiting-title { font-size: 1.3rem; }
+.swo-content {
+  max-width: 660px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+.swo-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: .75rem;
+  padding-bottom: .5rem;
+}
+.swo-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.75rem 0;
+}
+.swo-section {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+.swo-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: .15em;
+  color: var(--accent);
+}
+.swo-text {
+  color: var(--text);
+  line-height: 1.78;
+  font-size: .92rem;
+}
+.swo-text.swo-variant {
+  color: var(--muted);
+  border-left: 2px solid var(--border);
+  padding-left: .9rem;
+  font-style: italic;
+}
+.swo-branch {
+  font-size: .85rem;
+  color: var(--muted);
+  font-style: italic;
+  line-height: 1.65;
+}
+.swo-next-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  color: var(--gold);
+  line-height: 1.2;
+}
+.swo-next-time {
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  letter-spacing: .1em;
+  color: var(--muted);
+}
 
 /* ── Banner "solo el líder puede decidir" ── */
 .leader-only-banner {
