@@ -159,7 +159,7 @@ function renderStage() {
 
   if (s.isStage5) {
     const flags  = group.flags || {};
-    const state5 = computeStage5State(flags, group.budget, group.penalties);
+    const state5 = computeStage5State(flags, group.budget, group.penalties, group.hours, group.reputation ?? 100);
     const v5     = s.variants[state5.ctx];
     html += buildIncidentCard(s, v5, state5);
   } else {
@@ -531,7 +531,9 @@ function showFinal() {
   let penFinal    = group.penalties;
   (flags.pendingPenalties || []).forEach(p => { budgetFinal -= p.amount; penFinal += p.amount; });
 
-  const state = computeStage5State(flags, budgetFinal, penFinal);
+  const state = computeStage5State(flags, budgetFinal, penFinal, group.hours, group.reputation ?? 100);
+  budgetFinal -= state.extraPenalties;
+  penFinal    += state.extraPenalties;
 
   const eyebrows = { A:'// GESTIÓN EXITOSA', B:'// GESTIÓN ACEPTABLE', C:'// GESTIÓN DEFICIENTE', D:'// COLAPSO INSTITUCIONAL' };
   const titles   = { A:'Crisis<br>contenida', B:'Crisis<br>costosa', C:'Crisis<br>sin resolver', D:'Quiebre<br>institucional' };

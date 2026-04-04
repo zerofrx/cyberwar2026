@@ -383,22 +383,53 @@ export const STAGES = [
 
 // ── computeStage5State ───────────────────────
 // Versión pura: no lee G, recibe parámetros
-export function computeStage5State(flags, budget, penalties) {
+export function computeStage5State(flags, budget, penalties, hours = 0, reputation = 100) {
   const budgetUsedPct = (BUDGET_INIT - budget) / BUDGET_INIT;
+  const reasons = [];
+  let extraPenalties = 0;
 
+  // ── Estado base (umbrales ajustados para mayor dificultad) ──
+  let level; // 0=LEVE  1=MEDIO  2=GRAVE  3=CRÍTICO
   if (flags.licenseRevoked || flags.backupsDestroyed) {
-    return { ctx:'D', label:'CRÍTICO', reason:'Backups destruidos o licencia revocada. El banco está ante una crisis existencial.' };
+    level = 3;
+  } else if (!flags.openedMonday && penalties >= 2000000) {
+    level = 3; // era ≥$3M → ahora ≥$2M
+  } else if (!flags.openedMonday) {
+    level = 2;
+  } else if (penalties >= 500000 || budgetUsedPct > 0.55) {
+    level = 1; // era ≥$1M/70% → ahora ≥$500k/55%
+  } else {
+    level = 0;
   }
-  if (!flags.openedMonday && penalties >= 3000000) {
-    return { ctx:'D', label:'CRÍTICO', reason:'No abrieron el lunes y las penalizaciones superan $3M.' };
+
+  // ── Opción 3: penalización por exceso de horas ──────────────
+  if (hours > HOURS_LIMIT) {
+    level = Math.min(level + 1, 3);
+    extraPenalties += 1000000;
+    reasons.push('Excedieron el límite de 72h operativas (+$1,000,000 en costos regulatorios).');
   }
-  if (!flags.openedMonday) {
-    return { ctx:'C', label:'GRAVE', reason:'No lograron abrir el lunes. Supervisión regulatoria activa.' };
+
+  // ── Opción 2: penalización por reputación baja ──────────────
+  if (reputation < 25) {
+    level = Math.min(level + 2, 3);
+    extraPenalties += 500000;
+    reasons.push(`Reputación institucional crítica (${reputation}%): daño reputacional severo (+$500,000).`);
+  } else if (reputation < 50) {
+    level = Math.min(level + 1, 3);
+    reasons.push(`Reputación institucional baja (${reputation}%): el regulador considera el daño reputacional como agravante.`);
   }
-  if (penalties >= 1000000 || budgetUsedPct > 0.7) {
-    return { ctx:'B', label:'MEDIO', reason:'Abrieron el lunes pero la gestión fue costosa y cuestionable.' };
-  }
-  return { ctx:'A', label:'LEVE', reason:'Abrieron el lunes con presupuesto saludable y gestión sólida.' };
+
+  // ── Construir resultado ─────────────────────────────────────
+  const STATES = [
+    { ctx:'A', label:'LEVE',    baseReason:'Abrieron el lunes con presupuesto saludable y gestión sólida.' },
+    { ctx:'B', label:'MEDIO',   baseReason:'Abrieron el lunes pero la gestión fue costosa y cuestionable.' },
+    { ctx:'C', label:'GRAVE',   baseReason:'No lograron abrir el lunes. Supervisión regulatoria activa.' },
+    { ctx:'D', label:'CRÍTICO', baseReason:'El banco está ante una crisis existencial.' },
+  ];
+  const s = STATES[level];
+  const reason = reasons.length ? s.baseReason + ' ' + reasons.join(' ') : s.baseReason;
+
+  return { ctx: s.ctx, label: s.label, reason, extraPenalties };
 }
 
 // ── applyDecision ────────────────────────────

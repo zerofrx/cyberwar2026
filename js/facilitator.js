@@ -374,7 +374,7 @@ function renderResults() {
 
     const state   = g.final_state === 'game_over'
       ? { ctx: 'X', label: 'ELIMINADO' }
-      : computeStage5State(flags, budgetFinal, penFinal);
+      : computeStage5State(flags, budgetFinal, penFinal, g.hours, g.reputation ?? 100);
 
     const log     = g.decision_log || [];
     const correct = log.filter(e => e.type === 'correct').length;

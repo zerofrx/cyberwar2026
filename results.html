@@ -205,8 +205,10 @@
         (flags.pendingPenalties || []).forEach(p => { budgetFinal -= p.amount; penFinal += p.amount; });
 
         const state = g.final_state === 'game_over'
-          ? { ctx: 'X', label: 'ELIMINADO' }
-          : computeStage5State(flags, budgetFinal, penFinal);
+          ? { ctx: 'X', label: 'ELIMINADO', extraPenalties: 0 }
+          : computeStage5State(flags, budgetFinal, penFinal, g.hours, g.reputation ?? 100);
+        budgetFinal -= (state.extraPenalties || 0);
+        penFinal    += (state.extraPenalties || 0);
 
         const log     = g.decision_log || [];
         const correct = log.filter(e => e.type === 'correct').length;
