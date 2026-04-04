@@ -27,6 +27,10 @@ async function init() {
   document.getElementById('btnGenCodes').addEventListener('click', generateCodes);
   document.getElementById('facRoomCode').addEventListener('click', copyRoomCode);
   document.getElementById('overrideCheck').addEventListener('change', updateAdvanceButton);
+  document.getElementById('btnPrelim').addEventListener('click', showPreliminary);
+  document.getElementById('btnClosePrelim').addEventListener('click', () => {
+    document.getElementById('prelimOverlay').classList.add('mp-hidden');
+  });
 
   if (savedSessionId) {
     sessionId = savedSessionId;
@@ -232,6 +236,7 @@ function renderControls() {
   const isFinished = session.status === 'finished';
 
   document.getElementById('btnStart').classList.toggle('mp-hidden', !isLobby);
+  document.getElementById('btnPrelim').classList.toggle('mp-hidden', !isActive);
   document.getElementById('btnAdvance').classList.toggle('mp-hidden', !isActive);
   document.getElementById('btnFinish').classList.toggle('mp-hidden', isLobby || isFinished);
   document.getElementById('btnReset').classList.toggle('mp-hidden', isLobby && session.current_stage === 0);
@@ -417,6 +422,133 @@ function renderResults() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ── Resultados preliminares ──────────────────
+function showPreliminary() {
+  const overlay    = document.getElementById('prelimOverlay');
+  const stageIdx   = session.current_stage;
+  const curStage   = STAGES[stageIdx];
+  const nextStage  = STAGES[stageIdx + 1];
+
+  // Label de etapa actual
+  document.getElementById('prelimStageLabel').textContent =
+    `${curStage.label} — ${curStage.title}`;
+
+  // Determinar líder por ctx → budget (sin mostrar nombre)
+  const ctxOrder = { A:0, B:1, C:2, D:3, default:1 };
+  const active = groups.filter(g => g.final_state !== 'game_over');
+  const ranked = [...active].sort((a, b) => {
+    const diff = (ctxOrder[a.ctx] ?? 1) - (ctxOrder[b.ctx] ?? 1);
+    if (diff !== 0) return diff;
+    const aB = a.budget - (a.flags?.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
+    const bB = b.budget - (b.flags?.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
+    return bB - aB;
+  });
+  const leader = ranked[0];
+
+  // ── Historia del equipo líder ─────────────
+  const leaderEl = document.getElementById('prelimLeaderStory');
+  if (leader) {
+    const lCtx      = (leader.ctx && leader.ctx !== 'default') ? leader.ctx : 'A';
+    const variant   = curStage.variants?.[lCtx];
+    const narrative = variant?.narrative || curStage.status;
+    const rep       = leader.reputation ?? 100;
+    const repColor  = rep >= 70 ? 'var(--success)' : rep >= 40 ? 'var(--gold)' : 'var(--accent)';
+    const budgetFinal = leader.budget -
+      (leader.flags?.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
+    const budgetColor = budgetFinal > 3000000 ? 'var(--success)'
+                      : budgetFinal > 1500000 ? 'var(--gold)' : 'var(--accent)';
+
+    leaderEl.innerHTML = `
+      <div class="prelim-section-label">// SITUACIÓN DEL EQUIPO LÍDER</div>
+      <div class="prelim-narrative">${narrative}</div>
+      <div class="prelim-leader-stats">
+        <div class="prelim-stat">
+          <span class="prelim-stat-label">PRESUPUESTO</span>
+          <span class="prelim-stat-val" style="color:${budgetColor}">${fmt(budgetFinal)}</span>
+        </div>
+        <div class="prelim-stat">
+          <span class="prelim-stat-label">REPUTACIÓN</span>
+          <span class="prelim-stat-val" style="color:${repColor}">${rep}%</span>
+        </div>
+        <div class="prelim-stat">
+          <span class="prelim-stat-label">HORAS</span>
+          <span class="prelim-stat-val">${leader.hours}h / 72h</span>
+        </div>
+      </div>`;
+  } else {
+    leaderEl.innerHTML = '';
+  }
+
+  // ── Teaser de la siguiente etapa ──────────
+  const nextEl = document.getElementById('prelimNextStage');
+  if (nextStage) {
+    const nextVariant = nextStage.variants?.A;
+    nextEl.innerHTML = `
+      <div class="prelim-divider"></div>
+      <div class="prelim-section-label">// SE APROXIMA — ${nextStage.label}</div>
+      <div class="prelim-next-time">${nextStage.timestamp}</div>
+      <div class="prelim-next-title">${nextStage.title}</div>
+      ${nextVariant ? `<div class="prelim-narrative prelim-narrative-muted">${nextVariant.narrative}</div>` : ''}`;
+  } else {
+    nextEl.innerHTML = `
+      <div class="prelim-divider"></div>
+      <div class="prelim-section-label">// SIGUIENTE — ETAPA FINAL</div>
+      <div class="prelim-next-title">El Día de Cuentas</div>
+      <div class="prelim-narrative">Cada decisión define el desenlace. El regulador está listo para evaluar a Banco Meridian.</div>`;
+  }
+
+  // ── Tarjetas de grupos (orden por slot, sin posición) ──
+  const gridEl = document.getElementById('prelimGroupsGrid');
+  const sorted = [...groups].sort((a, b) => a.slot - b.slot);
+  gridEl.innerHTML = sorted.map(g => {
+    if (g.final_state === 'game_over') {
+      return `<div class="prelim-group-card prelim-gameover">
+        <div class="prelim-group-name">${g.name}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;color:var(--muted)">ELIMINADO</div>
+      </div>`;
+    }
+    const flags      = g.flags || {};
+    const budgetFin  = g.budget - (flags.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
+    const budgetPct  = Math.max(0, (budgetFin / 5000000) * 100);
+    const hoursPct   = Math.min(100, (g.hours / 72) * 100);
+    const rep        = g.reputation ?? 100;
+    const repColor   = rep >= 70 ? 'var(--success)' : rep >= 40 ? 'var(--gold)' : 'var(--accent)';
+    const budColor   = budgetPct > 60 ? 'var(--success)' : budgetPct > 30 ? 'var(--gold)' : 'var(--accent)';
+    const log        = g.decision_log || [];
+    const chips      = log.map(e =>
+      `<span class="prelim-chip prelim-chip-${e.type}" title="S${e.stage} ${e.letter}: ${e.text}">S${e.stage} ${e.letter}</span>`
+    ).join('');
+
+    return `<div class="prelim-group-card">
+      <div class="prelim-group-name">${g.name}</div>
+      <div class="prelim-bar-row">
+        <span class="prelim-bar-label">Presupuesto</span>
+        <span class="prelim-bar-val" style="color:${budColor}">${fmt(budgetFin)}</span>
+      </div>
+      <div class="prelim-bar-track">
+        <div class="prelim-bar-fill" style="width:${budgetPct}%;background:${budColor}"></div>
+      </div>
+      <div class="prelim-bar-row">
+        <span class="prelim-stat-label-sm">Reputación</span>
+        <span class="prelim-bar-val" style="color:${repColor}">${rep}%</span>
+      </div>
+      <div class="prelim-bar-track">
+        <div class="prelim-bar-fill" style="width:${rep}%;background:${repColor}"></div>
+      </div>
+      <div class="prelim-bar-row">
+        <span class="prelim-bar-label">Horas</span>
+        <span class="prelim-bar-val">${g.hours}h</span>
+      </div>
+      <div class="prelim-bar-track">
+        <div class="prelim-bar-fill" style="width:${hoursPct}%;background:var(--info)"></div>
+      </div>
+      ${chips ? `<div class="prelim-chips">${chips}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  overlay.classList.remove('mp-hidden');
 }
 
 // ── Generar códigos de acceso ─────────────────

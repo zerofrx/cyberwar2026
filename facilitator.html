@@ -58,6 +58,9 @@
           <button class="fac-btn fac-btn-start" id="btnStart">
             Iniciar simulacro
           </button>
+          <button class="fac-btn fac-btn-prelim mp-hidden" id="btnPrelim">
+            Ver resultados preliminares
+          </button>
           <button class="fac-btn fac-btn-advance mp-hidden" id="btnAdvance" disabled>
             Avanzar a etapa <span id="nextStageNum">2</span> →
           </button>
@@ -119,6 +122,36 @@
         </div>
       </main>
 
+    </div>
+  </div>
+
+  <!-- ── Overlay: resultados preliminares ─────── -->
+  <div id="prelimOverlay" class="prelim-overlay mp-hidden">
+    <div class="prelim-panel">
+
+      <div class="prelim-header">
+        <div>
+          <div class="prelim-eyebrow">// RESULTADOS PRELIMINARES · SIN RANKING</div>
+          <div class="prelim-stage-label" id="prelimStageLabel">ETAPA 1</div>
+        </div>
+        <button class="prelim-close" id="btnClosePrelim">✕ Cerrar</button>
+      </div>
+
+      <div class="prelim-body">
+
+        <!-- Columna izquierda: historia líder + teaser siguiente etapa -->
+        <div class="prelim-left">
+          <div id="prelimLeaderStory"></div>
+          <div id="prelimNextStage"></div>
+        </div>
+
+        <!-- Columna derecha: tarjetas de grupos (sin posición) -->
+        <div class="prelim-right">
+          <div class="prelim-section-label">// ESTADO DE LOS EQUIPOS</div>
+          <div id="prelimGroupsGrid" class="prelim-groups-grid"></div>
+        </div>
+
+      </div>
     </div>
   </div>
 

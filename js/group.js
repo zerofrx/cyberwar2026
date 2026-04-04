@@ -563,7 +563,46 @@ function showFinal() {
     <div class="fstat"><div class="fstat-val" style="color:var(--accent)">${traps}</div><div class="fstat-lbl">Trampas caídas</div></div>
     <div class="fstat"><div class="fstat-val" style="color:var(--info)">${group.hours}h</div><div class="fstat-lbl">Horas usadas</div></div>`;
 
-  let narrative = `<div class="story-narrative" style="margin-bottom:1.25rem"><div class="sn-title">REGISTRO DE DECISIONES</div>`;
+  // ── Historia final ───────────────────────────
+  const stories = {
+    A: `Banco Meridian superó el ataque de ransomware más grave de su historia sin perder la confianza de sus clientes ni su posición ante el regulador. El lunes a las 10:00 AM las puertas abrieron con normalidad, y los 180,000 clientes encontraron sus servicios funcionando como si nada hubiera ocurrido el fin de semana anterior.\n\nLas decisiones técnicas correctas en las primeras horas —contención lógica, preservación de evidencia, comunicación protocolizada— marcaron la diferencia entre una crisis gestionada y un colapso institucional. La CNBV reconoció públicamente la respuesta como modelo de gestión de incidentes para el sector financiero. Las penalizaciones fueron mínimas o inexistentes.\n\nBanco Meridian emerge de esta crisis no solo intacto sino fortalecido. La reputación institucional se mantiene sólida, los sistemas están limpios y documentados, y el equipo demostró que la preparación y las decisiones correctas bajo presión extrema son posibles. Este es el estándar que el sector necesita.`,
+    B: `Banco Meridian abrió el lunes —ese objetivo crítico se cumplió— pero el costo del camino fue significativamente mayor de lo necesario. Las decisiones subóptimas durante la crisis generaron gastos que erosionaron el presupuesto operativo y dejaron al regulador con preguntas legítimas sobre la calidad de la gestión del equipo.\n\nLa CNBV abrió un expediente de seguimiento formal. No hay multas catastróficas, pero las observaciones acompañarán al banco durante los próximos doce meses de auditorías reforzadas. Los accionistas recibieron el informe con reservas: se abrió, sí, pero ¿a qué precio y con qué precedentes?\n\nEl banco sobrevive. La lección es clara: abrir el lunes no es suficiente si el camino para lograrlo fue innecesariamente costoso. Una próxima crisis —y siempre hay una próxima— llegará con las reservas ya parcialmente comprometidas por las decisiones de este fin de semana.`,
+    C: `Banco Meridian no abrió el lunes. Los cajeros permanecieron apagados. Las sucursales colocaron carteles improvisados en sus ventanas. Las redes sociales ardieron con el hashtag #MeridianCerrado. Para las 2:00 PM, el BCP había iniciado formalmente una supervisión especial y tres medios de comunicación tenían corresponsales frente a la sede central.\n\nLa CNBV no tiene margen de flexibilidad cuando una institución financiera de importancia sistémica no puede operar en la fecha comprometida. Las penalizaciones son significativas y el banco entra en modo de supervisión reforzada: cada decisión futura requerirá aprobación regulatoria previa, lo que ralentizará dramáticamente la recuperación.\n\nNo todo está perdido. Con un plan de remediación creíble presentado antes del jueves y ejecución disciplinada, Banco Meridian puede recuperar su posición operativa en el próximo trimestre. Pero la confianza —de clientes, reguladores y mercado— tardará años en reconstruirse.`,
+    D: `A las 11:47 AM del lunes, el Superintendente de Bancos emitió la Resolución de Intervención Temporal número 2024-BM-001 sobre Banco Meridian. El banco —con 180,000 clientes y cuarenta años de historia ininterrumpida en el sistema financiero— dejó de operar de forma independiente en ese momento.\n\nLas decisiones tomadas durante la crisis no solo destruyeron el presupuesto y la reputación institucional: activaron simultáneamente todos los mecanismos de protección regulatoria disponibles. Backups destruidos, pagos ilegales de rescate, obstrucción activa de la investigación, silencio ante el regulador en momentos críticos —la acumulación de errores fue demasiado para cualquier sistema de defensa institucional.\n\nLos próximos pasos no son recuperación sino procesos. Auditorías forenses completas, demandas colectivas de depositantes, posible liquidación controlada o fusión forzada con otro banco intervenido. El análisis post-mortem de esta crisis se utilizará durante años en programas de formación en ciberseguridad financiera. Como ejemplo definitivo de qué no hacer.`
+  };
+
+  // ── Reputación ────────────────────────────────
+  const rep      = group.reputation ?? 100;
+  const repColor = rep >= 70 ? 'var(--success)' : rep >= 40 ? 'var(--gold)' : 'var(--accent)';
+  const repLabel = rep >= 70 ? 'Reputación preservada' : rep >= 40 ? 'Reputación dañada' : rep >= 25 ? 'Reputación crítica' : 'Reputación destruida';
+  const repDesc  = rep >= 70
+    ? 'Las decisiones del equipo mantuvieron la confianza institucional. El banco conserva su credibilidad ante reguladores, clientes y mercado.'
+    : rep >= 40
+    ? 'Algunas decisiones comprometieron la imagen pública del banco. Se requiere trabajo activo para recuperar la confianza del mercado en los próximos meses.'
+    : rep >= 25
+    ? 'El daño reputacional es severo y ha incidido directamente en el resultado final. La reconstrucción de la imagen institucional tomará años de gestión activa.'
+    : 'La reputación institucional fue destruida. El banco ha perdido la confianza de sus clientes, el mercado y el regulador de forma casi irrecuperable.';
+
+  let narrative = `
+  <div class="fn-story">
+    <div class="fn-story-eyebrow">// HISTORIA FINAL — BANCO MERIDIAN</div>
+    <div class="fn-story-body">${(stories[state.ctx] || stories.D).replace(/\n\n/g, '</p><p>')}</div>
+  </div>
+
+  <div class="fn-rep-block">
+    <div class="fn-rep-header">
+      <div class="fn-rep-label">// REPUTACIÓN INSTITUCIONAL FINAL</div>
+      <div class="fn-rep-pct" style="color:${repColor}">${rep}%</div>
+    </div>
+    <div class="fn-rep-bar-track">
+      <div class="fn-rep-bar" style="width:${rep}%;background:${repColor}"></div>
+    </div>
+    <div class="fn-rep-tag" style="color:${repColor}">${repLabel}</div>
+    <div class="fn-rep-desc">${repDesc}</div>
+  </div>
+
+  <div class="story-narrative" style="margin-bottom:1.25rem"><div class="sn-title">REGISTRO DE DECISIONES</div>`;
+
   log.forEach(e => {
     const tierCss = e.type === 'correct' ? 'sn-tier-best' : e.type === 'ok' ? 'sn-tier-good' : 'sn-tier-poor';
     narrative += `

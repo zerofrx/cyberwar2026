@@ -150,6 +150,7 @@
     CARGANDO RESULTADOS...
   </div>
 
+  <div id="resStory" style="display:none;max-width:780px;margin:0 auto 2.5rem;padding:0 1.5rem"></div>
   <div id="resGrid" class="res-grid" style="display:none"></div>
 
   <script type="module">
@@ -187,6 +188,13 @@
         .subscribe();
     }
 
+    const FINAL_STORIES = {
+      A: `Banco Meridian superó el ataque de ransomware más grave de su historia sin perder la confianza de sus clientes ni su posición ante el regulador. El lunes a las 10:00 AM las puertas abrieron con normalidad. La CNBV reconoció la respuesta como modelo de gestión de incidentes para el sector financiero. El banco emerge fortalecido.`,
+      B: `Banco Meridian abrió el lunes, pero el costo del camino fue significativamente mayor de lo necesario. Las decisiones subóptimas erosionaron el presupuesto y dejaron al regulador con preguntas sobre la calidad de la gestión. La CNBV abrió un expediente de seguimiento. El banco sobrevive, pero con las reservas comprometidas.`,
+      C: `Banco Meridian no abrió el lunes. Para las 2:00 PM el BCP había iniciado supervisión especial. La CNBV impuso penalizaciones significativas y el banco entró en modo de supervisión reforzada. La recuperación operativa tomará meses; la recuperación de la confianza del mercado, años.`,
+      D: `A las 11:47 AM del lunes, el Superintendente de Bancos emitió la Resolución de Intervención Temporal sobre Banco Meridian. El banco con 180,000 clientes y cuarenta años de historia dejó de operar de forma independiente. Backups destruidos, pagos ilegales, obstrucción regulatoria —la acumulación de errores activó todos los mecanismos de protección disponibles.`
+    };
+
     function render(groups) {
       const ctxColors = { A:'var(--success)', B:'var(--info)', C:'var(--gold)', D:'var(--accent)', X:'var(--muted)' };
       const ctxLabels = {
@@ -220,9 +228,37 @@
         return diff !== 0 ? diff : b.budgetFinal - a.budgetFinal;
       });
 
+      // ── Historia final del ganador ─────────────
+      const winner = ranked[0];
+      if (winner && winner.state.ctx !== 'X') {
+        const wColor = ctxColors[winner.state.ctx];
+        const wRep   = winner.reputation ?? 100;
+        const wRepColor = wRep >= 70 ? 'var(--success)' : wRep >= 40 ? 'var(--gold)' : 'var(--accent)';
+        const wRepLabel = wRep >= 70 ? 'Reputación preservada' : wRep >= 40 ? 'Reputación dañada' : 'Reputación crítica';
+        const storyEl = document.getElementById('resStory');
+        storyEl.innerHTML = `
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.15em;color:${wColor};margin-bottom:.75rem">// HISTORIA FINAL — BANCO MERIDIAN</div>
+          <div style="font-size:.95rem;line-height:1.8;color:var(--text);margin-bottom:1.25rem">${FINAL_STORIES[winner.state.ctx] || ''}</div>
+          <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:.85rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:8px">
+            <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.12em;color:var(--muted);flex:1;min-width:120px">REPUTACIÓN DEL GANADOR</div>
+            <div style="display:flex;align-items:center;gap:.75rem;flex:2;min-width:180px">
+              <div style="flex:1;background:var(--border);border-radius:4px;height:6px;overflow:hidden">
+                <div style="height:100%;border-radius:4px;background:${wRepColor};width:${wRep}%;transition:width .4s"></div>
+              </div>
+              <span style="font-family:'Outfit',sans-serif;font-size:.95rem;font-weight:700;color:${wRepColor}">${wRep}%</span>
+              <span style="font-family:'Outfit',sans-serif;font-size:.8rem;color:${wRepColor}">${wRepLabel}</span>
+            </div>
+          </div>`;
+        storyEl.style.display = 'block';
+      }
+
+      // ── Tarjetas de grupos ──────────────────────
       const grid = document.getElementById('resGrid');
       grid.innerHTML = ranked.map((g, i) => {
-        const color = ctxColors[g.state.ctx] || 'var(--muted)';
+        const color    = ctxColors[g.state.ctx] || 'var(--muted)';
+        const rep      = g.reputation ?? 100;
+        const repColor = rep >= 70 ? 'var(--success)' : rep >= 40 ? 'var(--gold)' : 'var(--accent)';
+        const repLabel = rep >= 70 ? 'Preservada' : rep >= 40 ? 'Dañada' : rep >= 25 ? 'Crítica' : 'Destruida';
         const chips = g.log.map(e =>
           `<span class="res-decision-chip res-chip-${e.type}" title="${e.text}">S${e.stage} ${e.letter}</span>`
         ).join('');
@@ -255,6 +291,15 @@
               <div class="res-stat">
                 <div class="res-stat-label">TRAMPAS CAÍDAS</div>
                 <div class="res-stat-val" style="color:var(--accent)">${g.traps}</div>
+              </div>
+            </div>
+            <div style="margin-top:.75rem;padding:.6rem .75rem;background:var(--bg);border-radius:6px;border:1px solid var(--border)">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem">
+                <span style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.1em;color:var(--muted)">REPUTACIÓN</span>
+                <span style="font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:700;color:${repColor}">${rep}% — ${repLabel}</span>
+              </div>
+              <div style="background:var(--border);border-radius:4px;height:5px;overflow:hidden">
+                <div style="height:100%;border-radius:4px;background:${repColor};width:${rep}%;transition:width .4s"></div>
               </div>
             </div>
             ${chips ? `<div class="res-decisions">${chips}</div>` : ''}
