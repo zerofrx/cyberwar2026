@@ -209,7 +209,6 @@ function buildIncidentCard(s, variant, state5) {
       <h2 class="ic-title">${s.title}</h2>
       <p class="ic-narrative">${variant.narrative}</p>
       ${variant.update ? `<div class="ic-update"><div class="ic-update-label">// ACTUALIZACIÓN</div>${variant.update}</div>` : ''}
-      ${variant.branchCtx ? `<div class="branch-ctx"><div class="branch-ctx-label">// BIFURCACIÓN ACTIVA</div>${variant.branchCtx}</div>` : ''}
       ${state5 ? `<div style="margin-top:.75rem;padding:.65rem;background:var(--gold-light);border:1px solid #e0c880;border-radius:6px;font-size:.78rem;color:var(--gold)">
         <div style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.1em;margin-bottom:.2rem">// ESTADO CALCULADO</div>
         <strong>Estado: ${state5.label}</strong> — ${state5.reason}
