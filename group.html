@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crisis Cibernética Bancaria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="gm.css">
   <link rel="stylesheet" href="css/multiplayer.css">
 </head>
@@ -72,6 +75,18 @@
             <div class="bl-row"><span>Costos operativos</span><span class="bl-val bl-red" id="blCosts">$0</span></div>
             <div class="bl-row"><span>Penalizaciones</span><span class="bl-val bl-red" id="blPenalties">$0</span></div>
             <div class="bl-row bl-total"><span>Disponible</span><span class="bl-val bl-blue" id="blAvailable">$5,000,000</span></div>
+          </div>
+        </div>
+        <div class="sb-section">
+          <div class="sb-label">// REPUTACIÓN</div>
+          <div class="rep-track">
+            <div class="ht-row">
+              <span class="rep-bank-name">Banco Meridian</span>
+              <span id="repVal" class="ht-val">100%</span>
+            </div>
+            <div class="ht-bar-track">
+              <div class="rep-bar-fill" id="repBar" style="width:100%"></div>
+            </div>
           </div>
         </div>
         <div class="sb-section" id="pendingSection" style="display:none">

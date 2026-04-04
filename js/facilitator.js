@@ -335,6 +335,16 @@ function buildGroupCard(g) {
       </div>
     </div>
 
+    <div class="fac-bar-row">
+      <div class="fac-bar-label">
+        <span>Reputación</span>
+        <span>${g.reputation ?? 100}%</span>
+      </div>
+      <div class="fac-bar-track">
+        <div class="fac-bar-fill" style="width:${g.reputation ?? 100}%;background:${(g.reputation ?? 100) >= 70 ? '#4caf81' : (g.reputation ?? 100) >= 40 ? '#d4a843' : '#e05c5c'}"></div>
+      </div>
+    </div>
+
     <div class="fac-decision-state ${dsClass}">${dsText}</div>
   </div>`;
 }

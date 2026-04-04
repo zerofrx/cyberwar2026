@@ -343,6 +343,7 @@ window.confirmDecision = async function() {
       costs:        result.costs,
       penalties:    result.penalties,
       hours:        result.hours,
+      reputation:   result.reputation,
       flags:        result.flags,
       decision_log: result.decision_log,
       notif_log:    result.notif_log,
@@ -359,6 +360,7 @@ window.confirmDecision = async function() {
     costs:         result.costs,
     penalties:     result.penalties,
     hours:         result.hours,
+    reputation:    result.reputation,
     flags:         result.flags,
     decision_log:  result.decision_log,
     notif_log:     result.notif_log,
@@ -388,6 +390,16 @@ function updateSidebar() {
   const bar = document.getElementById('hoursBar');
   bar.style.width = pct + '%';
   bar.style.background = pct > 85 ? 'var(--accent)' : pct > 60 ? 'var(--gold)' : 'var(--info)';
+
+  // Reputation bar
+  const rep = group.reputation ?? 100;
+  document.getElementById('repVal').textContent = rep + '%';
+  const repBar = document.getElementById('repBar');
+  repBar.style.width = rep + '%';
+  repBar.style.background =
+    rep >= 70 ? 'var(--success)' :
+    rep >= 40 ? 'var(--gold)'    :
+                'var(--accent)';
 
   // Budget detail
   document.getElementById('blCosts').textContent     = '-' + fmt(group.costs);

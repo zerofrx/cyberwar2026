@@ -735,9 +735,10 @@ body {
 .stab {
   flex: 1;
   text-align: center;
-  font-family: 'DM Mono', monospace;
-  font-size: .54rem;
-  letter-spacing: .1em;
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: .82rem;
+  font-weight: 500;
+  letter-spacing: .02em;
   padding: .65rem .4rem;
   color: var(--muted);
   cursor: pointer;
@@ -751,7 +752,7 @@ body {
   gap: .3rem;
 }
 .stab:hover  { color: var(--text); }
-.stab.active { color: #e5ddd5; border-bottom-color: var(--info); }
+.stab.active { color: #e5ddd5; border-bottom-color: var(--info); font-weight: 600; }
 
 .sidebar-body {
   display: flex;
@@ -782,6 +783,66 @@ body {
   border-radius: 4px;
   transition: width .4s ease;
 }
+.rep-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width .4s ease, background .4s ease;
+  background: var(--success);
+}
+.rep-bank-name {
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--text);
+}
+
+/* ══════════════════════════════════════════
+   GROUP.HTML — Sidebar typography overrides (Outfit)
+   ══════════════════════════════════════════ */
+
+/* Hours tracker label ("Consumido") */
+.hours-track .ht-row > span:first-child {
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Hours / rep value ("2h", "85%") */
+#tabPanelInfo .ht-val {
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* Budget row labels ("Inicial", "Costos operativos", …) */
+.budget-live .bl-row > span:first-child {
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: .95rem;
+  font-weight: 400;
+  color: var(--text);
+}
+
+/* Budget row values ("$5,000,000", …) */
+.budget-live .bl-val {
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: .95rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* Budget total row ("Disponible") */
+.budget-live .bl-row.bl-total > span:first-child {
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.budget-live .bl-row.bl-total .bl-val {
+  font-size: 1rem;
+  font-weight: 700;
+}
 
 /* ══════════════════════════════════════════
    GROUP.HTML — Round indicator dots
@@ -803,7 +864,8 @@ body {
 .notif-item {
   border-radius: 6px;
   padding: .6rem .75rem;
-  font-size: .78rem;
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: .9rem;
   line-height: 1.5;
   border-left: 3px solid;
 }
@@ -812,12 +874,16 @@ body {
 .notif-error { background: var(--accent-light);  border-color: var(--accent);  color: var(--text); }
 .ni-title {
   font-family: 'DM Mono', monospace;
-  font-size: .6rem;
+  font-size: .65rem;
   letter-spacing: .08em;
   margin-bottom: .2rem;
   opacity: .85;
 }
-.ni-body { color: var(--text); }
+.ni-body {
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: .9rem;
+  color: var(--text);
+}
 
 /* ══════════════════════════════════════════
    GROUP.HTML — Decision log entries
@@ -826,8 +892,9 @@ body {
   display: flex;
   align-items: center;
   gap: .4rem;
-  font-size: .74rem;
-  padding: .45rem .6rem;
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: .88rem;
+  padding: .5rem .65rem;
   border-radius: 5px;
   line-height: 1.45;
 }
@@ -837,29 +904,32 @@ body {
 
 .dl-stage {
   font-family: 'DM Mono', monospace;
-  font-size: .54rem;
+  font-size: .58rem;
   color: var(--muted);
   flex-shrink: 0;
 }
 .dl-letter {
-  font-family: 'DM Mono', monospace;
-  font-size: .65rem;
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: .88rem;
   font-weight: 700;
   color: var(--text);
   flex-shrink: 0;
-  width: 14px;
+  width: 16px;
 }
 .dl-text {
   flex: 1;
   min-width: 0;
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: .88rem;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .dl-cost {
-  font-family: 'DM Mono', monospace;
-  font-size: .62rem;
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: .82rem;
+  font-weight: 600;
   color: var(--accent);
   flex-shrink: 0;
 }

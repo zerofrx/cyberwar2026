@@ -146,7 +146,7 @@ export const STAGES = [
       letter:'E', text:'Comunicado a Clientes',
       sub:'Emitir un comunicado público a los 180,000 clientes antes de saber qué datos fueron comprometidos',
       cost:100000, hours:6,
-      type:'trap', typeLabel:'PREMATURA',
+      type:'trap', typeLabel:'PREMATURA', repCost:20,
       consequence:'Sin saber qué fue cifrado ni qué datos se vieron afectados, el comunicado genera alarma masiva. Se inicia una corrida bancaria digital. El regulador llama furioso. El daño reputacional multiplica la crisis.',
       waitStory:'El comunicado se publicó a las 6:00 AM del sábado con la mejor intención: transparencia proactiva. Para las 8:00 AM, el hashtag #MeridianHackeado tenía 47,000 menciones en redes sociales. Para las 10:00 AM, las líneas de atención al cliente estaban completamente saturadas. Para el mediodía, los cajeros automáticos registraban volúmenes de retiro ocho veces superiores al promedio de un sábado.\n\nEl problema no fue comunicar —fue comunicar sin información. El mensaje no pudo responder las preguntas básicas que cualquier cliente se haría: ¿Qué datos fueron afectados específicamente? ¿Están seguros mis ahorros? ¿El banco sigue operando? Sin respuestas concretas, los 180,000 clientes asumieron el peor escenario posible y actuaron en consecuencia. La corrida bancaria digital no fue causada por el ataque —fue causada por el comunicado prematuro.\n\nEl regulador llamó al CEO directamente a las 11:30 AM: "Esto no cumple el protocolo SGSI de manejo de incidentes." El siguiente stage llega con pánico en redes activo, el regulador en modo confrontacional y la prensa esperando cualquier nuevo error para amplificarlo. La comunicación en crisis tiene reglas muy específicas —y el timing lo es todo.',
       branchNote:'→ Stage 3, Contexto B (corrida bancaria activa)',
@@ -179,7 +179,7 @@ export const STAGES = [
       letter:'A', text:'Caza de Brujas',
       sub:'Suspender de inmediato a la empleada de RRHH y comunicarlo públicamente como medida correctiva',
       cost:50000, hours:2,
-      type:'trap', typeLabel:'TRAMPA',
+      type:'trap', typeLabel:'TRAMPA', repCost:20,
       consequence:'La empleada no era un insider —fue víctima de phishing. Su abogado presenta una demanda por daño moral. El regulador multa al banco por incumplir protocolos de investigación. Penalización: $1,000,000.',
       waitStory:'Claudia M. fue convocada a una reunión de crisis sin que nadie le explicara por qué. Cuando salió 45 minutos después ya no tenía credenciales de acceso a los sistemas del banco. El comunicado interno la nombraba como "empleada que comprometió los protocolos de seguridad institucionales". Salió del edificio sin entender completamente qué había hecho mal.\n\nLo que el análisis forense confirma: Claudia recibió un correo aparentemente legítimo de un proveedor de LinkedIn. El correo tenía firma digital válida y un dominio que difería en una sola letra del proveedor real. Ninguno de los sistemas de filtrado del banco lo detectó. No hubo negligencia —fue un ataque de spear phishing sofisticado que habría engañado a cualquier empleado sin entrenamiento específico en esa técnica. El banco no la entrenó porque tampoco conocía ese vector.\n\nEl abogado de Claudia presentó la demanda dos horas después de su suspensión. La CNBV inició una investigación paralela sobre el proceso de investigación del banco —que ahora debe defenderse de dos frentes simultáneos. La multa es de $1,000,000, pero el costo real es la narrativa: un banco que culpa a sus empleados en lugar de proteger sus sistemas tiene muy pocas probabilidades de recuperar la confianza del regulador antes del cierre de la crisis.',
       branchNote:'PENALIZACIÓN: -$1,000,000. Demanda laboral activa. → Stage 4, Contexto B',
@@ -189,7 +189,7 @@ export const STAGES = [
       letter:'B', text:'Silencio Corporativo',
       sub:'No comunicar nada a clientes, prensa ni regulador hasta tener el panorama completo',
       cost:0, hours:4,
-      type:'trap', typeLabel:'TRAMPA LEGAL',
+      type:'trap', typeLabel:'TRAMPA LEGAL', repCost:30,
       consequence:'Ocultar un incidente material es una infracción regulatoria grave. El regulador descubre el silencio a través de un reporte externo. Multa máxima de $3,000,000. El banco queda bajo supervisión especial.',
       waitStory:'Durante cuatro horas, el equipo legal del banco argumentó que "hablar demasiado pronto podría comprometer la investigación". La lógica tenía sentido en abstracto. Durante esas mismas cuatro horas, un analista de seguridad independiente que detectó tráfico anómalo saliendo de servidores del banco publicó sus hallazgos en Twitter con capturas de pantalla. El regulador los vio antes de recibir cualquier comunicación oficial del banco.\n\nLa llamada del Superintendente de Bancos llegó a las 6:30 PM del sábado. No fue una solicitud de información. Fue una notificación de que se había iniciado formalmente un proceso sancionatorio por incumplimiento del artículo 112-bis del reglamento de gestión de riesgo operativo: ocultamiento de incidente material con impacto potencial en clientes. La ley no exige que el banco tenga el panorama completo para reportar —exige que reporte el incidente apenas lo detecta, aunque sea incompleto.\n\nLa multa de $3,000,000 es el piso, no el techo. El banco queda bajo supervisión especial, lo que significa que cada decisión en los stages siguientes tendrá un supervisor regulatorio mirando por encima del hombro. Operar bajo supervisión especial elimina opciones y multiplica los tiempos. La transparencia temprana —aunque incompleta— siempre es menos costosa que el silencio descubierto.',
       branchNote:'PENALIZACIÓN: -$3,000,000. Supervisión regulatoria. → Stage 4, Contexto B',
@@ -199,7 +199,7 @@ export const STAGES = [
       letter:'C', text:'Comunicación SGSI',
       sub:'Activar el protocolo de comunicación del Sistema de Gestión de Seguridad de la Información',
       cost:250000, hours:6,
-      type:'correct', typeLabel:'CORRECTA',
+      type:'correct', typeLabel:'CORRECTA', repCost:-5,
       consequence:'El protocolo SGSI proporciona mensajes preaprobados para reguladores, clientes y prensa. Se frena el pánico. El regulador recibe el informe preliminar requerido. La reputación se estabiliza. El banco mantiene el control del relato.',
       waitStory:'A las 3:15 PM del sábado, tres comunicados salieron simultáneamente: uno para el regulador con el informe técnico preliminar en el formato exigido por la norma, uno para empleados con instrucciones operativas claras, y un mensaje público breve que confirmaba "una interrupción de sistemas bajo control activo" sin revelar detalles que pudieran comprometer la investigación o generar pánico adicional.\n\nEl protocolo SGSI existe precisamente para este momento. Los mensajes estaban preaprobados por el departamento legal, calibrados para dar información sin generar alarma y diseñados para cumplir con los plazos regulatorios de reporte. No es comunicación espontánea —es comunicación de crisis ejecutada con precisión. El regulador recibió el informe antes del plazo de cuatro horas. La respuesta fue escueta pero significativa: "Confirmamos recepción. Manténganos informados."\n\nEl siguiente stage llega con el regulador en modo colaborativo, la prensa con pocas razones para especular negativamente y el equipo técnico con espacio para trabajar sin interferencia externa. Eso no significa que sea fácil —el Stage 4 traerá la carrera más difícil del juego. Pero significa que tienen las condiciones mínimas para que la recuperación técnica sea posible. Un regulador aliado en el Stage 4 vale más que cualquier herramienta técnica.',
       branchNote:'→ Stage 4, Contexto A',
@@ -209,7 +209,7 @@ export const STAGES = [
       letter:'D', text:'Threat Hunting Activo',
       sub:'Lanzar una operación intensiva para identificar y eliminar todas las puertas traseras de la red',
       cost:300000, hours:18,
-      type:'correct', typeLabel:'CORRECTA',
+      type:'correct', typeLabel:'CORRECTA', repCost:0,
       consequence:'El equipo encuentra y elimina 3 puertas traseras que el atacante dejó para persistencia. La red queda limpia. El tiempo consumido es alto pero la seguridad está garantizada para Stage 4.',
       waitStory:'Dieciocho horas de trabajo ininterrumpido. Tres equipos rotando en turnos de seis horas. El primer backdoor fue encontrado a las 5:00 AM en un servidor de autenticación secundario que nadie usaba desde hacía meses —precisamente por eso el atacante lo eligió. El segundo, a las 11:00 AM, embebido en un proceso de sincronización de bases de datos que se ejecutaba automáticamente cada noche. El tercero —el más sofisticado— fue descubierto a las 3:00 PM integrado dentro de un módulo de actualización automática del antivirus corporativo.\n\nTres niveles de persistencia. Si el banco hubiera iniciado la recuperación técnica sin esta operación, habría reactivado el ransomware desde el interior de sus propios sistemas de recuperación —el resultado habría sido catastrófico. La operación fue costosa en tiempo y dinero, pero el resultado es definitivo: red auditada con certificación forense de limpieza total.\n\nEl siguiente stage llega con una ventaja técnica única: cualquier proceso de recuperación puede ejecutarse sin miedo a reinfección. El reloj está más ajustado —18 horas menos disponibles para llegar al lunes— pero la seguridad de los sistemas está garantizada. En el Stage 4 deberán elegir qué hacer con esa ventaja. El tiempo es crítico: calcúlenlo bien antes de decidir.',
       branchNote:'→ Stage 4, Contexto A (red segura)',
@@ -219,7 +219,7 @@ export const STAGES = [
       letter:'E', text:'Migrar a la Nube',
       sub:'Iniciar una migración de emergencia de toda la infraestructura a la nube en 48 horas',
       cost:2500000, hours:48,
-      type:'extreme', typeLabel:'EXTREMA',
+      type:'extreme', typeLabel:'EXTREMA', repCost:15,
       consequence:'Una migración de arquitectura completa en 48 horas es técnicamente imposible. El equipo colapsa. El proyecto fracasa. Se consumen 48 horas del presupuesto temporal y $2.5M del presupuesto financiero. El banco no abre el lunes.',
       waitStory:'El equipo de infraestructura llevaba 28 horas trabajando sin descanso cuando el Gerente de TI entró a la sala y dijo en voz baja lo que todos sabían: "No vamos a terminar." La migración de una arquitectura bancaria certificada por el regulador requiere meses de planificación, pruebas de cumplimiento normativo, validación de integridad de datos y certificación del ambiente destino. No 48 horas de emergencia con equipos agotados.\n\nA las 36 horas, el 30% de la arquitectura estaba parcialmente migrada en un estado híbrido no certificado. El 70% restante seguía en los servidores originales, algunos ya comprometidos. La coexistencia de sistemas en dos ambientes generó inconsistencias en las bases de datos de clientes que ningún sistema podía resolver automáticamente. El ambiente nube no tenía las certificaciones regulatorias para operar en producción.\n\nEste camino lleva directamente al peor estado del Stage 5. El banco no abrirá el lunes. Los sistemas están en un estado intermedio que es técnicamente más complejo que el ataque original. Los $2,500,000 gastados no produjeron ningún resultado recuperable. La presentación ante el regulador en el Stage 5 comenzará desde el escenario más adverso posible. Utilicen los recursos que les quedan con máxima precisión.',
       branchNote:'→ COLAPSO TOTAL: Stage 5 Crítico directo (tiempo y dinero agotados)',
@@ -252,7 +252,7 @@ export const STAGES = [
       letter:'A', text:'Script Milagroso',
       sub:'Ejecutar un script de recuperación automatizado descargado de un foro técnico sin auditar',
       cost:0, hours:12,
-      type:'trap', typeLabel:'TRAMPA',
+      type:'trap', typeLabel:'TRAMPA', repCost:20,
       consequence:'El script ejecuta código no auditado en los servidores. Corrompe las bases de datos de transacciones de los últimos 6 meses. La corrupción es irreversible. El banco no puede abrir el lunes.',
       waitStory:'El script tenía 847 líneas de código Python publicado en un foro de seguridad con doce votos positivos. El técnico que lo ejecutó argumentó que "había funcionado en casos similares". Lo que nadie leyó fue el bloque de código en la línea 203 que, al detectar la presencia de tablas de transacciones bancarias en formato propietario, ejecutaba una rutina de "limpieza de datos corrompidos" que interpretaba como corruptos exactamente esos formatos propietarios del Core CBS.\n\nLas primeras tablas sobrescritas fueron las de transacciones del viernes —el día del ataque. Luego las del jueves. Luego la semana anterior. El proceso tardó 12 horas en completarse y cuando finalizó, seis meses de historial transaccional habían sido irreversiblemente sobrescritos con ceros. La corrupción no tiene solución técnica posible.\n\nEl banco no puede abrir el lunes porque sin el historial transaccional completo no puede operar dentro de los parámetros de integridad contable exigidos por el regulador. El Stage 5 comienza en el peor escenario técnico posible. La pregunta ante el regulador no será "por qué tardaron en abrir" sino "si alguna vez podrán volver a operar normalmente". Lleguen al Stage 5 con la mejor narrativa que puedan construir.',
       branchNote:'→ Stage 5, Estado Crítico (bases de datos corrompidas)',
@@ -262,7 +262,7 @@ export const STAGES = [
       letter:'B', text:'Degradación Aceptable / DRP',
       sub:'Activar el Plan de Recuperación de Desastres: Core básico + cajeros al 60% de capacidad',
       cost:800000, hours:18,
-      type:'correct', typeLabel:'CORRECTA',
+      type:'correct', typeLabel:'CORRECTA', repCost:-5,
       consequence:'El equipo ejecuta el DRP con precisión. El Core básico, los cajeros y la banca digital quedan operativos al 60% de capacidad. El lunes a las 10:00 AM el banco abre. Misión cumplida.',
       waitStory:'A las 6:00 AM del domingo, el Director de Tecnología presentó el plan al Comité de Crisis: Core básico en modo transaccional esencial, cajeros al 60% de capacidad operativa, y banca digital con funcionalidades de consulta y transferencia simple. Treinta y dos páginas del Plan de Recuperación de Desastres que el banco actualizó hace 18 meses y que nadie esperaba necesitar tan pronto.\n\nLa ejecución fue meticulosa. Cada componente subió en orden estricto, validado antes de conectar el siguiente. A las 9:47 AM del lunes —trece minutos antes de la apertura— el Director de Tecnología confirmó al Comité: "Estamos listos." El banco abrió al 60% de capacidad. Los clientes notaron algunas limitaciones en servicios avanzados pero los cajeros funcionaron y las transferencias esenciales procesaron sin interrupciones.\n\nEl Stage 5 llega con la ventaja más importante del juego: el banco abrió el lunes. Ese hecho define el piso mínimo del resultado final. Cuánto más arriba lleguen en el estado final depende de las penalizaciones acumuladas en stages anteriores y de cómo gestionen la presentación ante el regulador y los accionistas. El Stage 5 es el más importante de todos —y ahora lo enfrentan desde la mejor posición posible.',
       branchNote:'→ Stage 5, Estado según presupuesto y decisiones previas. ABRIERON EL LUNES.',
@@ -272,7 +272,7 @@ export const STAGES = [
       letter:'C', text:'Recovery Broker',
       sub:'Contratar un intermediario que promete descifrar los archivos por $1,000,000 en 5 horas',
       cost:1000000, hours:5,
-      type:'trap', typeLabel:'TRAMPA / ESTAFA',
+      type:'trap', typeLabel:'TRAMPA / ESTAFA', repCost:15,
       consequence:'El "Recovery Broker" es una estafa. Desaparece con el millón de dólares. Pierden 5 horas críticas y $1M. Cuando intentan el siguiente plan ya no hay margen de tiempo para abrir el lunes.',
       waitStory:'El Recovery Broker se presentó en videollamada desde una conexión con VPN múltiple. Mostró tres casos de éxito con logotipos de empresas reconocidas internacionalmente. Prometió "acceso directo a grupos de ransomware para negociación técnica de claves". El pago —$1,000,000 en USDT— era irrevocable por diseño del sistema de pagos cripto.\n\nCuatro horas después del depósito, el número de WhatsApp del broker quedó desconectado. La dirección de billetera cripto no tenía historial previo de transacciones legítimas. No había empresa registrada en ningún país. La Interpol confirmó en 20 minutos que el perfil correspondía a un operador conocido que había ejecutado al menos cuatro estafas similares en instituciones financieras de América Latina en los últimos 18 meses.\n\nEl daño no es solo el millón de dólares desaparecido. Son las cinco horas perdidas mientras el reloj del lunes corría sin margen. El banco ya no tiene tiempo suficiente para ejecutar el DRP completo antes de la apertura. El Stage 5 comenzará con el banco cerrado y el regulador esperando una explicación de por qué, además de gestionar el ataque, perdieron $1,000,000 en una estafa que cualquier revisión básica habría detectado.',
       branchNote:'→ Stage 5, Estado Crítico o Grave (estafados + sin tiempo)',
@@ -282,7 +282,7 @@ export const STAGES = [
       letter:'D', text:'Parche Suicida',
       sub:'Aplicar un parche de seguridad directamente sobre los servidores infectados sin aislar primero',
       cost:100000, hours:8,
-      type:'fatal', typeLabel:'FATAL',
+      type:'fatal', typeLabel:'FATAL', repCost:35,
       consequence:'En Contexto B: el ransomware todavía activo detecta la actividad y cifra la copia de recuperación. GAME OVER técnico. En Contexto A: el parche funciona parcialmente pero daña módulos del Core.',
       waitStory:'La decisión de aplicar el parche directamente sobre los servidores infectados tiene una lógica superficial: si el parche sella la vulnerabilidad, el ransomware pierde su canal de comunicación y eventualmente se inactiva. Esa lógica es correcta en condiciones normales. Lo que ignora es un detalle crítico que cualquier equipo de Incident Response habría señalado: el módulo de defensa de LockBit 3.0 monitorea específicamente la actividad de parches en servidores donde reside.\n\nEn Contexto B, con el ransomware todavía activo en la red, la aplicación del parche disparó el protocolo de "detección de limpieza" del malware. En tres minutos, el ransomware ejecutó su protocolo de destrucción: cifró los servidores de recuperación, los backups de último recurso y los logs de auditoría que hubieran servido de evidencia ante el regulador. No hay reversión posible.\n\nNo hay Stage 5 con posibilidad de recuperación. La pantalla muestra COLAPSO TOTAL. En Contexto A, el daño es menor pero los módulos del Core quedan comprometidos y el banco no abre el lunes. El aislamiento previo a cualquier intervención técnica no es un paso opcional en un entorno comprometido —es la diferencia entre recuperación y colapso.',
       branchNote:'CTX B → GAME OVER. CTX A → Stage 5, Estado Grave.',
@@ -292,7 +292,7 @@ export const STAGES = [
       letter:'E', text:'Threat Hunting Tardío',
       sub:'Dedicar las próximas 24 horas a limpiar la red antes de intentar cualquier recuperación',
       cost:600000, hours:24,
-      type:'recycled', typeLabel:'RECICLADA',
+      type:'recycled', typeLabel:'RECICLADA', repCost:10,
       consequence:'La red queda perfectamente segura, pero consumen 24 horas en el proceso. Ya no hay tiempo para restaurar los sistemas antes del lunes. El banco no abre. Técnicamente correcto, estratégicamente tardío.',
       waitStory:'La red quedó perfectamente auditada a las 10:00 AM del domingo. Sin backdoors, sin módulos durmientes, sin procesos sospechosos en ninguno de los 847 endpoints. El informe forense tiene 340 páginas de documentación de limpieza total con hash verification de cada archivo crítico. Es, técnicamente, una operación de seguridad impecable que cualquier auditor reconocería como correcta.\n\nEl problema es aritmético. La apertura obligatoria del lunes a las 10:00 AM está a 24 horas. El DRP mínimo viable requiere exactamente 36 horas de ejecución controlada. El equipo técnico tiene garantías de seguridad absolutas pero no tiene tiempo físico para usarlas. Ejecutar el DRP a la mitad sería peor que no ejecutarlo.\n\nEl Stage 5 comenzará con el banco cerrado. La red está limpia —eso reducirá levemente las consecuencias comparado con otros caminos que llevan al mismo resultado— pero el regulador, los accionistas y los 180,000 clientes que no pudieron operar el lunes no hacen distinciones operativas finas. El Stage 5 es la presentación final: lleguen con los argumentos más sólidos posibles. La narrativa de "hicimos lo técnicamente correcto" puede tener valor si se presenta bien.',
       branchNote:'→ Stage 5, Estado Grave (red limpia pero no abrieron)',
@@ -336,7 +336,7 @@ export const STAGES = [
       letter:'A', text:'Chivo Expiatorio',
       sub:'Responsabilizar públicamente a un empleado de nivel medio para desviar la atención del regulador',
       cost:10000, hours:0,
-      type:'trap', typeLabel:'TRAMPA',
+      type:'trap', typeLabel:'TRAMPA', repCost:25,
       consequence:'Los auditores del regulador examinan los registros y determinan que la narrativa fue fabricada. La maniobra se interpreta como obstrucción y fraude procesal. Multa adicional de $3,000,000.',
       branchNote:'PENALIZACIÓN FINAL: -$3,000,000',
       penalty:3000000
@@ -345,7 +345,7 @@ export const STAGES = [
       letter:'B', text:'Transparencia SGSI',
       sub:'Presentar el informe completo del SGSI con todas las decisiones, errores y aprendizajes',
       cost:150000, hours:0,
-      type:'correct', typeLabel:'CORRECTA',
+      type:'correct', typeLabel:'CORRECTA', repCost:-10,
       consequence:'Estado LEVE/MEDIO: el regulador reconoce la buena fe. Multa: $0. Estado GRAVE: multa reducida de $500,000 pero se salva la licencia. Estado CRÍTICO: multa de $1,000,000 pero no se revoca la licencia.',
       branchNote:'Multa según estado: LEVE→$0, MEDIO→$0, GRAVE→-$500k, CRÍTICO→-$1M',
       penalty:0, conditionalPenalty:true
@@ -354,7 +354,7 @@ export const STAGES = [
       letter:'C', text:'Promesa Faraónica',
       sub:'Comprometerse públicamente a invertir $5M en ciberseguridad para compensar el incidente',
       cost:2000000, hours:0,
-      type:'trap', typeLabel:'TRAMPA',
+      type:'trap', typeLabel:'TRAMPA', repCost:10,
       consequence:'Las promesas sin evidencia de remediación no borran la negligencia pasada. El regulador aplica la multa estándar y exige que se demuestre la inversión prometida. Penalización adicional: $1,000,000.',
       branchNote:'PENALIZACIÓN EXTRA: -$1,000,000 adicional',
       penalty:1000000
@@ -363,7 +363,7 @@ export const STAGES = [
       letter:'D', text:'Acuerdo Proactivo',
       sub:'Proponer un acuerdo voluntario con el regulador antes de que inicie la investigación formal',
       cost:500000, hours:0,
-      type:'lifesaver', typeLabel:'SALVAVIDAS',
+      type:'lifesaver', typeLabel:'SALVAVIDAS', repCost:-5,
       consequence:'El acuerdo proactivo demuestra buena fe y frena investigaciones más profundas. El regulador acepta. Se evitan costos ocultos mayores. Especialmente efectivo si la gestión fue deficiente.',
       branchNote:'Frena investigaciones. Recomendado para Estado GRAVE/CRÍTICO.',
       penalty:0
@@ -372,7 +372,7 @@ export const STAGES = [
       letter:'E', text:'Obstrucción Legal',
       sub:'Instruir a los abogados del banco a obstruir la investigación regulatoria con recursos legales',
       cost:50000, hours:0,
-      type:'fatal', typeLabel:'FATAL',
+      type:'fatal', typeLabel:'FATAL', repCost:40,
       consequence:'El regulador interpreta la obstrucción como evidencia de culpa. Revoca la licencia operativa del banco. Inicia una intervención estatal. Multa máxima: $5,000,000. El banco deja de existir como institución independiente.',
       branchNote:'CONSECUENCIA FATAL: Licencia REVOCADA + -$5,000,000',
       penalty:5000000, licenseRevoked:true
@@ -417,6 +417,7 @@ export function applyDecision(groupState, stageIndex, optionIndex) {
   let costs    = groupState.costs    + effectiveCost;
   let penalties = groupState.penalties;
   let hours    = groupState.hours    + opt.hours;
+  let reputation = Math.max(0, Math.min(100, (groupState.reputation ?? 100) - (opt.repCost ?? 0)));
 
   // Penalizaciones inmediatas
   if (opt.penalty && !opt.isPendingPenalty) {
@@ -473,7 +474,7 @@ export function applyDecision(groupState, stageIndex, optionIndex) {
   }
 
   return {
-    budget, costs, penalties, hours,
+    budget, costs, penalties, hours, reputation,
     flags: newFlags,
     decision_log: newLog,
     notif_log: [...groupState.notif_log, newNotif],
