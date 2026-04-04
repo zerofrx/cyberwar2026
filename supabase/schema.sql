@@ -56,6 +56,9 @@ CREATE TABLE IF NOT EXISTS groups (
   decision_log  JSONB NOT NULL DEFAULT '[]',
   notif_log     JSONB NOT NULL DEFAULT '[]',
 
+  -- Reputación institucional (0–100)
+  reputation    SMALLINT NOT NULL DEFAULT 100,
+
   -- Resultado final
   final_state   TEXT  DEFAULT NULL,              -- LEVE | MEDIO | GRAVE | CRÍTICO
   final_budget  BIGINT DEFAULT NULL,
