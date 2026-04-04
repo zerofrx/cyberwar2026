@@ -1,6 +1,6 @@
 // ══════════════════════════════════════════
 // group.js — Lógica de la pantalla de grupo
-// Soporta roles: leader | ciso | legal | comms | ops
+// Soporta roles: ciso | analyst | legal | comms | ops
 // ══════════════════════════════════════════
 
 import { supabase }                          from './supabase-client.js';
@@ -12,7 +12,7 @@ const params    = new URLSearchParams(location.search);
 const SESSION_ID = params.get('session') || localStorage.getItem('cw_session_id');
 const GROUP_ID   = params.get('group')   || localStorage.getItem('cw_group_id');
 const ROLE       = (params.get('role')   || localStorage.getItem('cw_role') || 'ciso').toLowerCase();
-const IS_LEADER  = ROLE === 'leader';
+const IS_LEADER  = ROLE === 'ciso';
 
 // ── Estado local ─────────────────────────────
 let group    = null;   // fila de la tabla groups
@@ -21,20 +21,20 @@ let unread   = 0;
 let currentTab = 'info';
 
 const ROLE_LABELS = {
-  leader: 'LÍDER', ciso: 'CISO', legal: 'LEGAL',
+  ciso: 'CISO', analyst: 'ANALISTA', legal: 'LEGAL',
   comms: 'COMMS', ops: 'OPS'
 };
 const ROLE_CSS = {
-  leader: 'role-leader', ciso: 'role-ciso', legal: 'role-legal',
+  ciso: 'role-ciso', analyst: 'role-analyst', legal: 'role-legal',
   comms: 'role-comms', ops: 'role-ops'
 };
 
 // Textos de contexto por rol para cada opción
 const ROLE_PANELS = {
-  ciso: {
+  analyst: {
     label: '// ANÁLISIS TÉCNICO',
     css: 'role-panel-ciso',
-    keys: ['consequence']   // CISO ve la consecuencia técnica
+    keys: ['consequence']   // Analista ve la consecuencia técnica
   },
   legal: {
     label: '// EXPOSICIÓN LEGAL',
@@ -221,7 +221,7 @@ function buildDecisionCard(s, ctx) {
       <div class="impact-badge impact-${s.impact === 'CRÍTICO' ? 'high' : 'med'}">${s.impact}</div>
     </div>
     <div class="dc-body">
-      ${isLocked ? `<div class="leader-only-banner">Solo el Líder del equipo puede seleccionar y confirmar la decisión</div>` : ''}
+      ${isLocked ? `<div class="leader-only-banner">Solo el CISO puede seleccionar y confirmar la decisión</div>` : ''}
       <div class="decision-opts ${isLocked ? 'dec-opts-locked' : ''}" id="decOpts">`;
 
   s.options.forEach((opt, i) => {
@@ -264,7 +264,7 @@ function buildDecisionCard(s, ctx) {
     </div>
     <div class="confirm-bar" id="confirmBar">
       <div class="confirm-hint" id="confirmHint">
-        ${IS_LEADER ? 'Selecciona la opción elegida por el equipo' : 'El Líder seleccionará la decisión del equipo'}
+        ${IS_LEADER ? 'Selecciona la opción elegida por el equipo' : 'El CISO seleccionará la decisión del equipo'}
       </div>
       ${IS_LEADER ? '<button class="btn btn-dark" id="confirmBtn" onclick="confirmDecision()" style="display:none">APLICAR DECISIÓN →</button>' : ''}
     </div>

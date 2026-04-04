@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS groups (
   name         TEXT NOT NULL DEFAULT 'Equipo',
 
   -- Nombres de los miembros (personalizan la narrativa)
-  member_leader TEXT DEFAULT '',
-  member_ciso   TEXT DEFAULT '',
+  member_ciso     TEXT DEFAULT '',
+  member_analyst  TEXT DEFAULT '',
   member_legal  TEXT DEFAULT '',
   member_comms  TEXT DEFAULT '',
   member_ops    TEXT DEFAULT '',
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS players (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id   UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
   group_id     UUID NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
-  role         TEXT NOT NULL,                    -- leader | ciso | legal | comms | ops
+  role         TEXT NOT NULL,                    -- ciso | analyst | legal | comms | ops
   display_name TEXT DEFAULT '',
   is_online    BOOLEAN NOT NULL DEFAULT false,
   last_seen    TIMESTAMPTZ DEFAULT now(),

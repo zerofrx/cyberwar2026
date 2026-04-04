@@ -6,8 +6,8 @@ import { supabase }                              from './supabase-client.js';
 import { STAGES, fmt, computeStage5State }       from './game-data.js';
 
 const NUM_GROUPS  = 6;
-const ROLES       = ['leader', 'ciso', 'legal', 'comms', 'ops'];
-const ROLE_LABELS = { leader:'LÍDER', ciso:'CISO', legal:'LEGAL', comms:'COMMS', ops:'OPS' };
+const ROLES       = ['ciso', 'analyst', 'legal', 'comms', 'ops'];
+const ROLE_LABELS = { ciso:'CISO', analyst:'ANALISTA', legal:'LEGAL', comms:'COMMS', ops:'OPS' };
 
 let session  = null;
 let groups   = [];
