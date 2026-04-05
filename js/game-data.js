@@ -189,8 +189,8 @@ export const STAGES = [
   hints: [
     { type: 'info',  title: '// ASESORÍA REGULATORIA — CNBV',         body: 'Las instituciones que notifican proactivamente dentro de las 72h y presentan análisis forense completo reciben hasta un 60% de reducción en sanciones.' },
     { type: 'info',  title: '// MARCO SGSI — ISO 27001',              body: 'La identificación documentada del vector de entrada y el plan de mejora inmediata son los factores más valorados por auditores en revisiones post-incidente.' },
-    { type: 'warn',  title: '// ANÁLISIS REDES SOCIALES (SESGADO)',    body: 'DESINFORMACIÓN: "#MeridianHackeado está siendo amplificado por bots de competidores. Un comunicado oficial podría escalar el pánico." — Fuente: analista anónimo.' },
-    { type: 'warn',  title: '// MEMO RR.HH. FILTRADO',                 body: 'DESINFORMACIÓN: "La analista involucrada tiene historial de incumplimiento de políticas. Documentar su negligencia protegería legalmente al banco." — Sin sustento legal verificado.' },
+    { type: 'warn',  title: '// ANÁLISIS — Redes Sociales Internas',    body: '"#MeridianHackeado está siendo amplificado en redes. Un comunicado oficial podría escalar el pánico innecesariamente." — Monitoreo interno, 14:32h.' },
+    { type: 'warn',  title: '// MEMO INTERNO — Recursos Humanos',       body: '"La analista involucrada presenta historial de incumplimiento de políticas de seguridad. Documentar su negligencia podría proteger legalmente al banco." — Área de RRHH.' },
   ],
   options: [
     {
