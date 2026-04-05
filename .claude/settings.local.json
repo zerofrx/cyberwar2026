@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "mcp__supabase__execute_sql",
-      "mcp__Claude_Preview__preview_start"
+      "mcp__Claude_Preview__preview_start",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   },
   "enableAllProjectMcpServers": true,
