@@ -220,21 +220,20 @@ html, body {
   overflow: hidden;
 }
 .game-main {
-  overflow-y: auto;
+  overflow-y: scroll;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  background: #f0ebe4;
+  background: var(--bg);
 }
 
 /* ── TARJETA DE INCIDENTE ── */
 .incident-card {
-  background: #fff;
-  border: 1px solid #e0d8d0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
 .ic-status-bar {
   background: var(--accent);
@@ -260,31 +259,31 @@ html, body {
   font-family: 'DM Mono', monospace;
   font-size: .6rem;
   letter-spacing: .12em;
-  color: #9a8e85;
+  color: var(--muted);
   margin-bottom: .6rem;
 }
 .ic-title {
   font-family: 'Playfair Display', serif;
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1c1712;
+  color: #e5ddd5;
   line-height: 1.2;
   margin-bottom: .85rem;
 }
 .ic-narrative {
   font-size: .9rem;
   line-height: 1.75;
-  color: var(--accent);
+  color: var(--text);
 }
 .ic-update {
   margin-top: .9rem;
-  background: #fdf6ec;
-  border: 1px solid #e8d8b0;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-left: 3px solid var(--gold);
   border-radius: 5px;
   padding: .65rem .9rem;
   font-size: .82rem;
-  color: #6b5820;
+  color: var(--text);
   line-height: 1.55;
 }
 .ic-update-label {
@@ -311,11 +310,10 @@ html, body {
 
 /* ── TARJETA DE DECISIÓN ── */
 .decision-card {
-  background: #fff;
-  border: 1px solid #e0d8d0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
   display: flex;
   flex-direction: column;
 }
@@ -324,13 +322,13 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.4rem;
-  border-bottom: 1px solid #f0e8e0;
+  border-bottom: 1px solid var(--border);
   gap: 1rem;
 }
 .dc-question {
   font-family: 'Playfair Display', serif;
   font-size: 1.05rem;
-  color: #1c1712;
+  color: #e5ddd5;
   line-height: 1.4;
 }
 .impact-badge {
@@ -354,20 +352,21 @@ html, body {
   align-items: flex-start;
   gap: .75rem;
   padding: .8rem 1rem;
-  border: 1px solid #e4dcd4;
+  min-height: 44px;
+  border: 1px solid var(--border);
   border-radius: 7px;
   cursor: pointer;
   transition: border-color .15s, background .15s, box-shadow .15s;
-  background: #faf7f4;
+  background: var(--bg);
 }
 .dec-opt:hover {
-  border-color: #c0b0a4;
-  background: #f5f0ea;
-  box-shadow: 0 1px 3px rgba(0,0,0,.07);
+  border-color: var(--muted);
+  background: var(--dark);
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
 }
 .dec-opt.selected {
   border-color: var(--info);
-  background: #eef5fd;
+  background: var(--info-light);
   box-shadow: 0 0 0 2px rgba(74,144,217,.18);
 }
 
@@ -390,7 +389,7 @@ html, body {
 .do-text {
   font-size: .88rem;
   font-weight: 600;
-  color: #1c1712;
+  color: var(--text);
   margin-bottom: .2rem;
   line-height: 1.35;
 }
@@ -447,7 +446,7 @@ html, body {
 .sb-panel.active { display: flex; }
 .sb-label {
   font-family: 'DM Mono', monospace;
-  font-size: .56rem;
+  font-size: .68rem;
   letter-spacing: .12em;
   color: var(--muted);
   margin-bottom: .45rem;
@@ -605,24 +604,16 @@ html, body {
 /* ── BARRA DE CONFIRMACIÓN ── */
 .confirm-bar {
   padding: .85rem 1.4rem;
-  background: #f7f2ed;
-  border-top: 1px solid #e4dcd4;
+  background: var(--dark);
+  border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   flex-shrink: 0;
 }
-.confirm-hint { font-size: .75rem; color: #7a6e65; }
-.confirm-hint strong { color: #3a2e28; }
-
-/* override btn-dark para la confirm bar (fondo claro) */
-.confirm-bar .btn-dark {
-  background: #2a221a;
-  border-color: #2a221a;
-  color: #f0e8e0;
-}
-.confirm-bar .btn-dark:hover { opacity: .88; }
+.confirm-hint { font-size: .75rem; color: var(--muted); }
+.confirm-hint strong { color: var(--text); }
 
 /* ── PANEL DE CONSECUENCIA REVELADA ── */
 .consequence-reveal {
@@ -749,3 +740,10 @@ html, body {
 .rb-medio   { background: var(--info-light);    color: var(--info);    border: 1px solid #b0c8f0; }
 .rb-grave   { background: var(--gold-light);    color: var(--gold);    border: 1px solid #e0c880; }
 .rb-critico { background: var(--accent-light);  color: var(--accent);  border: 1px solid var(--accent-border); }
+
+/* ── Accesibilidad: reducir movimiento ── */
+@media (prefers-reduced-motion: reduce) {
+  .waiting-icon { animation: none; border-top-color: var(--info); }
+  .ht-bar, .rep-bar-fill { transition: none; }
+  .btn, .dec-opt, .fac-bar-fill { transition: none; }
+}
