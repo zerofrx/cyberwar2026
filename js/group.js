@@ -104,9 +104,60 @@ function setupTopbar() {
   document.getElementById('roomCodePill').textContent  = session?.room_code || '—';
   document.getElementById('lobbyRoomCode').textContent = session?.room_code || '—';
 
+  const stn = document.getElementById('sidebarTeamName');
+  if (stn) stn.textContent = group?.name || '—';
+
   const badge = document.getElementById('roleBadge');
   badge.textContent  = ROLE_LABELS[ROLE] || ROLE.toUpperCase();
   badge.className    = `role-badge ${ROLE_CSS[ROLE] || ''}`;
+}
+
+// ── Nombre del equipo (lobby) ─────────────────
+function setupLobbyNameField() {
+  if (IS_LEADER) {
+    const wrap  = document.getElementById('teamNameEditWrap');
+    const input = document.getElementById('teamNameInput');
+    if (!wrap || !input) return;
+    wrap.classList.remove('mp-hidden');
+    if (!input.dataset.focused) input.value = group?.name || '';
+
+    // Evitar añadir listeners duplicados
+    if (!input.dataset.wired) {
+      input.dataset.wired = '1';
+      document.getElementById('teamNameSaveBtn')
+        .addEventListener('click', saveTeamName);
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') { input.blur(); } });
+      input.addEventListener('focus',   () => { input.dataset.focused = '1'; });
+      input.addEventListener('blur',    () => { delete input.dataset.focused; saveTeamName(); });
+    }
+  } else {
+    const disp = document.getElementById('teamNameDisplay');
+    const text = document.getElementById('teamNameText');
+    if (disp) disp.classList.remove('mp-hidden');
+    if (text) text.textContent = group?.name || '—';
+  }
+}
+
+async function saveTeamName() {
+  const input    = document.getElementById('teamNameInput');
+  const feedback = document.getElementById('teamNameFeedback');
+  if (!input || !feedback) return;
+  const newName = input.value.trim();
+  if (!newName || newName === group?.name) return;
+
+  try {
+    const { error } = await supabase.from('groups')
+      .update({ name: newName, updated_at: new Date().toISOString() })
+      .eq('id', GROUP_ID);
+    if (error) throw error;
+    group = { ...group, name: newName };
+    setupTopbar();
+    feedback.textContent = '✓ Guardado';
+    setTimeout(() => { feedback.textContent = ''; }, 2000);
+  } catch (err) {
+    feedback.textContent = 'Error al guardar';
+    console.error(err);
+  }
 }
 
 // ── Render principal ─────────────────────────
@@ -117,6 +168,7 @@ function render() {
 
   if (session.status === 'lobby') {
     showScreen('screenLobby');
+    setupLobbyNameField();
     return;
   }
   if (session.status === 'finished' || group.final_state) {

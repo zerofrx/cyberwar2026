@@ -1418,3 +1418,71 @@ body {
   .prelim-body { grid-template-columns: 1fr; }
   .prelim-left { border-right: none; border-bottom: 1px solid var(--border); }
 }
+
+/* ════════════════════════════════════════
+   Nombre de equipo editable (lobby CISO)
+   ════════════════════════════════════════ */
+.team-name-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: .14em;
+  color: var(--muted);
+  margin-bottom: .5rem;
+}
+.team-name-input-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  justify-content: center;
+}
+.team-name-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: .55rem .85rem;
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e5ddd5;
+  text-align: center;
+  outline: none;
+  width: 260px;
+  transition: border-color .15s;
+}
+.team-name-input:focus { border-color: var(--info); }
+.team-name-save-btn {
+  background: var(--success);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 34px;
+  height: 34px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity .15s;
+}
+.team-name-save-btn:hover { opacity: .8; }
+.team-name-feedback {
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  color: var(--success);
+  margin-top: .35rem;
+  min-height: 1em;
+}
+.team-name-text {
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #e5ddd5;
+}
+.team-name-sidebar {
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #e5ddd5;
+  margin-bottom: .35rem;
+  letter-spacing: .01em;
+}

@@ -34,6 +34,23 @@
     <div class="waiting-sub">El simulacro comenzará en cuanto el facilitador inicie la sesión.</div>
     <div id="lobbyRoomCode" class="room-code-display">—</div>
     <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;color:var(--muted)">CÓDIGO DE SALA</div>
+
+    <!-- Nombre del equipo (CISO edita, resto ve) -->
+    <div id="teamNameWrap" style="margin-top:1.5rem;text-align:center">
+      <div id="teamNameEditWrap" class="mp-hidden">
+        <div class="team-name-label">// NOMBRE DEL EQUIPO</div>
+        <div class="team-name-input-row">
+          <input id="teamNameInput" class="team-name-input"
+                 type="text" maxlength="32" placeholder="Nombre del equipo…" />
+          <button id="teamNameSaveBtn" class="team-name-save-btn">✓</button>
+        </div>
+        <div id="teamNameFeedback" class="team-name-feedback"></div>
+      </div>
+      <div id="teamNameDisplay" class="mp-hidden">
+        <div class="team-name-label">// NOMBRE DEL EQUIPO</div>
+        <div id="teamNameText" class="team-name-text">—</div>
+      </div>
+    </div>
   </div>
 
   <!-- ── Pantalla de juego ──────────────────── -->
@@ -53,7 +70,8 @@
       <!-- Tab: Control -->
       <div class="sidebar-body" id="tabPanelInfo">
         <div class="sb-section">
-          <div class="sb-label" id="controlTabLabel">// ESTADO DEL EQUIPO</div>
+          <div class="sb-label">// EQUIPO</div>
+          <div class="team-name-sidebar" id="sidebarTeamName">—</div>
           <div class="round-indicator" id="roundIndicator"></div>
         </div>
         <div class="sb-section">
