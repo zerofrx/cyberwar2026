@@ -469,18 +469,27 @@ function updateSidebar() {
       .join('');
   }
 
-  // Notifications
-  const feed = group.notif_log || [];
-  if (feed.length) {
+  // Notifications — combine stage hints + decision log
+  const decisions = group.notif_log || [];
+  const stageIdx  = group.stage ?? 0;
+  const hints     = [];
+  for (let i = 0; i <= Math.min(stageIdx, STAGES.length - 1); i++) {
+    (STAGES[i].hints || []).forEach(h => hints.push(h));
+  }
+  const allAlerts = [...hints, ...decisions];
+
+  {
     const badge = document.getElementById('notifBadge');
-    if (currentTab !== 'alerts') {
-      unread = feed.length;
+    if (allAlerts.length && currentTab !== 'alerts') {
+      unread = allAlerts.length;
       badge.textContent = unread;
       badge.style.display = 'inline';
     }
-    document.getElementById('notifFeed').innerHTML = [...feed].reverse()
-      .map(n => `<div class="notif-item notif-${n.type}"><div class="ni-title">${n.title}</div><div class="ni-body">${n.body}</div></div>`)
-      .join('');
+    document.getElementById('notifFeed').innerHTML = allAlerts.length
+      ? [...allAlerts].reverse()
+          .map(n => `<div class="notif-item notif-${n.type}"><div class="ni-title">${n.title}</div><div class="ni-body">${n.body}</div></div>`)
+          .join('')
+      : '<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:1rem">Sin alertas</div>';
   }
 
   // Decision log

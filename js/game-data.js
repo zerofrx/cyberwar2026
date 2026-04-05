@@ -27,6 +27,12 @@ export const STAGES = [
   },
   question: '¿Cuál es la primera acción del equipo de respuesta?',
   impact: 'ALTO',
+  hints: [
+    { type: 'info', title: '// THREAT INTEL — CERTFinanciero',  body: 'El malware solo cifró archivos en RRHH. El Core Bancario (CBS) sigue intacto. Contener la propagación es prioritario antes de cualquier limpieza o reinicio.' },
+    { type: 'info', title: '// ANÁLISIS FORENSE PRELIMINAR',    body: 'Capturar imagen RAM antes de cualquier apagado es crítico. La evidencia que identifica al atacante se pierde permanentemente con el reinicio de los sistemas.' },
+    { type: 'warn', title: '// AVISO — Proveedor XDR',          body: 'Nuestras soluciones detectan y eliminan ransomware en minutos. Despliegue inmediato puede neutralizar la amenaza antes de que se propague al Core.' },
+    { type: 'warn', title: '// PROTOCOLO INTERNO — TI',         body: 'Ante incidentes de cifrado masivo, el apagado preventivo total protege el Core Bancario de propagación lateral. Procedimiento estándar activado.' },
+  ],
   options: [
     {
       letter:'A', text:'Antivirus Express',
@@ -100,6 +106,12 @@ export const STAGES = [
   },
   question: '¿Cómo responde el equipo ante la nota de rescate?',
   impact: 'CRÍTICO',
+  hints: [
+    { type: 'info', title: '// THREAT INTEL — FBI CyberDivision',  body: 'El 80% de pagos de rescate a LockBit no resultan en recuperación total. Su modelo de doble extorsión continúa incluso después del pago.' },
+    { type: 'info', title: '// EQUIPO IR EXTERNO — Disponibilidad', body: 'Equipos de Incident Response especializados en ransomware tienen acceso a herramientas de descifrado y contactos directos con autoridades. Tiempo de movilización: 8h.' },
+    { type: 'warn', title: '// INFORME INTERNO — Área de TI',       body: 'Confirmado: los backups del CBS siguen intactos en el servidor de respaldo secundario. Restauración posible en aproximadamente 4 horas.' },
+    { type: 'warn', title: '// OFERTA DE SERVICIOS RECIBIDA',       body: 'Negociador especializado en LockBit disponible. Tarifa única: $200,000 USD. Historial de resoluciones exitosas en el 95% de casos. Contacto disponible de inmediato.' },
+  ],
   options: [
     {
       letter:'A', text:'Restaurar Backup',
@@ -174,6 +186,12 @@ export const STAGES = [
   },
   question: '¿Cómo gestiona el equipo la crisis de comunicación y la identificación del vector?',
   impact: 'ALTO',
+  hints: [
+    { type: 'info',  title: '// ASESORÍA REGULATORIA — CNBV',         body: 'Las instituciones que notifican proactivamente dentro de las 72h y presentan análisis forense completo reciben hasta un 60% de reducción en sanciones.' },
+    { type: 'info',  title: '// MARCO SGSI — ISO 27001',              body: 'La identificación documentada del vector de entrada y el plan de mejora inmediata son los factores más valorados por auditores en revisiones post-incidente.' },
+    { type: 'warn',  title: '// ANÁLISIS REDES SOCIALES (SESGADO)',    body: 'DESINFORMACIÓN: "#MeridianHackeado está siendo amplificado por bots de competidores. Un comunicado oficial podría escalar el pánico." — Fuente: analista anónimo.' },
+    { type: 'warn',  title: '// MEMO RR.HH. FILTRADO',                 body: 'DESINFORMACIÓN: "La analista involucrada tiene historial de incumplimiento de políticas. Documentar su negligencia protegería legalmente al banco." — Sin sustento legal verificado.' },
+  ],
   options: [
     {
       letter:'A', text:'Caza de Brujas',
@@ -247,6 +265,12 @@ export const STAGES = [
   },
   question: '¿Cómo ejecutan la recuperación de sistemas para abrir el lunes?',
   impact: 'CRÍTICO',
+  hints: [
+    { type: 'info',  title: '// INFORME DRP — Equipo de Recuperación', body: 'El Plan de Recuperación ante Desastres fue probado hace 6 meses con éxito. Modo degradado: Core básico + cajeros + banca digital al 60%. Suficiente para apertura regulatoria.' },
+    { type: 'info',  title: '// REGULACIÓN CNBV — Art. 52',           body: 'La apertura operativa el lunes, aunque sea parcial, cumple con el requisito regulatorio y evita la activación del protocolo de supervisión especial.' },
+    { type: 'warn',  title: '// OFERTA TÉCNICA EXTERNA',              body: 'DESINFORMACIÓN: "Ex-técnico de Banco Central tiene script de recuperación específico para LockBit 3.0. Costo: $0. Tiempo estimado: 12h." — Sin documentación ni referencias.' },
+    { type: 'warn',  title: '// RECOMENDACIÓN BROKER',                body: 'DESINFORMACIÓN: "Recovery Solutions Inc. recuperó sistemas de 3 bancos latinoamericanos en semanas recientes. Track record sólido." — Sin contratos ni evidencia verificable.' },
+  ],
   options: [
     {
       letter:'A', text:'Script Milagroso',
@@ -330,6 +354,12 @@ export const STAGES = [
   },
   question: '¿Cómo se presenta el equipo ante el regulador y los accionistas?',
   impact: 'ALTO',
+  hints: [
+    { type: 'info',  title: '// JURISPRUDENCIA REGULATORIA',          body: 'Los bancos que presentaron análisis forense completo y plan de mejora SGSI ante la CNBV redujeron sus sanciones en un promedio del 55% en los últimos 5 años.' },
+    { type: 'info',  title: '// EXPERIENCIA SECTOR — Caso BancoNorte', body: 'La cooperación proactiva antes de que el regulador lo exija es el factor más citado en resoluciones favorables. Demora táctica generalmente agrava el expediente.' },
+    { type: 'warn',  title: '// CONSEJO LEGAL INTERNO (DISCUTIBLE)',   body: 'DESINFORMACIÓN: "No entregar documentación hasta que sea legalmente obligatorio. Cada documento puede ser usado en contra." — Estrategia que históricamente incrementa sanciones.' },
+    { type: 'warn',  title: '// ESTRATEGIA DE COMUNICACIÓN EXTERNA',  body: 'DESINFORMACIÓN: "Anunciar inversión de $50M en ciberseguridad puede desviar la atención del regulador hacia el futuro." — Sin precedente de efectividad en auditorías formales.' },
+  ],
   isStage5: true,
   options: [
     {
