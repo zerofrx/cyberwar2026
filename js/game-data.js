@@ -268,8 +268,8 @@ export const STAGES = [
   hints: [
     { type: 'info',  title: '// INFORME DRP — Equipo de Recuperación', body: 'El Plan de Recuperación ante Desastres fue probado hace 6 meses con éxito. Modo degradado: Core básico + cajeros + banca digital al 60%. Suficiente para apertura regulatoria.' },
     { type: 'info',  title: '// REGULACIÓN CNBV — Art. 52',           body: 'La apertura operativa el lunes, aunque sea parcial, cumple con el requisito regulatorio y evita la activación del protocolo de supervisión especial.' },
-    { type: 'warn',  title: '// OFERTA TÉCNICA EXTERNA',              body: 'DESINFORMACIÓN: "Ex-técnico de Banco Central tiene script de recuperación específico para LockBit 3.0. Costo: $0. Tiempo estimado: 12h." — Sin documentación ni referencias.' },
-    { type: 'warn',  title: '// RECOMENDACIÓN BROKER',                body: 'DESINFORMACIÓN: "Recovery Solutions Inc. recuperó sistemas de 3 bancos latinoamericanos en semanas recientes. Track record sólido." — Sin contratos ni evidencia verificable.' },
+    { type: 'warn',  title: '// OFERTA TÉCNICA EXTERNA',              body: '"Ex-técnico de Banco Central cuenta con script de recuperación específico para LockBit 3.0. Costo: $0. Tiempo estimado: 12 horas." — Contacto intermediario.' },
+    { type: 'warn',  title: '// INFORME DE MERCADO — Recovery Services', body: '"Recovery Solutions Inc. recuperó sistemas de 3 bancos latinoamericanos en semanas recientes. Track record sólido y verificado." — Reporte de servicios externos.' },
   ],
   options: [
     {
@@ -357,8 +357,8 @@ export const STAGES = [
   hints: [
     { type: 'info',  title: '// JURISPRUDENCIA REGULATORIA',          body: 'Los bancos que presentaron análisis forense completo y plan de mejora SGSI ante la CNBV redujeron sus sanciones en un promedio del 55% en los últimos 5 años.' },
     { type: 'info',  title: '// EXPERIENCIA SECTOR — Caso BancoNorte', body: 'La cooperación proactiva antes de que el regulador lo exija es el factor más citado en resoluciones favorables. Demora táctica generalmente agrava el expediente.' },
-    { type: 'warn',  title: '// CONSEJO LEGAL INTERNO (DISCUTIBLE)',   body: 'DESINFORMACIÓN: "No entregar documentación hasta que sea legalmente obligatorio. Cada documento puede ser usado en contra." — Estrategia que históricamente incrementa sanciones.' },
-    { type: 'warn',  title: '// ESTRATEGIA DE COMUNICACIÓN EXTERNA',  body: 'DESINFORMACIÓN: "Anunciar inversión de $50M en ciberseguridad puede desviar la atención del regulador hacia el futuro." — Sin precedente de efectividad en auditorías formales.' },
+    { type: 'warn',  title: '// NOTA INTERNA — Asesoría Legal',         body: '"No entregar documentación hasta que sea legalmente obligatorio. Cada documento entregado puede ser usado en contra del banco." — Departamento Legal.' },
+    { type: 'warn',  title: '// ESTRATEGIA — Comunicaciones Externas', body: '"Anunciar una inversión de $50M en ciberseguridad puede desviar la atención del regulador hacia el futuro del banco." — Consultoría externa.' },
   ],
   isStage5: true,
   options: [
