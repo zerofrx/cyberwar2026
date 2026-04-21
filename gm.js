@@ -157,7 +157,7 @@ const STAGES = [
   variants: {
     A: {
       narrative: 'El equipo forense identificó el vector de entrada: un correo de phishing en LinkedIn dirigido a <strong>Claudia M., analista de RRHH</strong>, hace 21 días. El malware estuvo latente tres semanas antes de activarse. La prensa pregunta por rumores de una "interrupción operativa mayor". No hay pánico todavía pero la ventana de comunicación se cierra.',
-      update: '⚡ El regulador (CNBV) envió un correo formal solicitando un informe preliminar en 4 horas. La respuesta que den determinará el tono de la relación con la autoridad.',
+      update: '⚡ El BCP envió un correo formal solicitando un informe preliminar en 4 horas. La respuesta que den determinará el tono de la relación con la autoridad.',
       branchCtx: '✓ CONTEXTO A — Control forense. Tiempo para comunicar correctamente.'
     },
     B: {
@@ -292,7 +292,7 @@ const STAGES = [
   title: 'El Día de Cuentas',
   variants: {
     A: {
-      narrative: '<strong>Estado: LEVE.</strong> Abrieron el lunes con el DRP. El presupuesto está sano. La gestión fue técnicamente sólida. El regulador (CNBV) espera una comparecencia formal. El riesgo de multa es bajo si la presentación es correcta.',
+      narrative: '<strong>Estado: LEVE.</strong> Abrieron el lunes con el DRP. El presupuesto está sano. La gestión fue técnicamente sólida. El BCP espera una comparecencia formal. El riesgo de multa es bajo si la presentación es correcta.',
       update: '⚡ El regulador valora la transparencia y la velocidad de respuesta. Un informe SGSI bien documentado puede resultar en multa cero.',
       branchCtx: '✓ ESTADO LEVE — Abrieron el lunes. Presupuesto saludable. Gestión sólida.'
     },
