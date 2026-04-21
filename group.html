@@ -24,6 +24,10 @@
       <div id="roleBadge" class="role-badge">—</div>
       <div class="budget-pill" id="budgetPill">$5,000,000</div>
       <div class="time-pill" id="timePill">0h / 72h</div>
+      <button id="themeToggle" class="theme-toggle-btn" title="Cambiar tema" aria-label="Cambiar entre modo claro y oscuro">
+        <span class="tt-icon tt-moon">🌙</span>
+        <span class="tt-icon tt-sun">☀️</span>
+      </button>
     </div>
   </div>
 
@@ -164,5 +168,33 @@
   </div>
 
   <script type="module" src="js/group.js"></script>
+  <script>
+    (function () {
+      const btn  = document.getElementById('themeToggle');
+      const html = document.documentElement;
+      const MOON = btn.querySelector('.tt-moon');
+      const SUN  = btn.querySelector('.tt-sun');
+
+      function apply(theme) {
+        if (theme === 'light') {
+          html.setAttribute('data-theme', 'light');
+          MOON.style.display = 'none';
+          SUN.style.display  = '';
+        } else {
+          html.removeAttribute('data-theme');
+          MOON.style.display = '';
+          SUN.style.display  = 'none';
+        }
+      }
+
+      apply(localStorage.getItem('cw-theme') || 'dark');
+
+      btn.addEventListener('click', () => {
+        const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        localStorage.setItem('cw-theme', next);
+        apply(next);
+      });
+    })();
+  </script>
 </body>
 </html>

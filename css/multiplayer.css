@@ -1486,3 +1486,70 @@ body {
   margin-bottom: .35rem;
   letter-spacing: .01em;
 }
+
+/* ── Botón de tema (topbar) ── */
+.theme-toggle-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: .9rem;
+  transition: background .15s, border-color .15s;
+  flex-shrink: 0;
+  padding: 0;
+}
+.theme-toggle-btn:hover { background: var(--bg); border-color: var(--text); }
+
+/* ── Light mode ── */
+html[data-theme="light"] {
+  --dark:          #f0f4f8;
+  --bg:            #e4ecf5;
+  --surface:       #ffffff;
+  --border:        #bfcfdf;
+  --text:          #1a2840;
+  --muted:         #5a7090;
+  --accent-light:  rgba(192,57,43,.07);
+  --accent-border: rgba(192,57,43,.20);
+  --success-light: rgba(46,158,96,.08);
+  --gold-light:    rgba(200,154,32,.08);
+  --info-light:    rgba(74,144,217,.08);
+  --purple-light:  rgba(139,82,200,.08);
+}
+html[data-theme="light"] body          { background: var(--dark); }
+html[data-theme="light"] .topbar       { background: var(--surface); border-bottom-color: var(--border); }
+html[data-theme="light"] .sidebar      { background: var(--surface); border-left-color: var(--border); }
+html[data-theme="light"] .game-main    { background: var(--bg); }
+html[data-theme="light"] .incident-card,
+html[data-theme="light"] .decision-card { background: var(--surface); border-color: var(--border); }
+html[data-theme="light"] .ic-narrative,
+html[data-theme="light"] .dc-question,
+html[data-theme="light"] .do-text      { color: var(--text); }
+html[data-theme="light"] .ic-title     { color: #1a2840; }
+html[data-theme="light"] .dec-opt       { background: var(--bg); border-color: var(--border); }
+html[data-theme="light"] .dec-opt:hover { background: #d8e6f4; border-color: var(--info); }
+
+/* Opción seleccionada — contraste reforzado en light mode */
+html[data-theme="light"] .dec-opt.selected {
+  background: rgba(74,144,217,.14);
+  border-color: var(--info);
+  border-width: 2px;
+  box-shadow: inset 3px 0 0 var(--info), 0 0 0 3px rgba(74,144,217,.18);
+}
+html[data-theme="light"] .dec-opt.selected .do-text { color: #0d2d5a; font-weight: 700; }
+
+/* Confirm bar + botón APLICAR DECISIÓN */
+html[data-theme="light"] .confirm-bar  { background: #d4e3f5; border-top: 2px solid var(--info); }
+html[data-theme="light"] .btn-dark     { background: #1a2840; border-color: #1a2840; color: #ffffff; }
+html[data-theme="light"] .btn-dark:hover { background: #243858; }
+
+html[data-theme="light"] .meta-pill,
+html[data-theme="light"] .budget-pill,
+html[data-theme="light"] .time-pill    { background: var(--bg); border-color: var(--border); }
+html[data-theme="light"] .waiting-screen,
+html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
