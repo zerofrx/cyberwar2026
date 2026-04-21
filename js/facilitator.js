@@ -163,16 +163,17 @@ async function resetSession() {
       .update({ status: 'lobby', current_stage: 0, updated_at: new Date().toISOString() })
       .eq('id', sessionId);
 
-    const groupIds = groups.map(g => g.id);
-    if (groupIds.length) {
+    for (const g of groups) {
       await supabase.from('groups')
         .update({
+          name:          `Equipo ${g.slot}`,
           stage:         0,
           ctx:           'default',
           budget:        5000000,
           costs:         0,
           penalties:     0,
           hours:         0,
+          reputation:    100,
           flags:         { backupsDestroyed: false, openedMonday: false, paidRansom: false,
                            silentCorp: false, laborLawsuit: false, licenseRevoked: false,
                            pendingPenalties: [] },
@@ -183,7 +184,7 @@ async function resetSession() {
           final_state:   null,
           updated_at:    new Date().toISOString()
         })
-        .in('id', groupIds);
+        .eq('id', g.id);
     }
 
     await loadGroups();

@@ -378,9 +378,11 @@ body {
   font-family: 'DM Mono', monospace;
   font-size: 1.8rem;
   letter-spacing: .2em;
+  text-indent: .2em;
   color: var(--info);
   text-align: center;
   padding: .5rem;
+  overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
