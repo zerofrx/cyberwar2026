@@ -382,9 +382,53 @@ window.selectOption = async function(i) {
     .eq('id', GROUP_ID);
 };
 
+// ── Efecto cybernético al confirmar ──────────
+function showCyberConfirm(opt) {
+  const overlay = document.getElementById('cyberConfirmOverlay');
+  if (!overlay) return;
+
+  // Rellenar contenido
+  document.getElementById('ccoLetter').textContent     = opt.letter;
+  document.getElementById('ccoOptionName').textContent = opt.text;
+
+  // Generar líneas de log fake
+  const hash = Array.from({ length: 16 }, () =>
+    '0123456789abcdef'[Math.floor(Math.random() * 16)]).join('');
+  const ts = new Date().toISOString().replace('T', ' ').substring(0, 19);
+  document.getElementById('ccoLog').innerHTML = [
+    `OPCIÓN ${opt.letter} — ${opt.typeLabel || 'REGISTRADA'}`,
+    `HASH: ${hash}`,
+    `TIMESTAMP: ${ts}`,
+    `TRANSMISIÓN COMPLETADA`
+  ].map(l => `<div class="cco-log-line">${l}</div>`).join('');
+
+  // Reiniciar animaciones: quitar y volver a añadir la clase
+  overlay.classList.remove('cco-leaving');
+  overlay.classList.remove('mp-hidden');
+
+  // Cerrar con fade-out tras 2.6s
+  const timer = setTimeout(() => hideCyberConfirm(), 2600);
+  overlay._hideTimer = timer;
+}
+
+function hideCyberConfirm() {
+  const overlay = document.getElementById('cyberConfirmOverlay');
+  if (!overlay || overlay.classList.contains('mp-hidden')) return;
+  clearTimeout(overlay._hideTimer);
+  overlay.classList.add('cco-leaving');
+  overlay.addEventListener('animationend', () => {
+    overlay.classList.add('mp-hidden');
+    overlay.classList.remove('cco-leaving');
+  }, { once: true });
+}
+
 window.confirmDecision = async function() {
   const chosen = group.chosen_option;
   if (chosen === null || chosen === undefined || group.revealed) return;
+
+  // Efecto cybernético
+  const opt = STAGES[group.stage]?.options?.[chosen];
+  if (opt) showCyberConfirm(opt);
 
   const result = applyDecision(group, group.stage, chosen);
 
