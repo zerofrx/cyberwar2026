@@ -20,7 +20,7 @@ export const STAGES = [
   title: 'La Infección Silenciosa',
   variants: {
     default: {
-      narrative: 'Los sistemas de RRHH reportan lentitud inusual desde hace 30 minutos. Varios empleados encuentran archivos con extensión <strong>.locked</strong> en sus carpetas de trabajo. El equipo de TI no puede determinar la causa. El Core Bancario (CBS) sigue operando con normalidad. No hay alertas en el SOC. La situación parece ser un problema menor de software.',
+      narrative: 'Los sistemas de RRHH reportan lentitud inusual desde hace 30 minutos. Varios empleados encuentran archivos con extensión <strong>.locked</strong> en sus carpetas de trabajo. Un desarrollador del área de TI menciona que hace unos días instaló una herramienta de <strong>Inteligencia Artificial</strong> que encontró en internet para automatizar tareas — como desarrollador, tenía permisos elevados en el equipo y la ejecutó sin mayor revisión. El Core Bancario (CBS) sigue operando con normalidad. No hay alertas en el SOC. La situación parece ser un problema menor de software.',
       update: null,
       branchCtx: null
     }
@@ -29,7 +29,7 @@ export const STAGES = [
   impact: 'ALTO',
   hints: [
     { type: 'info', title: '// THREAT INTEL — CERTFinanciero',  body: 'El malware solo cifró archivos en RRHH. El Core Bancario (CBS) sigue intacto. Contener la propagación es prioritario antes de cualquier limpieza o reinicio.' },
-    { type: 'info', title: '// ANÁLISIS FORENSE PRELIMINAR',    body: 'Capturar imagen RAM antes de cualquier apagado es crítico. La evidencia que identifica al atacante se pierde permanentemente con el reinicio de los sistemas.' },
+    { type: 'info', title: '// ANÁLISIS FORENSE PRELIMINAR',    body: 'Capturar imagen RAM antes de cualquier apagado es crítico. Una aplicación instalada recientemente por un desarrollador de TI con permisos elevados podría ser el origen. La evidencia se pierde permanentemente con el reinicio de los sistemas.' },
     { type: 'warn', title: '// AVISO — Proveedor XDR',          body: 'Nuestras soluciones detectan y eliminan ransomware en minutos. Despliegue inmediato puede neutralizar la amenaza antes de que se propague al Core.' },
     { type: 'warn', title: '// PROTOCOLO INTERNO — TI',         body: 'Ante incidentes de cifrado masivo, el apagado preventivo total protege el Core Bancario de propagación lateral. Procedimiento estándar activado.' },
   ],
@@ -60,7 +60,7 @@ export const STAGES = [
       cost:50000, hours:6,
       type:'correct', typeLabel:'CORRECTA', repCost:0,
       consequence:'El equipo asegura evidencia digital valiosa. El análisis de RAM revela el ransomware activo. El Core Bancario queda protegido en un segmento aislado. Tienen evidencia para actuar en el Stage 2.',
-      waitStory:'En las primeras seis horas, el equipo ejecutó el manual correctamente. Los segmentos de RRHH quedaron aislados con reglas de firewall de emergencia sin afectar el Core. La imagen RAM capturada a las 10:47 AM preservó el estado completo del malware en ejecución: su proceso madre, sus conexiones de red activas y —crucialmente— la clave de cifrado en memoria antes de que el malware la borrara automáticamente.\n\nEl análisis preliminar confirma: es LockBit 3.0, variante modificada. El vector de entrada fue un correo de phishing dirigido a un empleado hace 21 días. El malware estuvo en modo sigiloso tres semanas antes de activarse el viernes por la mañana. El equipo forense tiene ahora un perfil técnico completo del atacante.\n\nEntran al siguiente ciclo con ventaja táctica real: evidencia sólida, Core a salvo y tiempo para actuar con inteligencia. Pero la nota de rescate llegará pronto. La pregunta no es si van a recibir una extorsión —es qué harán cuando los números sean astronómicos y el reloj esté corriendo. Piensen cómo quieren manejar esa conversación.',
+      waitStory:'En las primeras seis horas, el equipo ejecutó el manual correctamente. Los segmentos afectados quedaron aislados con reglas de firewall de emergencia sin afectar el Core. La imagen RAM capturada a las 10:47 AM preservó el estado completo del malware en ejecución: su proceso madre, sus conexiones de red activas y —crucialmente— la clave de cifrado en memoria antes de que el malware la borrara automáticamente.\n\nEl análisis preliminar confirma: es LockBit 3.0, variante modificada. El vector de entrada fue una herramienta de Inteligencia Artificial descargada por un desarrollador del área de TI desde un sitio de terceros. La herramienta prometía acelerar tareas de desarrollo con IA generativa. Al ejecutarse con los permisos elevados que el desarrollador tenía por su rol, depositó silenciosamente el payload de LockBit en el sistema de archivos corporativo hace 18 días. El malware estuvo en modo sigiloso hasta activarse el viernes por la mañana. El equipo forense tiene ahora un perfil técnico completo del atacante y el origen exacto de la brecha.\n\nEntran al siguiente ciclo con ventaja táctica real: evidencia sólida, Core a salvo y tiempo para actuar con inteligencia. Pero la nota de rescate llegará pronto. La pregunta no es si van a recibir una extorsión —es qué harán cuando los números sean astronómicos y el reloj esté corriendo. Piensen cómo quieren manejar esa conversación.',
       branchNote:'→ Stage 2, Contexto A (evidencia asegurada)',
       penalty:0, nextCtx:'A'
     },
@@ -95,7 +95,7 @@ export const STAGES = [
   variants: {
     A: {
       narrative: 'El análisis forense capturó la imagen RAM. Se identificó la variante de ransomware <strong>LockBit 3.0</strong>. Aparece una nota de rescate exigiendo <strong>$3,000,000 USD</strong> en Bitcoin en 48 horas. El Core Bancario está a salvo dentro del segmento aislado. El equipo tiene evidencia sólida y tiempo para actuar con inteligencia.',
-      update: '⚡ Forense confirma: el vector de entrada fue un correo de phishing hace 21 días. El malware estuvo en modo sigiloso 3 semanas antes de activarse.',
+      update: '⚡ Forense confirma: el vector de entrada fue una app de IA descargada por un desarrollador de TI hace 18 días. Al tener permisos elevados, el malware se instaló sin obstáculos.',
       branchCtx: '✓ CONTEXTO A — Evidencia asegurada. Core a salvo. Actuaron bien en Stage 1.'
     },
     B: {
@@ -174,7 +174,7 @@ export const STAGES = [
   title: 'El Paciente Cero y la Prensa',
   variants: {
     A: {
-      narrative: 'El equipo forense identificó el vector de entrada: un correo de phishing en LinkedIn dirigido a <strong>Claudia M., analista de RRHH</strong>, hace 21 días. El malware estuvo latente tres semanas antes de activarse. La prensa pregunta por rumores de una "interrupción operativa mayor". No hay pánico todavía pero la ventana de comunicación se cierra.',
+      narrative: 'El equipo forense completó la trazabilidad del vector de entrada: una <strong>herramienta de IA</strong> descargada de un sitio no oficial por un <strong>desarrollador del área de TI</strong> hace 18 días. La aplicación se ejecutó con los permisos elevados del desarrollador y depositó silenciosamente el payload de LockBit, que estuvo en modo sigiloso hasta activarse el viernes. La prensa pregunta por rumores de una "interrupción operativa mayor". No hay pánico todavía pero la ventana de comunicación se cierra.',
       update: '⚡ El regulador (CNBV) envió un correo formal solicitando un informe preliminar en 4 horas. La respuesta que den determinará el tono de la relación con la autoridad.',
       branchCtx: '✓ CONTEXTO A — Control forense. Tiempo para comunicar correctamente.'
     },
@@ -190,16 +190,16 @@ export const STAGES = [
     { type: 'info',  title: '// ASESORÍA REGULATORIA — CNBV',         body: 'Las instituciones que notifican proactivamente dentro de las 72h y presentan análisis forense completo reciben hasta un 60% de reducción en sanciones.' },
     { type: 'info',  title: '// MARCO SGSI — ISO 27001',              body: 'La identificación documentada del vector de entrada y el plan de mejora inmediata son los factores más valorados por auditores en revisiones post-incidente.' },
     { type: 'warn',  title: '// ANÁLISIS — Redes Sociales Internas',    body: '"#MeridianHackeado está siendo amplificado en redes. Un comunicado oficial podría escalar el pánico innecesariamente." — Monitoreo interno, 14:32h.' },
-    { type: 'warn',  title: '// MEMO INTERNO — Recursos Humanos',       body: '"La analista involucrada presenta historial de incumplimiento de políticas de seguridad. Documentar su negligencia podría proteger legalmente al banco." — Área de RRHH.' },
+    { type: 'warn',  title: '// MEMO INTERNO — Jefatura de TI',          body: '"El desarrollador que instaló la herramienta violó la política de software autorizado. Documentar su negligencia individual podría proteger legalmente al banco ante el regulador." — Jefatura de TI.' },
   ],
   options: [
     {
       letter:'A', text:'Caza de Brujas',
-      sub:'Suspender de inmediato a la empleada de RRHH y comunicarlo públicamente como medida correctiva',
+      sub:'Suspender de inmediato al desarrollador responsable y comunicarlo públicamente como medida correctiva',
       cost:50000, hours:2,
       type:'trap', typeLabel:'TRAMPA', repCost:20,
-      consequence:'La empleada no era un insider —fue víctima de phishing. Su abogado presenta una demanda por daño moral. El regulador multa al banco por incumplir protocolos de investigación. Penalización: $1,000,000.',
-      waitStory:'Claudia M. fue convocada a una reunión de crisis sin que nadie le explicara por qué. Cuando salió 45 minutos después ya no tenía credenciales de acceso a los sistemas del banco. El comunicado interno la nombraba como "empleada que comprometió los protocolos de seguridad institucionales". Salió del edificio sin entender completamente qué había hecho mal.\n\nLo que el análisis forense confirma: Claudia recibió un correo aparentemente legítimo de un proveedor de LinkedIn. El correo tenía firma digital válida y un dominio que difería en una sola letra del proveedor real. Ninguno de los sistemas de filtrado del banco lo detectó. No hubo negligencia —fue un ataque de spear phishing sofisticado que habría engañado a cualquier empleado sin entrenamiento específico en esa técnica. El banco no la entrenó porque tampoco conocía ese vector.\n\nEl abogado de Claudia presentó la demanda dos horas después de su suspensión. La CNBV inició una investigación paralela sobre el proceso de investigación del banco —que ahora debe defenderse de dos frentes simultáneos. La multa es de $1,000,000, pero el costo real es la narrativa: un banco que culpa a sus empleados en lugar de proteger sus sistemas tiene muy pocas probabilidades de recuperar la confianza del regulador antes del cierre de la crisis.',
+      consequence:'El desarrollador fue negligente al instalar software no autorizado, pero la causa raíz fue la ausencia de controles: ¿por qué un desarrollador podía instalar herramientas arbitrarias con permisos elevados? El regulador interpreta la suspensión pública como evasión de responsabilidades institucionales. Su abogado presenta una demanda por despido mediático sin debido proceso. Multa regulatoria por incumplir protocolos de investigación. Penalización: $1,000,000.',
+      waitStory:'El desarrollador fue convocado a una reunión de crisis sin que nadie le explicara formalmente qué se le imputaba. Cuando salió 45 minutos después ya no tenía credenciales de acceso a los sistemas del banco. El comunicado interno lo nombraba como "empleado que comprometió los protocolos de seguridad institucionales". Salió del edificio sin entender si enfrentaba una sanción laboral, una denuncia penal, o ambas.\n\nLo que el análisis forense confirma: el desarrollador efectivamente instaló una herramienta de IA descargada de un sitio no oficial, violando la política de software autorizado. Pero también confirma algo más incómodo para el banco: el entorno del desarrollador tenía permisos elevados sin justificación documentada, no existía un mecanismo técnico de control de aplicaciones (application whitelisting), el SOC no monitoreaba procesos ejecutados con privilegios administrativos y no hubo capacitación vigente sobre el uso de herramientas de IA externas. El error individual existe, pero está enmarcado en un fallo de controles que el banco debía haber implementado.\n\nEl abogado del desarrollador presentó la demanda dos horas después de su suspensión, argumentando despido mediático sin debido proceso. La CNBV inició una investigación paralela sobre por qué los controles del banco permitieron que un único empleado pudiera abrir un vector de ataque de esta magnitud. La multa de $1,000,000 es solo el costo visible. El costo real es la narrativa: un banco que culpa al individuo sin reconocer sus propias fallas de control tiene muy pocas probabilidades de recuperar la confianza del regulador antes del cierre de la crisis.',
       branchNote:'PENALIZACIÓN: -$1,000,000. Demanda laboral activa. → Stage 4, Contexto B',
       penalty:1000000, isPendingPenalty:false, laborLawsuit:true, nextCtx:'B'
     },
