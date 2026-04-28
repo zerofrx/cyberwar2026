@@ -452,7 +452,7 @@ function showPreliminary() {
   const leaderEl = document.getElementById('prelimLeaderStory');
   if (leader) {
     const lCtx      = (leader.ctx && leader.ctx !== 'default') ? leader.ctx : 'A';
-    const variant   = curStage.variants?.[lCtx];
+    const variant   = curStage.variants?.[lCtx] ?? curStage.variants?.['default'];
     const narrative = variant?.narrative || curStage.status;
     const rep       = leader.reputation ?? 100;
     const repColor  = rep >= 70 ? 'var(--success)' : rep >= 40 ? 'var(--gold)' : 'var(--accent)';
@@ -497,7 +497,7 @@ function showPreliminary() {
       <div class="prelim-divider"></div>
       <div class="prelim-section-label">// SIGUIENTE — ETAPA FINAL</div>
       <div class="prelim-next-title">El Día de Cuentas</div>
-      <div class="prelim-narrative">Cada decisión define el desenlace. El regulador está listo para evaluar a Banco Meridian.</div>`;
+      <div class="prelim-narrative">Cada decisión define el desenlace. El BCP está listo para evaluar a Banco Meridian.</div>`;
   }
 
   // ── Tarjetas de grupos (orden por slot, sin posición) ──
