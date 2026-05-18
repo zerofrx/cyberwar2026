@@ -1717,3 +1717,333 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
   from { opacity: 1; }
   to   { opacity: 0; }
 }
+
+/* ══════════════════════════════════════════
+   Toolkit técnico (Stage panel)
+   ══════════════════════════════════════════ */
+
+/* Color por categoría (un solo lugar) */
+:root {
+  --cat-deteccion:    var(--info, #4a90d9);
+  --cat-forense:      var(--gold, #c89a20);
+  --cat-inteligencia: #9b6dd9;
+  --cat-recuperacion: var(--success, #2e9e60);
+}
+
+.toolkit-panel {
+  margin: 0 0 1.5rem 0;
+  padding: 1.05rem 1.15rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.015), transparent 40%),
+    var(--surface);
+  position: relative;
+  overflow: hidden;
+}
+.toolkit-panel::before {
+  /* Scanline sutil de fondo, fija al panel */
+  content: "";
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0 3px,
+    rgba(255,255,255,.012) 3px 4px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+.toolkit-panel > * { position: relative; z-index: 1; }
+
+/* ── Header ── */
+.tk-header { margin-bottom: 1rem; }
+.tk-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.tk-title {
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  letter-spacing: .18em;
+  color: var(--accent);
+}
+.tk-budget {
+  font-family: 'DM Mono', monospace;
+  font-size: .58rem;
+  letter-spacing: .14em;
+  color: var(--muted);
+}
+.tk-budget span {
+  color: var(--gold);
+  font-size: .82rem;
+  margin-left: .35rem;
+  letter-spacing: .04em;
+}
+.tk-sub {
+  font-size: .76rem;
+  color: var(--muted);
+  margin-top: .35rem;
+  line-height: 1.55;
+  max-width: 720px;
+}
+.tk-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1rem;
+  margin-top: .75rem;
+  font-family: 'DM Mono', monospace;
+  font-size: .55rem;
+  letter-spacing: .15em;
+  color: var(--muted);
+}
+.lg-item { display: inline-flex; align-items: center; gap: .4rem; }
+.lg-dot {
+  width: 8px; height: 8px;
+  background: currentColor;
+  display: inline-block;
+}
+.lg-item.cat-deteccion    { color: var(--cat-deteccion); }
+.lg-item.cat-forense      { color: var(--cat-forense); }
+.lg-item.cat-inteligencia { color: var(--cat-inteligencia); }
+.lg-item.cat-recuperacion { color: var(--cat-recuperacion); }
+.lg-item { color: var(--muted); }  /* texto base muted */
+.lg-item .lg-dot              { background: var(--muted); }
+.lg-item.cat-deteccion .lg-dot    { background: var(--cat-deteccion); }
+.lg-item.cat-forense .lg-dot      { background: var(--cat-forense); }
+.lg-item.cat-inteligencia .lg-dot { background: var(--cat-inteligencia); }
+.lg-item.cat-recuperacion .lg-dot { background: var(--cat-recuperacion); }
+
+/* ── Grid ── */
+.tk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: .7rem;
+}
+
+/* ── Card ── */
+.toolkit-card {
+  position: relative;
+  padding: .75rem .85rem .8rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: .45rem;
+  min-height: 215px;
+  transition: border-color .18s ease, transform .18s ease,
+              box-shadow .18s ease, background .18s ease;
+}
+/* Rail izquierdo por categoría */
+.toolkit-card.cat-deteccion    { border-left-color: var(--cat-deteccion); }
+.toolkit-card.cat-forense      { border-left-color: var(--cat-forense); }
+.toolkit-card.cat-inteligencia { border-left-color: var(--cat-inteligencia); }
+.toolkit-card.cat-recuperacion { border-left-color: var(--cat-recuperacion); }
+
+/* Estado base: disponible */
+.toolkit-card:not(.tool-purchased):not(.tool-locked):hover {
+  transform: translateY(-1px);
+  border-color: var(--text);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.04), 0 4px 14px rgba(0,0,0,.25);
+}
+.toolkit-card:not(.tool-purchased):not(.tool-locked)::after {
+  /* Scanline interno sutil — refuerza estética terminal */
+  content: "";
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0 2px,
+    rgba(255,255,255,.012) 2px 3px
+  );
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Estado: bloqueada (sin presupuesto) */
+.toolkit-card.tool-locked {
+  opacity: .55;
+  background:
+    repeating-linear-gradient(135deg, transparent 0 7px, rgba(192,57,43,.045) 7px 8px),
+    var(--bg);
+  border-color: var(--border);
+}
+.toolkit-card.tool-locked .tk-icon { opacity: .35; }
+
+/* Estado: adquirida */
+.toolkit-card.tool-purchased {
+  background:
+    linear-gradient(135deg, rgba(46,158,96,.10), var(--bg) 55%);
+  border-color: var(--cat-recuperacion);
+  border-left-color: var(--cat-recuperacion);
+}
+.toolkit-card.tool-purchased::before {
+  content: "ADQUIRIDA";
+  position: absolute;
+  top: 8px; right: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: .48rem;
+  letter-spacing: .16em;
+  color: var(--cat-recuperacion);
+  border: 1px solid var(--cat-recuperacion);
+  padding: 2px 5px;
+  background: rgba(46,158,96,.08);
+  border-radius: 2px;
+}
+
+/* ── Card internals ── */
+.tk-cat-row {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+}
+.tk-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.tk-icon svg { width: 100%; height: 100%; display: block; }
+.cat-deteccion    .tk-icon { color: var(--cat-deteccion); }
+.cat-forense      .tk-icon { color: var(--cat-forense); }
+.cat-inteligencia .tk-icon { color: var(--cat-inteligencia); }
+.cat-recuperacion .tk-icon { color: var(--cat-recuperacion); }
+
+.tk-cat {
+  font-family: 'DM Mono', monospace;
+  font-size: .58rem;
+  letter-spacing: .15em;
+  color: var(--text);
+  opacity: .72;
+  text-transform: uppercase;
+}
+.tk-name {
+  font-weight: 600;
+  font-size: .9rem;
+  color: var(--text);
+  line-height: 1.3;
+}
+.tk-desc {
+  font-size: .74rem;
+  line-height: 1.5;
+  color: var(--muted);
+  margin-top: -.1rem;
+  /* Mantiene la card vertical homogénea cuando la descripción es corta */
+  min-height: 3em;
+}
+.tk-cost {
+  font-family: 'DM Mono', monospace;
+  color: var(--gold);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  margin-top: auto;
+}
+.tk-cost::before {
+  content: ""; /* fmt() ya incluye '$' */
+}
+
+/* ── Buy button ── */
+.tk-buy {
+  background: var(--info);
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  padding: .5rem .65rem;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  letter-spacing: .12em;
+  font-weight: 600;
+  transition: opacity .15s, background .15s, transform .1s;
+  margin-top: .25rem;
+}
+.tk-buy:hover:not(:disabled) {
+  opacity: .9;
+  transform: translateY(-1px);
+}
+.tk-buy:active:not(:disabled) {
+  transform: translateY(0);
+}
+.tk-buy:disabled {
+  cursor: default;
+  opacity: 1;
+}
+/* Botón adquirida */
+.tool-purchased .tk-buy {
+  background: transparent;
+  color: var(--cat-recuperacion);
+  border: 1px solid var(--cat-recuperacion);
+}
+/* Botón bloqueada */
+.tool-locked .tk-buy {
+  background: transparent;
+  color: var(--accent, #e05c5c);
+  border: 1px dashed var(--accent, #e05c5c);
+  opacity: .8;
+}
+
+/* ══════════════════════════════════════════
+   Stage timer (topbar)
+   ══════════════════════════════════════════ */
+.stage-timer {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .35rem .65rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: .78rem;
+  color: var(--text);
+  min-width: 78px;
+  justify-content: center;
+  transition: border-color .2s, color .2s, background .2s;
+}
+.stage-timer .st-icon { opacity: .65; }
+.stage-timer.timer-warn {
+  border-color: var(--gold);
+  color: var(--gold);
+  animation: stagetimer-pulse 1s ease-in-out infinite;
+}
+.stage-timer.timer-over {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(192, 57, 43, .07);
+}
+@keyframes stagetimer-pulse {
+  50% { opacity: .55; }
+}
+
+/* ══════════════════════════════════════════
+   Eficiencia (medalla final)
+   ══════════════════════════════════════════ */
+.eff-stars {
+  display: inline-flex;
+  gap: .12rem;
+  font-size: 1.45rem;
+  line-height: 1;
+  color: var(--gold);
+}
+.eff-stars .eff-empty { color: var(--border); }
+
+/* ══════════════════════════════════════════
+   Facilitator: mini row con tools + tiempo
+   ══════════════════════════════════════════ */
+.fac-mini-row {
+  display: flex;
+  justify-content: space-between;
+  gap: .65rem;
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  color: var(--muted);
+  margin-top: .5rem;
+  padding-top: .5rem;
+  border-top: 1px dashed var(--border);
+}

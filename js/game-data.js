@@ -39,6 +39,7 @@ export const STAGES = [
       sub:'Lanzar un escaneo de emergencia con el antivirus corporativo en los equipos afectados',
       cost:10000, hours:4,
       type:'trap', typeLabel:'TRAMPA', repCost:5,
+      correctTools:['iocfeed'],
       consequence:'El escaneo destruye la evidencia digital forense. Al intentar eliminar el malware, este activa un módulo de robo de credenciales que captura las claves nuevas generadas durante el proceso. No se logra contener el ataque.',
       waitStory:'Las herramientas del antivirus no distinguen entre un archivo legítimo y evidencia digital crítica. En cuestión de minutos, los logs de memoria que identificaban al atacante fueron sobrescritos sin posibilidad de recuperación. El equipo forense llega más tarde y encuentra el escenario destruido: sin huellas, sin vector de entrada, sin rastro del malware original.\n\nPero hay algo peor. Durante el escaneo, el módulo de robo de credenciales integrado en el ransomware se activó silenciosamente. Las nuevas contraseñas generadas por el proceso de "limpieza" —las que el equipo usó pensando que estaban protegidas— ya están en manos del atacante. Sin saberlo, acaban de entregarle acceso con credenciales válidas al perímetro interno del banco.\n\nEl próximo ciclo comenzará en caos total: sin evidencia forense, con credenciales comprometidas y con el atacante posicionado mucho más adentro de lo que nadie sabe todavía. Cada decisión del siguiente stage será exponencialmente más costosa. Piensen bien cómo quieren usar los recursos que les quedan.',
       branchNote:'→ Stage 2, Contexto B (caos activo)',
@@ -49,6 +50,7 @@ export const STAGES = [
       sub:'Apagar toda la infraestructura bancaria como medida de contención total',
       cost:2000000, hours:2,
       type:'trap', typeLabel:'TRAMPA DE PÁNICO', repCost:15,
+      correctTools:['backupverify'],
       consequence:'El apagón masivo causa un lucro cesante millonario injustificado. Al no haber investigado, no se sabe si era necesario. Además el Core Bancario se corrompe parcialmente durante el apagado de emergencia.',
       waitStory:'El apagón masivo detuvo todos los sistemas en 0.3 segundos. También detuvo: las 847 transacciones en vuelo del viernes, el sistema de nómina que procesaría pagos el sábado, y los procesos de cierre del día que garantizaban la integridad contable. El lucro cesante de dos horas de downtime bancario superó los $2,000,000 —sin que hubiera siquiera confirmación de si el ataque era real.\n\nSin evidencia previa, el equipo no sabe qué cifrar, qué restaurar ni por dónde empezar. El Core Bancario, al cortarle el suministro sin un proceso de apagado limpio, reporta sectores corrompidos en las tablas de transacciones. Los técnicos pasan las siguientes horas intentando entender qué pasó, mientras el atacante —que sí lo sabe— tiene tiempo de sobra para reorganizarse.\n\nLlegan al próximo ciclo sin información, sin evidencia y con millones ya gastados. Recuerden: en una crisis de ciberseguridad, actuar sin datos es casi siempre peor que no actuar. El siguiente stage los pondrá frente a decisiones donde la información es todavía más escasa.',
       branchNote:'→ Stage 2, Contexto B (caos y sin evidencia)',
@@ -59,6 +61,7 @@ export const STAGES = [
       sub:'Aislar los segmentos afectados, capturar imagen de RAM y preservar evidencia forense',
       cost:50000, hours:6,
       type:'correct', typeLabel:'CORRECTA', repCost:0,
+      correctTools:['edr','siem','memforensics'],
       consequence:'El equipo asegura evidencia digital valiosa. El análisis de RAM revela el ransomware activo. El Core Bancario queda protegido en un segmento aislado. Tienen evidencia para actuar en el Stage 2.',
       waitStory:'En las primeras seis horas, el equipo ejecutó el manual correctamente. Los segmentos afectados quedaron aislados con reglas de firewall de emergencia sin afectar el Core. La imagen RAM capturada a las 10:47 AM preservó el estado completo del malware en ejecución: su proceso madre, sus conexiones de red activas y —crucialmente— la clave de cifrado en memoria antes de que el malware la borrara automáticamente.\n\nEl análisis preliminar confirma: es LockBit 3.0, variante modificada. El vector de entrada fue una herramienta de Inteligencia Artificial descargada por un desarrollador del área de TI desde un sitio de terceros. La herramienta prometía acelerar tareas de desarrollo con IA generativa. Al ejecutarse con los permisos elevados que el desarrollador tenía por su rol, depositó silenciosamente el payload de LockBit en el sistema de archivos corporativo hace 18 días. El malware estuvo en modo sigiloso hasta activarse el viernes por la mañana. El equipo forense tiene ahora un perfil técnico completo del atacante y el origen exacto de la brecha.\n\nEntran al siguiente ciclo con ventaja táctica real: evidencia sólida, Core a salvo y tiempo para actuar con inteligencia. Pero la nota de rescate llegará pronto. La pregunta no es si van a recibir una extorsión —es qué harán cuando los números sean astronómicos y el reloj esté corriendo. Piensen cómo quieren manejar esa conversación.',
       branchNote:'→ Stage 2, Contexto A (evidencia asegurada)',
@@ -69,6 +72,7 @@ export const STAGES = [
       sub:'Contratar un negociador de rescate antes de saber si hay un ataque de ransomware activo',
       cost:300000, hours:8,
       type:'trap', typeLabel:'PREMATURA', repCost:5,
+      correctTools:['threatintel'],
       consequence:'Gastan recursos sin que haya una nota de rescate todavía. El negociador no tiene nada con qué trabajar. El malware sigue propagándose durante las 8 horas que tardó en llegar el negociador.',
       waitStory:'El negociador llegó cargando un maletín y sin nada con qué trabajar. No había nota de rescate. No había contacto del atacante. No había datos cifrados confirmados. El equipo pasó 8 horas en una sala de conferencias sin información útil, mientras el malware seguía propagándose silenciosamente por los servidores del banco.\n\nAl final de las ocho horas, el negociador facturó sus honorarios. El malware había avanzado hacia los servidores de archivos corporativos y estaba sondeando el segmento de datos de clientes. Los $300,000 gastados fueron, en esencia, tiempo de propagación pagado. El atacante usó esas 8 horas para fortalecer su posición dentro de la red.\n\nEl próximo stage comienza con recursos comprometidos y el atacante en posición mucho más sólida. Cuando llegue la nota de rescate, el monto reflejará exactamente cuánto avanzó el ataque durante esas horas. Un negociador es una herramienta útil —pero solo cuando hay algo que negociar. La secuencia de las acciones importa tanto como las acciones mismas.',
       branchNote:'→ Stage 2, Contexto B (recursos desperdiciados)',
@@ -79,6 +83,7 @@ export const STAGES = [
       sub:'Adquirir e instalar una solución de Endpoint Detection & Response de emergencia',
       cost:150000, hours:18,
       type:'trap', typeLabel:'PREMATURA', repCost:5,
+      correctTools:['edr'],
       consequence:'La instalación del EDR tarda 18 horas. Durante ese tiempo el ataque avanza sin freno. El EDR queda operativo cuando ya es tarde para la fase de infección inicial. Falsa sensación de seguridad.',
       waitStory:'Dieciocho horas. Ese fue el tiempo que tardó el equipo de instalación del EDR en licenciar el software, desplegarlo en los 847 endpoints del banco, configurar las reglas de detección y validar la consola central. Dieciocho horas en las que el ransomware trabajó completamente sin obstáculos, con acceso libre a toda la red interna.\n\nEl EDR quedó operativo a las 4:00 AM del sábado —precisamente cuando el malware había completado su misión de cifrado. Las primeras alertas que generó la nueva herramienta documentaban un ataque ya consumado: 23,000 archivos cifrados, 4 servidores comprometidos, y una nota de rescate activa desde la medianoche. La herramienta funcionaba perfectamente. Solo que llegó tarde.\n\nEl próximo stage comienza con una plataforma de detección impecable y nada útil que detectar. El dinero gastado en el EDR no tiene retorno inmediato —aunque podría tener valor en stages futuros si el equipo sabe usarlo. Lo que no puede recuperarse son las 18 horas de ventana donde el ataque avanzó sin respuesta. Piensen en qué pueden hacer todavía con los recursos que les quedan.',
       branchNote:'→ Stage 2, Contexto B (ataque avanzó sin contención)',
@@ -469,15 +474,23 @@ export function applyDecision(groupState, stageIndex, optionIndex) {
   const opt = s.options[optionIndex];
   const ctx = groupState.ctx;
 
-  const effectiveCost = (ctx === 'B' && opt.ctxBMultiplier)
+  let effectiveCost = (ctx === 'B' && opt.ctxBMultiplier)
     ? opt.cost * opt.ctxBMultiplier
     : opt.cost;
+
+  // ── Bonus por herramientas correctas ───────
+  const toolBonus = applyToolBonus(opt, groupState.tools_owned || []);
+  let effectiveHours = opt.hours;
+  if (toolBonus.matched > 0) {
+    effectiveCost  = Math.round(effectiveCost  * toolBonus.costMult);
+    effectiveHours = Math.round(effectiveHours * toolBonus.hoursMult);
+  }
 
   const newFlags = { ...groupState.flags };
   let budget   = groupState.budget   - effectiveCost;
   let costs    = groupState.costs    + effectiveCost;
   let penalties = groupState.penalties;
-  let hours    = groupState.hours    + opt.hours;
+  let hours    = groupState.hours    + effectiveHours;
   let reputation = Math.max(0, Math.min(100, (groupState.reputation ?? 100) - (opt.repCost ?? 0)));
 
   // Penalizaciones inmediatas
@@ -507,7 +520,8 @@ export function applyDecision(groupState, stageIndex, optionIndex) {
     ...groupState.decision_log,
     { stage: s.num, letter: opt.letter, text: opt.text,
       type: logType, typeLabel: opt.typeLabel,
-      cost: effectiveCost, hours: opt.hours }
+      cost: effectiveCost, hours: effectiveHours,
+      toolBonus: toolBonus.matched > 0 ? toolBonus : null }
   ];
 
   const newNotif = {
@@ -544,6 +558,104 @@ export function applyDecision(groupState, stageIndex, optionIndex) {
     isGameOver,
     isExtremeOutcome,
     opt,
-    effectiveCost
+    effectiveCost,
+    effectiveHours,
+    toolBonus
   };
+}
+
+// ══════════════════════════════════════════
+// TOOLKIT TÉCNICO — Herramientas por stage
+// ══════════════════════════════════════════
+// reveals = null  → herramienta silenciosamente inútil en este stage
+// reveals = {type,title,body} → al comprarla aparece como hint en Alertas
+// Inventario persistente: tools_owned se conserva entre stages
+export const STAGE_TOOLS = {
+  // Stage 1 (índice 0)
+  0: [
+    { id:'edr',          name:'EDR (Endpoint Detection)',     cost: 80000,  category:'Detección',
+      description:'Como una cámara de seguridad para cada computador del banco. Detecta comportamientos sospechosos en tiempo real.',
+      reveals:{ type:'info', title:'// EDR — Procesos activos',
+                body:'Detectado un binario firmado por un certificado no confiable ejecutándose con privilegios elevados en una estación de TI. Patrón consistente con LockBit en fase de cifrado.' } },
+    { id:'siem',         name:'SIEM (Correlación de logs)',   cost: 60000,  category:'Detección',
+      description:'Sala de monitoreo central que junta todas las alarmas del banco en un solo tablero para ver qué está pasando.',
+      reveals:{ type:'info', title:'// SIEM — Movimiento lateral',
+                body:'No se observa propagación hacia el segmento del Core Bancario. La actividad maliciosa está confinada al segmento de TI y archivos corporativos.' } },
+    { id:'memforensics', name:'Forensia de Memoria (RAM)',    cost: 120000, category:'Forense',
+      description:'Toma una fotografía completa de lo que un computador está haciendo ahora mismo, antes de que esa evidencia se borre.',
+      reveals:{ type:'info', title:'// FORENSIA — Vector de entrada',
+                body:'En la imagen de memoria de la estación origen aparece un proceso "ai-helper.exe" cargado desde la carpeta de usuario de un desarrollador. Firma digital no oficial. Ejecutado hace 18 días.' } },
+    { id:'sandbox',      name:'Sandbox de Análisis',          cost: 40000,  category:'Forense',
+      description:'Cuarto aislado donde se abre un archivo sospechoso sin riesgo para el banco, para ver qué hace realmente.',
+      reveals:{ type:'info', title:'// SANDBOX — Familia de malware',
+                body:'Detonación controlada confirma: LockBit 3.0 variante modificada. Capacidades: cifrado AES-256, doble extorsión, exfiltración previa al cifrado.' } },
+    { id:'threatintel',  name:'Threat Intel Feed',            cost: 50000,  category:'Inteligencia',
+      description:'Reporte de inteligencia externo: quién está atacando últimamente, cómo opera y qué suele pedir.',
+      reveals:{ type:'info', title:'// THREAT INTEL — Perfil del actor',
+                body:'TTP coincide con grupo conocido. Rescate típico: 1.5–3 USD por endpoint cifrado. Pago no garantiza desencriptado funcional (40% de casos con pérdida parcial reportada).' } },
+    { id:'iocfeed',      name:'IOC Feed (hashes/IPs)',        cost: 30000,  category:'Inteligencia',
+      description:'Lista de huellas digitales conocidas de atacantes (direcciones de internet, archivos peligrosos, patrones).',
+      reveals:null },
+    { id:'netcapture',   name:'Network Capture',              cost: 70000,  category:'Detección',
+      description:'Caja negra de la red: graba todo el tráfico que entra y sale del banco para revisarlo después.',
+      reveals:null },
+    { id:'backupverify', name:'Verificación Backup Offline',  cost: 100000, category:'Recuperación',
+      description:'Confirma que las copias de respaldo están sanas y se pueden usar para restaurar el banco si algo se cifra.',
+      reveals:{ type:'info', title:'// BACKUPS — Estado verificado',
+                body:'Backups offline de las últimas 72h íntegros y verificados. Restauración del Core Bancario viable en ~12h si se requiere. Aislamiento físico confirmado.' } },
+  ],
+  // Stages 2–4 (índices 1–3): pendientes para iteración siguiente
+};
+
+// Buscar una herramienta por id en CUALQUIER stage (inventario persistente)
+export function findTool(toolId) {
+  for (const stageIdx of Object.keys(STAGE_TOOLS)) {
+    const t = STAGE_TOOLS[stageIdx].find(x => x.id === toolId);
+    if (t) return t;
+  }
+  return null;
+}
+
+// Aplica multiplicadores de costo/horas según herramientas que respaldan la opción
+export function applyToolBonus(opt, toolsOwned) {
+  const required = opt?.correctTools || [];
+  if (!required.length || !toolsOwned?.length) {
+    return { costMult: 1, hoursMult: 1, matched: 0, total: required.length };
+  }
+  const matched = required.filter(t => toolsOwned.includes(t)).length;
+  const ratio   = matched / required.length;
+  return {
+    costMult:  1 - (0.15 * ratio),
+    hoursMult: 1 - (0.10 * ratio),
+    matched, total: required.length
+  };
+}
+
+// Tiempos objetivo por stage en segundos (1-indexed para legibilidad)
+export const STAGE_TIME_TARGETS = { 1: 1080, 2: 720, 3: 420, 4: 240, 5: 120 };
+
+// Calcula el score de eficiencia (0–100) según tiempos por stage e inventario inútil
+export function computeEfficiencyScore(stageDurations = {}, toolsOwned = []) {
+  let score = 100;
+  for (const [stage, secs] of Object.entries(stageDurations)) {
+    const target = STAGE_TIME_TARGETS[stage] || 600;
+    const over   = Math.max(0, Number(secs) - target);
+    score -= Math.floor(over / 30);  // -1 punto por cada 30s sobre el target
+  }
+  // -2 puntos por cada herramienta sin reveals (silenciosamente inútil)
+  const wasted = (toolsOwned || []).filter(id => {
+    const t = findTool(id);
+    return t && !t.reveals;
+  }).length;
+  score -= wasted * 2;
+  return Math.max(0, Math.min(100, score));
+}
+
+// Mapea score → estrellas (1–5)
+export function efficiencyStars(score) {
+  if (score >= 90) return 5;
+  if (score >= 75) return 4;
+  if (score >= 60) return 3;
+  if (score >= 40) return 2;
+  return 1;
 }

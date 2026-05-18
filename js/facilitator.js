@@ -110,9 +110,14 @@ async function loadGroups() {
 // ── Controles ────────────────────────────────
 async function startSession() {
   if (!session) return;
+  const nowIso = new Date().toISOString();
   await supabase.from('sessions')
-    .update({ status: 'active', updated_at: new Date().toISOString() })
+    .update({ status: 'active', updated_at: nowIso })
     .eq('id', sessionId);
+  // Arrancar cronómetro del Stage 1 en todos los grupos
+  await supabase.from('groups')
+    .update({ stage_start_at: nowIso, updated_at: nowIso })
+    .eq('session_id', sessionId);
 }
 
 async function advanceStage() {
@@ -136,10 +141,11 @@ async function advanceStage() {
   if (activeGroupIds.length) {
     await supabase.from('groups')
       .update({
-        stage:         next,
-        chosen_option: null,
-        revealed:      false,
-        updated_at:    new Date().toISOString()
+        stage:           next,
+        chosen_option:   null,
+        revealed:        false,
+        stage_start_at:  new Date().toISOString(),
+        updated_at:      new Date().toISOString()
       })
       .in('id', activeGroupIds);
   }
@@ -177,12 +183,16 @@ async function resetSession() {
           flags:         { backupsDestroyed: false, openedMonday: false, paidRansom: false,
                            silentCorp: false, laborLawsuit: false, licenseRevoked: false,
                            pendingPenalties: [] },
-          decision_log:  [],
-          notif_log:     [],
-          chosen_option: null,
-          revealed:      false,
-          final_state:   null,
-          updated_at:    new Date().toISOString()
+          decision_log:    [],
+          notif_log:       [],
+          chosen_option:   null,
+          revealed:        false,
+          final_state:     null,
+          tools_owned:     [],
+          stage_start_at:  null,
+          stage_durations: {},
+          efficiency_score: 100,
+          updated_at:      new Date().toISOString()
         })
         .eq('id', g.id);
     }
@@ -207,6 +217,16 @@ function renderAll() {
   renderDecisionProgress();
   renderResults();
 }
+
+// Refresh stage timer in group cards once per second
+setInterval(() => {
+  if (!groups || !session || session.status !== 'active') return;
+  document.querySelectorAll('[data-group-elapsed]').forEach(el => {
+    const gid = el.getAttribute('data-group-elapsed');
+    const g   = groups.find(x => x.id === gid);
+    if (g) el.textContent = '⏱ ' + formatStageElapsed(g);
+  });
+}, 1000);
 
 function renderStatus() {
   const el   = document.getElementById('facStatus');
@@ -351,8 +371,21 @@ function buildGroupCard(g) {
       </div>
     </div>
 
+    <div class="fac-mini-row">
+      <span title="Herramientas adquiridas">🛠 ${(g.tools_owned || []).length}</span>
+      <span data-group-elapsed="${g.id}" title="Tiempo en el stage actual">⏱ ${formatStageElapsed(g)}</span>
+    </div>
+
     <div class="fac-decision-state ${dsClass}">${dsText}</div>
   </div>`;
+}
+
+function formatStageElapsed(g) {
+  if (!g.stage_start_at) return '--:--';
+  const elapsed = Math.max(0, Math.floor((Date.now() - new Date(g.stage_start_at).getTime()) / 1000));
+  const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+  const s = String(elapsed % 60).padStart(2, '0');
+  return `${m}:${s}`;
 }
 
 // ── Resultados finales ───────────────────────

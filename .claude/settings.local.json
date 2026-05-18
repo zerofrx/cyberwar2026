@@ -3,7 +3,14 @@
     "allow": [
       "mcp__supabase__execute_sql",
       "mcp__Claude_Preview__preview_start",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(node --check js/group.js)",
+      "Bash(node --check js/facilitator.js)",
+      "Bash(grep -n \"game-data\\\\|STAGES\\\\|STAGE_TOOLS\" index.html)",
+      "Bash(grep -n \"game-data\\\\|STAGES\\\\|STAGE_TOOLS\" splash.html)",
+      "Bash(python -m http.server 8765)",
+      "Bash(echo \"Server PID: $!\")",
+      "Bash(curl -s http://localhost:8765/group.html)"
     ]
   },
   "enableAllProjectMcpServers": true,

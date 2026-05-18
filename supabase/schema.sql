@@ -59,6 +59,12 @@ CREATE TABLE IF NOT EXISTS groups (
   -- Reputación institucional (0–100)
   reputation    SMALLINT NOT NULL DEFAULT 100,
 
+  -- Toolkit técnico + timer por stage + puntaje de eficiencia
+  tools_owned       JSONB       NOT NULL DEFAULT '[]'::jsonb,
+  stage_start_at    TIMESTAMPTZ,
+  stage_durations   JSONB       NOT NULL DEFAULT '{}'::jsonb,
+  efficiency_score  SMALLINT    NOT NULL DEFAULT 100,
+
   -- Resultado final
   final_state   TEXT  DEFAULT NULL,              -- LEVE | MEDIO | GRAVE | CRÍTICO
   final_budget  BIGINT DEFAULT NULL,

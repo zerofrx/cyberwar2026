@@ -5,7 +5,9 @@
 
 import { supabase }                          from './supabase-client.js';
 import { STAGES, BUDGET_INIT, HOURS_LIMIT,
-         fmt, applyDecision, computeStage5State } from './game-data.js';
+         fmt, applyDecision, computeStage5State,
+         STAGE_TOOLS, STAGE_TIME_TARGETS, findTool,
+         computeEfficiencyScore, efficiencyStars } from './game-data.js';
 
 // ── Parsear URL params ───────────────────────
 const params    = new URLSearchParams(location.search);
@@ -218,9 +220,12 @@ function renderStage() {
     html += buildIncidentCard(s, variant, null);
   }
 
+  html += buildToolkitPanel();
   html += buildDecisionCard(s, ctx);
   main.innerHTML = html;
   renderRoundIndicator();
+  ensureStageStartAt();
+  startStageTimer();
 
   // Restaurar selección si el líder ya eligió
   if (group.chosen_option !== null && group.chosen_option !== undefined) {
@@ -250,6 +255,179 @@ function renderStage() {
       document.getElementById('confirmBtn').disabled   = true;
     }
   }
+}
+
+// ── Toolkit técnico ───────────────────────────
+const TOOL_CAT_SLUG = {
+  'Detección':     'deteccion',
+  'Forense':       'forense',
+  'Inteligencia':  'inteligencia',
+  'Recuperación':  'recuperacion'
+};
+const TOOL_CAT_ICON = {
+  deteccion:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></svg>',
+  forense:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5L20 20"/><path d="M7 10h6M10 7v6"/></svg>',
+  inteligencia:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 12l10-5M7 12l10 5"/></svg>',
+  recuperacion:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>'
+};
+
+function buildToolkitPanel() {
+  const tools = STAGE_TOOLS[group.stage] || [];
+  if (!tools.length) return '';
+  const owned = group.tools_owned || [];
+  const locked = !IS_LEADER;
+
+  const cards = tools.map(t => {
+    const slug      = TOOL_CAT_SLUG[t.category] || 'deteccion';
+    const icon      = TOOL_CAT_ICON[slug] || '';
+    const isOwned   = owned.includes(t.id);
+    const canAfford = group.budget >= t.cost;
+    const isLocked  = !isOwned && !canAfford;
+    const cls = [
+      'toolkit-card',
+      `cat-${slug}`,
+      isOwned ? 'tool-purchased' : '',
+      isLocked ? 'tool-locked' : ''
+    ].filter(Boolean).join(' ');
+
+    return `
+      <div class="${cls}">
+        <div class="tk-cat-row">
+          <span class="tk-icon">${icon}</span>
+          <span class="tk-cat">${t.category}</span>
+        </div>
+        <div class="tk-name">${t.name}</div>
+        ${t.description ? `<div class="tk-desc">${t.description}</div>` : ''}
+        <div class="tk-cost">${fmt(t.cost)}</div>
+        <button class="tk-buy" data-tool="${t.id}"
+          ${(isOwned || locked || !canAfford) ? 'disabled' : ''}
+          ${IS_LEADER && !isOwned && canAfford ? `onclick="purchaseTool('${t.id}')"` : ''}>
+          ${isOwned ? '✓ ADQUIRIDA' : (canAfford ? 'COMPRAR' : 'SIN PRESUPUESTO')}
+        </button>
+      </div>`;
+  }).join('');
+
+  return `
+  <section class="toolkit-panel">
+    <div class="tk-header">
+      <div class="tk-title-row">
+        <div class="tk-title">// TOOLKIT SOC</div>
+        <div class="tk-budget">PRESUPUESTO <span>${fmt(group.budget)}</span></div>
+      </div>
+      <div class="tk-sub">${IS_LEADER
+        ? 'Compra herramientas para revelar inteligencia. Las que no aplican a este escenario no devuelven información.'
+        : 'El CISO decide qué herramientas compra el equipo. Las pistas reveladas aparecen en Alertas.'}</div>
+      <div class="tk-legend">
+        <span class="lg-item cat-deteccion"><span class="lg-dot"></span>DETECCIÓN</span>
+        <span class="lg-item cat-forense"><span class="lg-dot"></span>FORENSE</span>
+        <span class="lg-item cat-inteligencia"><span class="lg-dot"></span>INTELIGENCIA</span>
+        <span class="lg-item cat-recuperacion"><span class="lg-dot"></span>RECUPERACIÓN</span>
+      </div>
+    </div>
+    <div class="tk-grid">${cards}</div>
+  </section>`;
+}
+
+window.purchaseTool = async function(toolId) {
+  if (!IS_LEADER) return;
+  const tool = (STAGE_TOOLS[group.stage] || []).find(t => t.id === toolId);
+  if (!tool) return;
+  const owned = group.tools_owned || [];
+  if (owned.includes(toolId)) return;
+  if (group.budget < tool.cost) return;
+
+  const newOwned  = [...owned, toolId];
+  const newBudget = group.budget - tool.cost;
+  const newCosts  = (group.costs || 0) + tool.cost;
+  const newNotif  = [...(group.notif_log || [])];
+
+  if (tool.reveals) {
+    newNotif.push({
+      type: tool.reveals.type || 'info',
+      title: tool.reveals.title,
+      body: tool.reveals.body,
+      stage: group.stage
+    });
+  } else {
+    newNotif.push({
+      type: 'warn',
+      title: `// ${tool.name} — Sin hallazgos`,
+      body: 'La herramienta no devolvió información útil para este escenario.',
+      stage: group.stage
+    });
+  }
+
+  await supabase.from('groups').update({
+    tools_owned: newOwned,
+    budget:      newBudget,
+    costs:       newCosts,
+    notif_log:   newNotif,
+    updated_at:  new Date().toISOString()
+  }).eq('id', GROUP_ID);
+};
+
+// ── Stage timer ───────────────────────────────
+let _stageTimerInterval = null;
+
+async function ensureStageStartAt() {
+  if (group.stage_start_at) return;
+  // Marca el inicio del stage. Pequeña carrera entre roles tolerable
+  // gracias a la cláusula .is('stage_start_at', null).
+  const nowIso = new Date().toISOString();
+  const { data, error } = await supabase
+    .from('groups')
+    .update({ stage_start_at: nowIso })
+    .eq('id', GROUP_ID)
+    .is('stage_start_at', null)
+    .select()
+    .maybeSingle();
+  if (data) {
+    group = { ...group, stage_start_at: data.stage_start_at };
+  }
+}
+
+function startStageTimer() {
+  clearInterval(_stageTimerInterval);
+  const el = document.getElementById('stageTimerVal');
+  const wrap = document.getElementById('stageTimer');
+  if (!el || !wrap) return;
+
+  const tick = () => {
+    if (!group?.stage_start_at) { el.textContent = '--:--'; return; }
+    const startMs = new Date(group.stage_start_at).getTime();
+    const targetSec = STAGE_TIME_TARGETS[group.stage + 1] || 600;
+    const elapsedSec = Math.floor((Date.now() - startMs) / 1000);
+    const remainSec  = targetSec - elapsedSec;
+
+    if (remainSec >= 0) {
+      const m = String(Math.floor(remainSec / 60)).padStart(2, '0');
+      const s = String(remainSec % 60).padStart(2, '0');
+      el.textContent = `${m}:${s}`;
+      wrap.classList.toggle('timer-warn', remainSec < 120);
+      wrap.classList.remove('timer-over');
+    } else {
+      const over = -remainSec;
+      const m = String(Math.floor(over / 60)).padStart(2, '0');
+      const s = String(over % 60).padStart(2, '0');
+      el.textContent = `+${m}:${s}`;
+      wrap.classList.add('timer-over');
+      wrap.classList.remove('timer-warn');
+    }
+  };
+  tick();
+  _stageTimerInterval = setInterval(tick, 1000);
+}
+
+function stopStageTimer() {
+  clearInterval(_stageTimerInterval);
+  _stageTimerInterval = null;
+  const wrap = document.getElementById('stageTimer');
+  if (wrap) wrap.classList.remove('timer-warn', 'timer-over');
+}
+
+function elapsedStageSeconds() {
+  if (!group?.stage_start_at) return 0;
+  return Math.max(0, Math.floor((Date.now() - new Date(group.stage_start_at).getTime()) / 1000));
 }
 
 function buildIncidentCard(s, variant, state5) {
@@ -432,39 +610,45 @@ window.confirmDecision = async function() {
 
   const result = applyDecision(group, group.stage, chosen);
 
+  // Persistir duración del stage actual
+  const elapsed = elapsedStageSeconds();
+  const newDurations = { ...(group.stage_durations || {}), [group.stage + 1]: elapsed };
+
   if (result.isGameOver) {
     // Game Over — actualizar estado y mostrar pantalla
     await supabase.from('groups').update({
-      budget:       result.budget,
-      costs:        result.costs,
-      penalties:    result.penalties,
-      hours:        result.hours,
-      reputation:   result.reputation,
-      flags:        result.flags,
-      decision_log: result.decision_log,
-      notif_log:    result.notif_log,
-      final_state:  'game_over',
-      revealed:     true,
-      updated_at:   new Date().toISOString()
+      budget:           result.budget,
+      costs:            result.costs,
+      penalties:        result.penalties,
+      hours:            result.hours,
+      reputation:       result.reputation,
+      flags:            result.flags,
+      decision_log:     result.decision_log,
+      notif_log:        result.notif_log,
+      stage_durations:  newDurations,
+      final_state:      'game_over',
+      revealed:         true,
+      updated_at:       new Date().toISOString()
     }).eq('id', GROUP_ID);
     return;
   }
 
   // Aplicar decisión y marcar revealed=true
   await supabase.from('groups').update({
-    budget:        result.budget,
-    costs:         result.costs,
-    penalties:     result.penalties,
-    hours:         result.hours,
-    reputation:    result.reputation,
-    flags:         result.flags,
-    decision_log:  result.decision_log,
-    notif_log:     result.notif_log,
-    ctx:           result.nextCtx,
-    revealed:      true,
+    budget:           result.budget,
+    costs:            result.costs,
+    penalties:        result.penalties,
+    hours:            result.hours,
+    reputation:       result.reputation,
+    flags:            result.flags,
+    decision_log:     result.decision_log,
+    notif_log:        result.notif_log,
+    stage_durations:  newDurations,
+    ctx:              result.nextCtx,
+    revealed:         true,
     // Si extremeOutcome, saltar al stage 4
-    stage:         result.isExtremeOutcome ? 4 : group.stage,
-    updated_at:    new Date().toISOString()
+    stage:            result.isExtremeOutcome ? 4 : group.stage,
+    updated_at:       new Date().toISOString()
   }).eq('id', GROUP_ID);
 };
 
@@ -663,10 +847,20 @@ function showFinal() {
   const log     = group.decision_log || [];
   const correct = log.filter(l => l.type === 'correct').length;
   const traps   = log.filter(l => l.type === 'trap').length;
+  // ── Eficiencia (medalla) ───────────────
+  const effScore = computeEfficiencyScore(group.stage_durations || {}, group.tools_owned || []);
+  const stars    = efficiencyStars(effScore);
+  const starsHtml = Array.from({ length: 5 },
+    (_, i) => `<span class="${i < stars ? '' : 'eff-empty'}">★</span>`).join('');
+
   document.getElementById('finalStats').innerHTML = `
     <div class="fstat"><div class="fstat-val" style="color:var(--success)">${correct}</div><div class="fstat-lbl">Óptimas</div></div>
     <div class="fstat"><div class="fstat-val" style="color:var(--accent)">${traps}</div><div class="fstat-lbl">Trampas caídas</div></div>
-    <div class="fstat"><div class="fstat-val" style="color:var(--info)">${group.hours}h</div><div class="fstat-lbl">Horas usadas</div></div>`;
+    <div class="fstat"><div class="fstat-val" style="color:var(--info)">${group.hours}h</div><div class="fstat-lbl">Horas usadas</div></div>
+    <div class="fstat"><div class="fstat-val eff-stars">${starsHtml}</div><div class="fstat-lbl">Eficiencia (${effScore}/100)</div></div>`;
+
+  // Persistir score de eficiencia (best-effort)
+  supabase.from('groups').update({ efficiency_score: effScore }).eq('id', GROUP_ID).then(() => {});
 
   // ── Historia final ───────────────────────────
   const stories = {
