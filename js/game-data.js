@@ -39,7 +39,7 @@ export const STAGES = [
       sub:'Lanzar un escaneo de emergencia con el antivirus corporativo en los equipos afectados',
       cost:10000, hours:4,
       type:'trap', typeLabel:'TRAMPA', repCost:5,
-      correctTools:['iocfeed'],
+      correctTools:['sandbox'],
       consequence:'El escaneo destruye la evidencia digital forense. Al intentar eliminar el malware, este activa un módulo de robo de credenciales que captura las claves nuevas generadas durante el proceso. No se logra contener el ataque.',
       waitStory:'Las herramientas del antivirus no distinguen entre un archivo legítimo y evidencia digital crítica. En cuestión de minutos, los logs de memoria que identificaban al atacante fueron sobrescritos sin posibilidad de recuperación. El equipo forense llega más tarde y encuentra el escenario destruido: sin huellas, sin vector de entrada, sin rastro del malware original.\n\nPero hay algo peor. Durante el escaneo, el módulo de robo de credenciales integrado en el ransomware se activó silenciosamente. Las nuevas contraseñas generadas por el proceso de "limpieza" —las que el equipo usó pensando que estaban protegidas— ya están en manos del atacante. Sin saberlo, acaban de entregarle acceso con credenciales válidas al perímetro interno del banco.\n\nEl próximo ciclo comenzará en caos total: sin evidencia forense, con credenciales comprometidas y con el atacante posicionado mucho más adentro de lo que nadie sabe todavía. Cada decisión del siguiente stage será exponencialmente más costosa. Piensen bien cómo quieren usar los recursos que les quedan.',
       branchNote:'→ Stage 2, Contexto B (caos activo)',
@@ -123,6 +123,7 @@ export const STAGES = [
       sub:'Activar la restauración desde los últimos backups del sistema para recuperar los archivos',
       cost:0, hours:4,
       type:'trap', typeLabel:'TRAMPA', repCost:10,
+      correctTools:['backupverify'],
       consequence:'El ransomware tenía un módulo de persistencia en el servidor de backups. Al activar la restauración, cifra también los backups. Pierden la única copia de seguridad. Se aplica penalización de $1,000,000 al finalizar el juego.',
       waitStory:'Cuando el técnico ejecutó el comando de restauración, la sala quedó en silencio. Segundos después, los monitores comenzaron a mostrar barras de progreso que avanzaban demasiado rápido —demasiado rápido para ser una restauración real. El módulo de persistencia del ransomware, instalado semanas antes precisamente en el servidor de backups, se activó ante la actividad inusual y ejecutó su segunda fase de cifrado.\n\nEn 47 minutos, las doce semanas de backups disponibles quedaron cifradas. La única copia de seguridad del banco dejó de existir como tal. No hay recuperación posible sin los archivos originales en manos del atacante, que ahora tiene todavía más poder de negociación. Los backups son la última línea de defensa en una crisis de ransomware —y acaban de perderla.\n\nEl siguiente stage llega con una deuda invisible: $1,000,000 de penalización diferida que aparecerá en el resultado final. Más grave aún: sin backups, cualquier decisión de recuperación técnica en los stages siguientes será mucho más costosa y arriesgada. Antes de decidir en el próximo ciclo, piensen en lo que tienen disponible para recuperar. La respuesta puede sorprenderlos.',
       branchNote:'PENALIZACIÓN: -$1,000,000 al final. Backups destruidos.',
@@ -134,6 +135,7 @@ export const STAGES = [
       sub:'Aislar sectores y capturar evidencia aunque sea de forma tardía',
       cost:150000, hours:10,
       type:'recycled', typeLabel:'RECICLADA', repCost:5,
+      correctTools:['edr','siem'],
       consequence:'Si están en Contexto B: el costo se triplica a $450,000 por el trabajo extra de reconstruir evidencia destruida. Logran identificar el ransomware y pasan al siguiente stage con evidencia parcial.',
       waitStory:'Llegar tarde a la contención tiene su precio, pero el equipo demostró que un procedimiento correcto —aunque tardío— todavía puede salvar la situación. La imagen RAM parcial y los fragmentos de log recuperados permitieron al equipo forense reconstruir aproximadamente el 60% de la cadena de ataque. No es la evidencia ideal, pero es suficiente para trabajar con ella.\n\nSi venían del Contexto B, el costo fue significativamente mayor: reconstruir evidencia destruida requiere herramientas especializadas, tiempo en sala limpia y un peritaje externo que costó tres veces más de lo que habría costado hacerlo correctamente en el Stage 1. La factura refleja exactamente el precio de las decisiones anteriores: $300,000 de sobrecosto que no existiría si hubieran contenido primero.\n\nEntran al siguiente ciclo con evidencia parcial y el Core estabilizado. No es la posición ideal, pero es una posición gestionable. Recuerden que el próximo stage traerá presión mediática y regulatoria —y con evidencia parcial, la respuesta a esas preguntas será más difícil de dar. Piensen qué información tienen disponible y cómo pueden usarla.',
       branchNote:'→ Stage 3, Contexto A (evidencia recuperada, costo elevado si Ctx B)',
@@ -144,6 +146,7 @@ export const STAGES = [
       sub:'Contratar un equipo de Incident Response externo y negociar tiempo con el atacante',
       cost:50000, hours:8,
       type:'correct', typeLabel:'CORRECTA', repCost:0,
+      correctTools:['threatintel','negociador'],
       consequence:'El equipo IR congela el reloj de la extorsión. Ganan tiempo operativo. Mantienen el Core estable. El atacante acepta "negociar" —lo que da espacio para la respuesta técnica sin pagar nada.',
       waitStory:'El equipo de Incident Response llegó a la sede central a las 11:30 PM. Lo primero que hicieron fue abrir un canal de comunicación con el atacante —no para negociar el pago, sino para comprar tiempo técnico. "Necesitamos verificar internamente la disponibilidad de fondos", fue el mensaje. El atacante, acostumbrado a este intercambio, aceptó extender el plazo 24 horas.\n\nEsas 24 horas son oro puro. Mientras el equipo IR mantenía ocupado al atacante con comunicaciones deliberadamente lentas, el equipo técnico desplegó herramientas de análisis avanzado, identificó los vectores de propagación activos y bloqueó los canales de comando y control del ransomware. El Core Bancario quedó estabilizado detrás de un segmento temporal que el IR construyó en 4 horas. Sin pagar un solo centavo.\n\nEl siguiente stage comienza con tiempo comprado, Core estable y un equipo externo con experiencia real en ransomware bancario. Pero el tiempo comprado no es tiempo indefinido —el atacante tiene límites de paciencia. En el próximo ciclo llegará la presión regulatoria y mediática. Cómo responden a esas dos frentes simultáneamente determinará si la crisis se contiene o explota hacia otro lado.',
       branchNote:'→ Stage 3, Contexto A',
@@ -154,6 +157,7 @@ export const STAGES = [
       sub:'Pagar los $3,000,000 de rescate en Bitcoin sin notificar a las autoridades',
       cost:3000000, hours:2,
       type:'trap', typeLabel:'TRAMPA EJECUTIVA', repCost:25,
+      correctTools:['negociador'],
       consequence:'El pago es ilegal según la regulación financiera. El grupo ransomware recibe el pago pero envía una segunda nota exigiendo $2,000,000 adicionales —extorsión doble. El dinero se perdió y la situación empeoró.',
       waitStory:'Las 3,000 unidades de Bitcoin salieron de la billetera corporativa a las 2:17 AM del sábado. La transacción fue confirmada por la red blockchain en 12 minutos. El CEO esperaba recibir las claves de descifrado en las horas siguientes. En cambio, a las 3:05 AM llegó un nuevo correo al mismo canal: "Buen intento. Tenemos copias de los datos en servidores adicionales que no mencionamos. Precio final: $2,000,000 adicionales. Tienen 12 horas. Próxima filtración: datos de nómina de los últimos 3 años."\n\nLos $3,000,000 se fueron y no hay forma legal ni técnica de recuperarlos. El banco ahora es un objetivo conocido que paga —lo que lo convierte en blanco prioritario para ataques futuros del mismo grupo y de grupos que monitorean estos pagos en blockchain. Además, el pago de rescate sin notificación a las autoridades constituye una infracción regulatoria grave que el BCP tratará como agravante.\n\nEl siguiente stage llega con la segunda extorsión activa, una amenaza de filtración de datos de nómina y la ilegalidad del pago como contexto. Cada decisión del próximo ciclo cargará el peso de este doble error. Piensen cómo pueden recuperar algo de terreno cuando el margen financiero y regulatorio se ha reducido tanto.',
       branchNote:'→ Stage 3, Contexto B (ilegalidad + extorsión doble)',
@@ -164,6 +168,7 @@ export const STAGES = [
       sub:'Emitir un comunicado público a los 180,000 clientes antes de saber qué datos fueron comprometidos',
       cost:100000, hours:6,
       type:'trap', typeLabel:'PREMATURA', repCost:20,
+      correctTools:['legalbcp'],
       consequence:'Sin saber qué fue cifrado ni qué datos se vieron afectados, el comunicado genera alarma masiva. Se inicia una corrida bancaria digital. El regulador llama furioso. El daño reputacional multiplica la crisis.',
       waitStory:'El comunicado se publicó a las 6:00 AM del sábado con la mejor intención: transparencia proactiva. Para las 8:00 AM, el hashtag #MeridianHackeado tenía 47,000 menciones en redes sociales. Para las 10:00 AM, las líneas de atención al cliente estaban completamente saturadas. Para el mediodía, los cajeros automáticos registraban volúmenes de retiro ocho veces superiores al promedio de un sábado.\n\nEl problema no fue comunicar —fue comunicar sin información. El mensaje no pudo responder las preguntas básicas que cualquier cliente se haría: ¿Qué datos fueron afectados específicamente? ¿Están seguros mis ahorros? ¿El banco sigue operando? Sin respuestas concretas, los 180,000 clientes asumieron el peor escenario posible y actuaron en consecuencia. La corrida bancaria digital no fue causada por el ataque —fue causada por el comunicado prematuro.\n\nEl regulador llamó al CEO directamente a las 11:30 AM: "Esto no cumple el protocolo SGSI de manejo de incidentes." El siguiente stage llega con pánico en redes activo, el regulador en modo confrontacional y la prensa esperando cualquier nuevo error para amplificarlo. La comunicación en crisis tiene reglas muy específicas —y el timing lo es todo.',
       branchNote:'→ Stage 3, Contexto B (corrida bancaria activa)',
@@ -203,6 +208,7 @@ export const STAGES = [
       sub:'Suspender de inmediato al desarrollador responsable y comunicarlo públicamente como medida correctiva',
       cost:50000, hours:2,
       type:'trap', typeLabel:'TRAMPA', repCost:20,
+      correctTools:['legalbcp'],
       consequence:'El desarrollador fue negligente al instalar software no autorizado, pero la causa raíz fue la ausencia de controles: ¿por qué un desarrollador podía instalar herramientas arbitrarias con permisos elevados? El regulador interpreta la suspensión pública como evasión de responsabilidades institucionales. Su abogado presenta una demanda por despido mediático sin debido proceso. Multa regulatoria por incumplir protocolos de investigación. Penalización: $1,000,000.',
       waitStory:'El desarrollador fue convocado a una reunión de crisis sin que nadie le explicara formalmente qué se le imputaba. Cuando salió 45 minutos después ya no tenía credenciales de acceso a los sistemas del banco. El comunicado interno lo nombraba como "empleado que comprometió los protocolos de seguridad institucionales". Salió del edificio sin entender si enfrentaba una sanción laboral, una denuncia penal, o ambas.\n\nLo que el análisis forense confirma: el desarrollador efectivamente instaló una herramienta de IA descargada de un sitio no oficial, violando la política de software autorizado. Pero también confirma algo más incómodo para el banco: el entorno del desarrollador tenía permisos elevados sin justificación documentada, no existía un mecanismo técnico de control de aplicaciones (application whitelisting), el SOC no monitoreaba procesos ejecutados con privilegios administrativos y no hubo capacitación vigente sobre el uso de herramientas de IA externas. El error individual existe, pero está enmarcado en un fallo de controles que el banco debía haber implementado.\n\nEl abogado del desarrollador presentó la demanda dos horas después de su suspensión, argumentando despido mediático sin debido proceso. El BCP inició una investigación paralela sobre por qué los controles del banco permitieron que un único empleado pudiera abrir un vector de ataque de esta magnitud. La multa de $1,000,000 es solo el costo visible. El costo real es la narrativa: un banco que culpa al individuo sin reconocer sus propias fallas de control tiene muy pocas probabilidades de recuperar la confianza del regulador antes del cierre de la crisis.',
       branchNote:'PENALIZACIÓN: -$1,000,000. Demanda laboral activa. → Stage 4, Contexto B',
@@ -223,6 +229,7 @@ export const STAGES = [
       sub:'Activar el protocolo de comunicación del Sistema de Gestión de Seguridad de la Información',
       cost:250000, hours:6,
       type:'correct', typeLabel:'CORRECTA', repCost:-5,
+      correctTools:['legalbcp','crisiscomms'],
       consequence:'El protocolo SGSI proporciona mensajes preaprobados para reguladores, clientes y prensa. Se frena el pánico. El regulador recibe el informe preliminar requerido. La reputación se estabiliza. El banco mantiene el control del relato.',
       waitStory:'A las 3:15 PM del sábado, tres comunicados salieron simultáneamente: uno para el regulador con el informe técnico preliminar en el formato exigido por la norma, uno para empleados con instrucciones operativas claras, y un mensaje público breve que confirmaba "una interrupción de sistemas bajo control activo" sin revelar detalles que pudieran comprometer la investigación o generar pánico adicional.\n\nEl protocolo SGSI existe precisamente para este momento. Los mensajes estaban preaprobados por el departamento legal, calibrados para dar información sin generar alarma y diseñados para cumplir con los plazos regulatorios de reporte. No es comunicación espontánea —es comunicación de crisis ejecutada con precisión. El regulador recibió el informe antes del plazo de cuatro horas. La respuesta fue escueta pero significativa: "Confirmamos recepción. Manténganos informados."\n\nEl siguiente stage llega con el regulador en modo colaborativo, la prensa con pocas razones para especular negativamente y el equipo técnico con espacio para trabajar sin interferencia externa. Eso no significa que sea fácil —el Stage 4 traerá la carrera más difícil del juego. Pero significa que tienen las condiciones mínimas para que la recuperación técnica sea posible. Un regulador aliado en el Stage 4 vale más que cualquier herramienta técnica.',
       branchNote:'→ Stage 4, Contexto A',
@@ -233,6 +240,7 @@ export const STAGES = [
       sub:'Lanzar una operación intensiva para identificar y eliminar todas las puertas traseras de la red',
       cost:300000, hours:18,
       type:'correct', typeLabel:'CORRECTA', repCost:0,
+      correctTools:['threathunt'],
       consequence:'El equipo encuentra y elimina 3 puertas traseras que el atacante dejó para persistencia. La red queda limpia. El tiempo consumido es alto pero la seguridad está garantizada para Stage 4.',
       waitStory:'Dieciocho horas de trabajo ininterrumpido. Tres equipos rotando en turnos de seis horas. El primer backdoor fue encontrado a las 5:00 AM en un servidor de autenticación secundario que nadie usaba desde hacía meses —precisamente por eso el atacante lo eligió. El segundo, a las 11:00 AM, embebido en un proceso de sincronización de bases de datos que se ejecutaba automáticamente cada noche. El tercero —el más sofisticado— fue descubierto a las 3:00 PM integrado dentro de un módulo de actualización automática del antivirus corporativo.\n\nTres niveles de persistencia. Si el banco hubiera iniciado la recuperación técnica sin esta operación, habría reactivado el ransomware desde el interior de sus propios sistemas de recuperación —el resultado habría sido catastrófico. La operación fue costosa en tiempo y dinero, pero el resultado es definitivo: red auditada con certificación forense de limpieza total.\n\nEl siguiente stage llega con una ventaja técnica única: cualquier proceso de recuperación puede ejecutarse sin miedo a reinfección. El reloj está más ajustado —18 horas menos disponibles para llegar al lunes— pero la seguridad de los sistemas está garantizada. En el Stage 4 deberán elegir qué hacer con esa ventaja. El tiempo es crítico: calcúlenlo bien antes de decidir.',
       branchNote:'→ Stage 4, Contexto A (red segura)',
@@ -292,6 +300,7 @@ export const STAGES = [
       sub:'Activar el Plan de Recuperación de Desastres: Core básico + cajeros al 60% de capacidad',
       cost:800000, hours:18,
       type:'correct', typeLabel:'CORRECTA', repCost:-5,
+      correctTools:['backupverify'],
       consequence:'El equipo ejecuta el DRP con precisión. El Core básico, los cajeros y la banca digital quedan operativos al 60% de capacidad. El lunes a las 10:00 AM el banco abre. Misión cumplida.',
       waitStory:'A las 6:00 AM del domingo, el Director de Tecnología presentó el plan al Comité de Crisis: Core básico en modo transaccional esencial, cajeros al 60% de capacidad operativa, y banca digital con funcionalidades de consulta y transferencia simple. Treinta y dos páginas del Plan de Recuperación de Desastres que el banco actualizó hace 18 meses y que nadie esperaba necesitar tan pronto.\n\nLa ejecución fue meticulosa. Cada componente subió en orden estricto, validado antes de conectar el siguiente. A las 9:47 AM del lunes —trece minutos antes de la apertura— el Director de Tecnología confirmó al Comité: "Estamos listos." El banco abrió al 60% de capacidad. Los clientes notaron algunas limitaciones en servicios avanzados pero los cajeros funcionaron y las transferencias esenciales procesaron sin interrupciones.\n\nEl Stage 5 llega con la ventaja más importante del juego: el banco abrió el lunes. Ese hecho define el piso mínimo del resultado final. Cuánto más arriba lleguen en el estado final depende de las penalizaciones acumuladas en stages anteriores y de cómo gestionen la presentación ante el regulador y los accionistas. El Stage 5 es el más importante de todos —y ahora lo enfrentan desde la mejor posición posible.',
       branchNote:'→ Stage 5, Estado según presupuesto y decisiones previas. ABRIERON EL LUNES.',
@@ -322,6 +331,7 @@ export const STAGES = [
       sub:'Dedicar las próximas 24 horas a limpiar la red antes de intentar cualquier recuperación',
       cost:600000, hours:24,
       type:'recycled', typeLabel:'RECICLADA', repCost:10,
+      correctTools:['threathunt'],
       consequence:'La red queda perfectamente segura, pero consumen 24 horas en el proceso. Ya no hay tiempo para restaurar los sistemas antes del lunes. El banco no abre. Técnicamente correcto, estratégicamente tardío.',
       waitStory:'La red quedó perfectamente auditada a las 10:00 AM del domingo. Sin backdoors, sin módulos durmientes, sin procesos sospechosos en ninguno de los 847 endpoints. El informe forense tiene 340 páginas de documentación de limpieza total con hash verification de cada archivo crítico. Es, técnicamente, una operación de seguridad impecable que cualquier auditor reconocería como correcta.\n\nEl problema es aritmético. La apertura obligatoria del lunes a las 10:00 AM está a 24 horas. El DRP mínimo viable requiere exactamente 36 horas de ejecución controlada. El equipo técnico tiene garantías de seguridad absolutas pero no tiene tiempo físico para usarlas. Ejecutar el DRP a la mitad sería peor que no ejecutarlo.\n\nEl Stage 5 comenzará con el banco cerrado. La red está limpia —eso reducirá levemente las consecuencias comparado con otros caminos que llevan al mismo resultado— pero el regulador, los accionistas y los 180,000 clientes que no pudieron operar el lunes no hacen distinciones operativas finas. El Stage 5 es la presentación final: lleguen con los argumentos más sólidos posibles. La narrativa de "hicimos lo técnicamente correcto" puede tener valor si se presenta bien.',
       branchNote:'→ Stage 5, Estado Grave (red limpia pero no abrieron)',
@@ -381,6 +391,7 @@ export const STAGES = [
       sub:'Presentar el informe completo del SGSI con todas las decisiones, errores y aprendizajes',
       cost:150000, hours:0,
       type:'correct', typeLabel:'CORRECTA', repCost:-10,
+      correctTools:['legalbcp','crisiscomms'],
       consequence:'Estado LEVE/MEDIO: el regulador reconoce la buena fe. Multa: $0. Estado GRAVE: multa reducida de $500,000 pero se salva la licencia. Estado CRÍTICO: multa de $1,000,000 pero no se revoca la licencia.',
       branchNote:'Multa según estado: LEVE→$0, MEDIO→$0, GRAVE→-$500k, CRÍTICO→-$1M',
       penalty:0, conditionalPenalty:true
@@ -390,6 +401,7 @@ export const STAGES = [
       sub:'Comprometerse públicamente a invertir $5M en ciberseguridad para compensar el incidente',
       cost:2000000, hours:0,
       type:'trap', typeLabel:'TRAMPA', repCost:10,
+      correctTools:['crisiscomms'],
       consequence:'Las promesas sin evidencia de remediación no borran la negligencia pasada. El regulador aplica la multa estándar y exige que se demuestre la inversión prometida. Penalización adicional: $1,000,000.',
       branchNote:'PENALIZACIÓN EXTRA: -$1,000,000 adicional',
       penalty:1000000
@@ -399,6 +411,7 @@ export const STAGES = [
       sub:'Proponer un acuerdo voluntario con el regulador antes de que inicie la investigación formal',
       cost:500000, hours:0,
       type:'lifesaver', typeLabel:'SALVAVIDAS', repCost:-5,
+      correctTools:['legalbcp'],
       consequence:'El acuerdo proactivo demuestra buena fe y frena investigaciones más profundas. El regulador acepta. Se evitan costos ocultos mayores. Especialmente efectivo si la gestión fue deficiente.',
       branchNote:'Frena investigaciones. Recomendado para Estado GRAVE/CRÍTICO.',
       penalty:0
@@ -565,55 +578,90 @@ export function applyDecision(groupState, stageIndex, optionIndex) {
 }
 
 // ══════════════════════════════════════════
-// TOOLKIT TÉCNICO — Herramientas por stage
+// TOOLKIT TÉCNICO — Catálogo de 10 herramientas
 // ══════════════════════════════════════════
-// reveals = null  → herramienta silenciosamente inútil en este stage
-// reveals = {type,title,body} → al comprarla aparece como hint en Alertas
+// revealedAt = stage (1–5) desde el cual la herramienta aparece como comprable
+// idealStage = stage donde su utilidad es máxima (referencia para bonus de anticipación)
+// reveals = null → herramienta silenciosamente inútil en este escenario
 // Inventario persistente: tools_owned se conserva entre stages
-export const STAGE_TOOLS = {
-  // Stage 1 (índice 0)
-  0: [
-    { id:'edr',          name:'EDR (Endpoint Detection)',     cost: 80000,  category:'Detección',
-      description:'Como una cámara de seguridad para cada computador del banco. Detecta comportamientos sospechosos en tiempo real.',
-      reveals:{ type:'info', title:'// EDR — Procesos activos',
-                body:'Detectado un binario firmado por un certificado no confiable ejecutándose con privilegios elevados en una estación de TI. Patrón consistente con LockBit en fase de cifrado.' } },
-    { id:'siem',         name:'SIEM (Correlación de logs)',   cost: 60000,  category:'Detección',
-      description:'Sala de monitoreo central que junta todas las alarmas del banco en un solo tablero para ver qué está pasando.',
-      reveals:{ type:'info', title:'// SIEM — Movimiento lateral',
-                body:'No se observa propagación hacia el segmento del Core Bancario. La actividad maliciosa está confinada al segmento de TI y archivos corporativos.' } },
-    { id:'memforensics', name:'Forensia de Memoria (RAM)',    cost: 120000, category:'Forense',
-      description:'Toma una fotografía completa de lo que un computador está haciendo ahora mismo, antes de que esa evidencia se borre.',
-      reveals:{ type:'info', title:'// FORENSIA — Vector de entrada',
-                body:'En la imagen de memoria de la estación origen aparece un proceso "ai-helper.exe" cargado desde la carpeta de usuario de un desarrollador. Firma digital no oficial. Ejecutado hace 18 días.' } },
-    { id:'sandbox',      name:'Sandbox de Análisis',          cost: 40000,  category:'Forense',
-      description:'Cuarto aislado donde se abre un archivo sospechoso sin riesgo para el banco, para ver qué hace realmente.',
-      reveals:{ type:'info', title:'// SANDBOX — Familia de malware',
-                body:'Detonación controlada confirma: LockBit 3.0 variante modificada. Capacidades: cifrado AES-256, doble extorsión, exfiltración previa al cifrado.' } },
-    { id:'threatintel',  name:'Threat Intel Feed',            cost: 50000,  category:'Inteligencia',
-      description:'Reporte de inteligencia externo: quién está atacando últimamente, cómo opera y qué suele pedir.',
-      reveals:{ type:'info', title:'// THREAT INTEL — Perfil del actor',
-                body:'TTP coincide con grupo conocido. Rescate típico: 1.5–3 USD por endpoint cifrado. Pago no garantiza desencriptado funcional (40% de casos con pérdida parcial reportada).' } },
-    { id:'iocfeed',      name:'IOC Feed (hashes/IPs)',        cost: 30000,  category:'Inteligencia',
-      description:'Lista de huellas digitales conocidas de atacantes (direcciones de internet, archivos peligrosos, patrones).',
-      reveals:null },
-    { id:'netcapture',   name:'Network Capture',              cost: 70000,  category:'Detección',
-      description:'Caja negra de la red: graba todo el tráfico que entra y sale del banco para revisarlo después.',
-      reveals:null },
-    { id:'backupverify', name:'Verificación Backup Offline',  cost: 100000, category:'Recuperación',
-      description:'Confirma que las copias de respaldo están sanas y se pueden usar para restaurar el banco si algo se cifra.',
-      reveals:{ type:'info', title:'// BACKUPS — Estado verificado',
-                body:'Backups offline de las últimas 72h íntegros y verificados. Restauración del Core Bancario viable en ~12h si se requiere. Aislamiento físico confirmado.' } },
-  ],
-  // Stages 2–4 (índices 1–3): pendientes para iteración siguiente
-};
+// Shape de tools_owned: Array<{id:string, stage:number}>  (stage 0-indexed)
+export const TOOLS_CATALOG = [
+  // ── Stage 1 reveal (5) ─────────────────────────
+  { id:'edr', name:'EDR (Endpoint Detection)', category:'Detección',
+    cost: 150000, revealedAt: 1, idealStage: 1,
+    description:'Como una cámara de seguridad para cada computador del banco. Detecta comportamientos sospechosos en tiempo real.',
+    reveals:{ type:'info', title:'// EDR — Procesos activos',
+              body:'Detectado un binario firmado por un certificado no confiable ejecutándose con privilegios elevados en una estación de TI. Patrón consistente con LockBit en fase de cifrado.' } },
+  { id:'siem', name:'SIEM (Correlación de logs)', category:'Detección',
+    cost: 100000, revealedAt: 1, idealStage: 1,
+    description:'Sala de monitoreo central que junta todas las alarmas del banco en un solo tablero para ver qué está pasando.',
+    reveals:{ type:'info', title:'// SIEM — Movimiento lateral',
+              body:'No se observa propagación hacia el segmento del Core Bancario. La actividad maliciosa está confinada al segmento de TI y archivos corporativos.' } },
+  { id:'memforensics', name:'Forensia de Memoria (RAM)', category:'Forense',
+    cost: 250000, revealedAt: 1, idealStage: 1,
+    description:'Toma una fotografía completa de lo que un computador está haciendo ahora mismo, antes de que esa evidencia se borre.',
+    reveals:{ type:'info', title:'// FORENSIA — Vector de entrada',
+              body:'En la imagen de memoria de la estación origen aparece un proceso "ai-helper.exe" cargado desde la carpeta de usuario de un desarrollador. Firma digital no oficial. Ejecutado hace 18 días.' } },
+  { id:'sandbox', name:'Sandbox de Análisis', category:'Forense',
+    cost: 80000, revealedAt: 1, idealStage: 1,
+    description:'Cuarto aislado donde se abre un archivo sospechoso sin riesgo para el banco, para ver qué hace realmente.',
+    reveals:{ type:'info', title:'// SANDBOX — Familia de malware',
+              body:'Detonación controlada confirma: LockBit 3.0 variante modificada. Capacidades: cifrado AES-256, doble extorsión, exfiltración previa al cifrado.' } },
+  { id:'backupverify', name:'Verificación Backup Offline', category:'Recuperación',
+    cost: 180000, revealedAt: 1, idealStage: 4,
+    description:'Confirma que las copias de respaldo están sanas y se pueden usar para restaurar el banco si algo se cifra. Su utilidad real llega cuando hay que reabrir.',
+    reveals:{ type:'info', title:'// BACKUPS — Estado verificado',
+              body:'Backups offline de las últimas 72h íntegros y verificados. Restauración del Core Bancario viable en ~12h si se requiere. Aislamiento físico confirmado.' } },
 
-// Buscar una herramienta por id en CUALQUIER stage (inventario persistente)
+  // ── Stage 2 reveal (+2) ────────────────────────
+  { id:'threatintel', name:'Threat Intel Feed', category:'Inteligencia',
+    cost: 120000, revealedAt: 2, idealStage: 2,
+    description:'Reporte de inteligencia externo: quién está atacando últimamente, cómo opera y qué suele pedir como rescate.',
+    reveals:{ type:'info', title:'// THREAT INTEL — Perfil del actor',
+              body:'TTP coincide con grupo conocido. Rescate típico: 1.5–3 USD por endpoint cifrado. Pago no garantiza desencriptado funcional (40% de casos con pérdida parcial reportada).' } },
+  { id:'negociador', name:'Negociador Externo Certificado', category:'Servicios',
+    cost: 500000, revealedAt: 2, idealStage: 2,
+    description:'Profesional especializado en negociar con ciberatacantes para reducir el monto del rescate o ganar tiempo de respuesta.',
+    reveals:{ type:'info', title:'// NEGOCIADOR — Evaluación táctica',
+              body:'Margen estimado de negociación: reducción del 30–50% del monto inicial si se demuestra evidencia de pago previo. Tiempo de contacto inicial: 4–6 horas. Confidencialidad cubierta por NDA.' } },
+
+  // ── Stage 3 reveal (+1) ────────────────────────
+  { id:'threathunt', name:'Threat Hunting Especializado', category:'Forense',
+    cost: 400000, revealedAt: 3, idealStage: 3,
+    description:'Equipo experto que busca activamente accesos ocultos del atacante que pudieron quedar en la red tras la primera contención.',
+    reveals:{ type:'info', title:'// THREAT HUNTING — Persistencia detectada',
+              body:'Encontradas tres credenciales de servicio con accesos elevados creadas en las últimas 72h por procesos del atacante. Sin remediación activa, el actor podría retornar incluso tras pagar el rescate.' } },
+
+  // ── Stage 4 reveal (+2) ────────────────────────
+  { id:'legalbcp', name:'Asesoría Legal Regulatoria (BCP)', category:'Servicios',
+    cost: 300000, revealedAt: 4, idealStage: 5,
+    description:'Bufete especializado en comunicación obligatoria al regulador bancario. Define qué reportar, cuándo y en qué formato.',
+    reveals:{ type:'info', title:'// LEGAL BCP — Marco regulatorio',
+              body:'El BCP exige notificación formal dentro de 24h del descubrimiento de un incidente material. La narrativa debe documentar acciones técnicas concretas sin caza de brujas individual.' } },
+  { id:'crisiscomms', name:'Crisis Communications Firm', category:'Servicios',
+    cost: 300000, revealedAt: 4, idealStage: 5,
+    description:'Agencia de comunicación de crisis. Maneja declaraciones públicas, relación con prensa y redes sociales en escenarios catastróficos.',
+    reveals:{ type:'info', title:'// CRISIS COMMS — Estrategia narrativa',
+              body:'Tres mensajes clave preparados para audiencias diferenciadas: clientes (tranquilidad operativa), reguladores (transparencia técnica), prensa (responsabilidad institucional). Plantillas listas para activar.' } },
+];
+
+// ── Helpers de inventario ─────────────────────
+// Devuelve sólo los IDs de las herramientas adquiridas (compatible con shape vieja: string[])
+export function ownedIds(group) {
+  return (group?.tools_owned || []).map(t => typeof t === 'string' ? t : t.id);
+}
+// Stage 0-indexed en el que se compró la herramienta (null si shape vieja o no comprada)
+export function purchaseStageOf(group, toolId) {
+  const entry = (group?.tools_owned || []).find(t => typeof t === 'object' && t && t.id === toolId);
+  return entry ? entry.stage : null;
+}
+// Herramientas visibles (compradables) en un stage dado (0-indexed)
+export function toolsForStage(stageIdx) {
+  return TOOLS_CATALOG.filter(t => t.revealedAt <= stageIdx + 1);
+}
+// Buscar una herramienta por id (inventario persistente)
 export function findTool(toolId) {
-  for (const stageIdx of Object.keys(STAGE_TOOLS)) {
-    const t = STAGE_TOOLS[stageIdx].find(x => x.id === toolId);
-    if (t) return t;
-  }
-  return null;
+  return TOOLS_CATALOG.find(t => t.id === toolId) || null;
 }
 
 // Aplica multiplicadores de costo/horas según herramientas que respaldan la opción
@@ -622,7 +670,10 @@ export function applyToolBonus(opt, toolsOwned) {
   if (!required.length || !toolsOwned?.length) {
     return { costMult: 1, hoursMult: 1, matched: 0, total: required.length };
   }
-  const matched = required.filter(t => toolsOwned.includes(t)).length;
+  const ownedSet = new Set(
+    toolsOwned.map(t => typeof t === 'string' ? t : t?.id).filter(Boolean)
+  );
+  const matched = required.filter(t => ownedSet.has(t)).length;
   const ratio   = matched / required.length;
   return {
     costMult:  1 - (0.15 * ratio),
@@ -634,28 +685,65 @@ export function applyToolBonus(opt, toolsOwned) {
 // Tiempos objetivo por stage en segundos (1-indexed para legibilidad)
 export const STAGE_TIME_TARGETS = { 1: 1080, 2: 720, 3: 420, 4: 240, 5: 120 };
 
-// Calcula el score de eficiencia (0–100) según tiempos por stage e inventario inútil
-export function computeEfficiencyScore(stageDurations = {}, toolsOwned = []) {
-  let score = 100;
-  for (const [stage, secs] of Object.entries(stageDurations)) {
-    const target = STAGE_TIME_TARGETS[stage] || 600;
-    const over   = Math.max(0, Number(secs) - target);
-    score -= Math.floor(over / 30);  // -1 punto por cada 30s sobre el target
+// Bonus por anticipación: +3 pts por cada stage de adelanto al idealStage
+export function computeAnticipationBonus(toolsOwned = []) {
+  let bonus = 0;
+  for (const entry of toolsOwned) {
+    if (typeof entry !== 'object' || !entry) continue;
+    const tool = findTool(entry.id);
+    if (!tool || !tool.idealStage) continue;
+    // entry.stage es 0-indexed; idealStage es 1-indexed
+    const stagesEarly = tool.idealStage - (entry.stage + 1);
+    if (stagesEarly > 0) bonus += 3 * stagesEarly;
   }
-  // -2 puntos por cada herramienta sin reveals (silenciosamente inútil)
-  const wasted = (toolsOwned || []).filter(id => {
+  return bonus;
+}
+
+// Penalización por herramientas sin reveals (silenciosamente inútiles)
+export function computeWastedPenalty(toolsOwned = []) {
+  const ids = toolsOwned.map(t => typeof t === 'string' ? t : t?.id).filter(Boolean);
+  const wasted = ids.filter(id => {
     const t = findTool(id);
     return t && !t.reveals;
   }).length;
-  score -= wasted * 2;
-  return Math.max(0, Math.min(100, score));
+  return wasted * 2;
+}
+
+// Penalización por tiempo (sobre los targets)
+export function computeTimePenalty(stageDurations = {}) {
+  let penalty = 0;
+  for (const [stage, secs] of Object.entries(stageDurations)) {
+    const target = STAGE_TIME_TARGETS[stage] || 600;
+    const over   = Math.max(0, Number(secs) - target);
+    penalty += Math.floor(over / 30);
+  }
+  return penalty;
+}
+
+// Score de eficiencia (base 100 + anticipación − tiempo − inútiles). Sin cap superior.
+export function computeEfficiencyScore(stageDurations = {}, toolsOwned = []) {
+  return Math.max(0,
+    100 + computeAnticipationBonus(toolsOwned)
+        - computeTimePenalty(stageDurations)
+        - computeWastedPenalty(toolsOwned)
+  );
+}
+
+// Desglose para la pantalla final
+export function efficiencyBreakdown(stageDurations = {}, toolsOwned = []) {
+  const base         = 100;
+  const anticipation = computeAnticipationBonus(toolsOwned);
+  const timePenalty  = computeTimePenalty(stageDurations);
+  const wasted       = computeWastedPenalty(toolsOwned);
+  const total        = Math.max(0, base + anticipation - timePenalty - wasted);
+  return { base, anticipation, timePenalty, wasted, total };
 }
 
 // Mapea score → estrellas (1–5)
 export function efficiencyStars(score) {
-  if (score >= 90) return 5;
-  if (score >= 75) return 4;
-  if (score >= 60) return 3;
-  if (score >= 40) return 2;
+  if (score >= 95) return 5;
+  if (score >= 80) return 4;
+  if (score >= 65) return 3;
+  if (score >= 45) return 2;
   return 1;
 }

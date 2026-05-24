@@ -6,8 +6,9 @@
 import { supabase }                          from './supabase-client.js';
 import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          fmt, applyDecision, computeStage5State,
-         STAGE_TOOLS, STAGE_TIME_TARGETS, findTool,
-         computeEfficiencyScore, efficiencyStars } from './game-data.js';
+         TOOLS_CATALOG, STAGE_TIME_TARGETS, findTool,
+         toolsForStage, ownedIds,
+         computeEfficiencyScore, efficiencyStars, efficiencyBreakdown } from './game-data.js';
 
 // ── Parsear URL params ───────────────────────
 const params    = new URLSearchParams(location.search);
@@ -262,36 +263,40 @@ const TOOL_CAT_SLUG = {
   'Detección':     'deteccion',
   'Forense':       'forense',
   'Inteligencia':  'inteligencia',
-  'Recuperación':  'recuperacion'
+  'Recuperación':  'recuperacion',
+  'Servicios':     'servicios'
 };
 const TOOL_CAT_ICON = {
   deteccion:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></svg>',
   forense:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5L20 20"/><path d="M7 10h6M10 7v6"/></svg>',
   inteligencia:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 12l10-5M7 12l10 5"/></svg>',
-  recuperacion:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>'
+  recuperacion:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>',
+  servicios:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M6 21V10l6-5 6 5v11M10 21v-6h4v6"/></svg>'
 };
 
 function buildToolkitPanel() {
-  const tools = STAGE_TOOLS[group.stage] || [];
-  if (!tools.length) return '';
-  const owned = group.tools_owned || [];
+  if (!TOOLS_CATALOG || !TOOLS_CATALOG.length) return '';
+  const owned = ownedIds({ tools_owned: group.tools_owned });
   const locked = !IS_LEADER;
+  const stageIdx = group.stage; // 0-indexed
 
-  const cards = tools.map(t => {
+  const cards = TOOLS_CATALOG.map(t => {
     const slug      = TOOL_CAT_SLUG[t.category] || 'deteccion';
     const icon      = TOOL_CAT_ICON[slug] || '';
     const isOwned   = owned.includes(t.id);
+    const isFuture  = t.revealedAt > stageIdx + 1;
     const canAfford = group.budget >= t.cost;
-    const isLocked  = !isOwned && !canAfford;
+    const isLocked  = !isOwned && !isFuture && !canAfford;
     const cls = [
       'toolkit-card',
       `cat-${slug}`,
-      isOwned ? 'tool-purchased' : '',
-      isLocked ? 'tool-locked' : ''
+      isOwned   ? 'tool-purchased' : '',
+      isFuture  ? 'tool-future'    : '',
+      isLocked  ? 'tool-locked'    : ''
     ].filter(Boolean).join(' ');
 
     return `
-      <div class="${cls}">
+      <div class="${cls}" data-reveal="${t.revealedAt}">
         <div class="tk-cat-row">
           <span class="tk-icon">${icon}</span>
           <span class="tk-cat">${t.category}</span>
@@ -300,9 +305,12 @@ function buildToolkitPanel() {
         ${t.description ? `<div class="tk-desc">${t.description}</div>` : ''}
         <div class="tk-cost">${fmt(t.cost)}</div>
         <button class="tk-buy" data-tool="${t.id}"
-          ${(isOwned || locked || !canAfford) ? 'disabled' : ''}
-          ${IS_LEADER && !isOwned && canAfford ? `onclick="purchaseTool('${t.id}')"` : ''}>
-          ${isOwned ? '✓ ADQUIRIDA' : (canAfford ? 'COMPRAR' : 'SIN PRESUPUESTO')}
+          ${(isOwned || locked || isFuture || !canAfford) ? 'disabled' : ''}
+          ${IS_LEADER && !isOwned && !isFuture && canAfford ? `onclick="purchaseTool('${t.id}')"` : ''}>
+          ${isOwned   ? '✓ ADQUIRIDA'
+           : isFuture ? `STAGE ${t.revealedAt}`
+           : canAfford ? 'COMPRAR'
+           : 'SIN PRESUPUESTO'}
         </button>
       </div>`;
   }).join('');
@@ -315,13 +323,14 @@ function buildToolkitPanel() {
         <div class="tk-budget">PRESUPUESTO <span>${fmt(group.budget)}</span></div>
       </div>
       <div class="tk-sub">${IS_LEADER
-        ? 'Compra herramientas para revelar inteligencia. Las que no aplican a este escenario no devuelven información.'
+        ? 'Compra herramientas para revelar inteligencia. Las que están bloqueadas se revelarán en stages posteriores — comprarlas adelantado da bonus de eficiencia.'
         : 'El CISO decide qué herramientas compra el equipo. Las pistas reveladas aparecen en Alertas.'}</div>
       <div class="tk-legend">
         <span class="lg-item cat-deteccion"><span class="lg-dot"></span>DETECCIÓN</span>
         <span class="lg-item cat-forense"><span class="lg-dot"></span>FORENSE</span>
         <span class="lg-item cat-inteligencia"><span class="lg-dot"></span>INTELIGENCIA</span>
         <span class="lg-item cat-recuperacion"><span class="lg-dot"></span>RECUPERACIÓN</span>
+        <span class="lg-item cat-servicios"><span class="lg-dot"></span>SERVICIOS</span>
       </div>
     </div>
     <div class="tk-grid">${cards}</div>
@@ -330,13 +339,16 @@ function buildToolkitPanel() {
 
 window.purchaseTool = async function(toolId) {
   if (!IS_LEADER) return;
-  const tool = (STAGE_TOOLS[group.stage] || []).find(t => t.id === toolId);
+  const tool = findTool(toolId);
   if (!tool) return;
-  const owned = group.tools_owned || [];
+  // Solo se puede comprar si ya está revelada en el stage actual
+  if (tool.revealedAt > group.stage + 1) return;
+  const owned = ownedIds({ tools_owned: group.tools_owned });
   if (owned.includes(toolId)) return;
   if (group.budget < tool.cost) return;
 
-  const newOwned  = [...owned, toolId];
+  // Nueva shape: array de objetos {id, stage}
+  const newOwned  = [...(group.tools_owned || []), { id: toolId, stage: group.stage }];
   const newBudget = group.budget - tool.cost;
   const newCosts  = (group.costs || 0) + tool.cost;
   const newNotif  = [...(group.notif_log || [])];
@@ -508,8 +520,9 @@ function buildRolePanel(opt, panel, effectiveCost) {
   if (ROLE === 'ciso') {
     content = opt.consequence;
   } else if (ROLE === 'legal') {
+    // Penalizaciones cuantitativas ocultas: solo riesgos cualitativos
     const items = [];
-    if (opt.penalty)        items.push(`Penalización: ${fmt(opt.penalty)}${opt.isPendingPenalty ? ' (diferida)' : ' (inmediata)'}`);
+    if (opt.penalty)        items.push('⚠ Riesgo de sanción económica del regulador');
     if (opt.laborLawsuit)   items.push('⚠ Riesgo de demanda laboral');
     if (opt.silentCorp)     items.push('⚠ Infracción regulatoria por silencio');
     if (opt.licenseRevoked) items.push('🔴 Riesgo de revocación de licencia');
@@ -681,21 +694,10 @@ function updateSidebar() {
     rep >= 40 ? 'var(--gold)'    :
                 'var(--accent)';
 
-  // Budget detail
+  // Budget detail (penalizaciones ocultas — solo visibles al facilitador)
   document.getElementById('blCosts').textContent     = '-' + fmt(group.costs);
-  document.getElementById('blPenalties').textContent = group.penalties > 0 ? '-' + fmt(group.penalties) : '$0';
   document.getElementById('blAvailable').textContent = fmt(group.budget);
   document.getElementById('blAvailable').style.color = group.budget < 0 ? 'var(--accent)' : 'var(--info)';
-
-  // Pending penalties
-  const pending = group.flags?.pendingPenalties || [];
-  const sec     = document.getElementById('pendingSection');
-  sec.style.display = pending.length ? '' : 'none';
-  if (pending.length) {
-    document.getElementById('pendingList').innerHTML = pending
-      .map(p => `<div style="font-size:.78rem;color:var(--gold);margin-bottom:.3rem">⏳ ${p.label}: -${fmt(p.amount)}</div>`)
-      .join('');
-  }
 
   // Notifications — combine stage hints + decision log
   const decisions = group.notif_log || [];
@@ -767,8 +769,6 @@ function appendConsequenceReveal(opt, effectiveCost) {
     <div class="cr2-body">
       <div class="cr2-budget-box">
         <div class="cr2-brow"><span>Costo de decisión</span><span class="cr2-val cr2-red">${effectiveCost > 0 ? '-'+fmt(effectiveCost) : '$0'}</span></div>
-        ${opt.penalty && !opt.isPendingPenalty ? `<div class="cr2-brow"><span>Penalización inmediata</span><span class="cr2-val cr2-red">-${fmt(opt.penalty)}</span></div>` : ''}
-        ${opt.penalty && opt.isPendingPenalty  ? `<div class="cr2-brow"><span>Penalización diferida</span><span class="cr2-val" style="color:var(--gold)">-${fmt(opt.penalty)} al final</span></div>` : ''}
         <div class="cr2-brow total"><span>Presupuesto actual</span><span class="cr2-val cr2-blue">${fmt(group.budget)}</span></div>
         <div class="cr2-brow"><span>Horas consumidas</span><span class="cr2-val">${group.hours}h / ${HOURS_LIMIT}h</span></div>
       </div>
@@ -847,17 +847,28 @@ function showFinal() {
   const log     = group.decision_log || [];
   const correct = log.filter(l => l.type === 'correct').length;
   const traps   = log.filter(l => l.type === 'trap').length;
-  // ── Eficiencia (medalla) ───────────────
-  const effScore = computeEfficiencyScore(group.stage_durations || {}, group.tools_owned || []);
-  const stars    = efficiencyStars(effScore);
-  const starsHtml = Array.from({ length: 5 },
+  // ── Eficiencia (medalla + desglose) ───────────────
+  const effBreakdown = efficiencyBreakdown(group.stage_durations || {}, group.tools_owned || []);
+  const effScore     = effBreakdown.total;
+  const stars        = efficiencyStars(effScore);
+  const starsHtml    = Array.from({ length: 5 },
     (_, i) => `<span class="${i < stars ? '' : 'eff-empty'}">★</span>`).join('');
 
   document.getElementById('finalStats').innerHTML = `
     <div class="fstat"><div class="fstat-val" style="color:var(--success)">${correct}</div><div class="fstat-lbl">Óptimas</div></div>
     <div class="fstat"><div class="fstat-val" style="color:var(--accent)">${traps}</div><div class="fstat-lbl">Trampas caídas</div></div>
     <div class="fstat"><div class="fstat-val" style="color:var(--info)">${group.hours}h</div><div class="fstat-lbl">Horas usadas</div></div>
-    <div class="fstat"><div class="fstat-val eff-stars">${starsHtml}</div><div class="fstat-lbl">Eficiencia (${effScore}/100)</div></div>`;
+    <div class="fstat eff-fstat">
+      <div class="fstat-val eff-stars">${starsHtml}</div>
+      <div class="fstat-lbl">Eficiencia (${effScore} pts)</div>
+      <div class="eff-breakdown">
+        <div class="eff-row"><span>Base</span><span>+${effBreakdown.base}</span></div>
+        ${effBreakdown.anticipation ? `<div class="eff-row eff-good"><span>Anticipación</span><span>+${effBreakdown.anticipation}</span></div>` : ''}
+        ${effBreakdown.timePenalty ? `<div class="eff-row eff-bad"><span>Tiempo excedido</span><span>−${effBreakdown.timePenalty}</span></div>` : ''}
+        ${effBreakdown.wasted ? `<div class="eff-row eff-bad"><span>Herramientas inútiles</span><span>−${effBreakdown.wasted}</span></div>` : ''}
+        <div class="eff-row eff-total"><span>Total</span><span>${effScore}</span></div>
+      </div>
+    </div>`;
 
   // Persistir score de eficiencia (best-effort)
   supabase.from('groups').update({ efficiency_score: effScore }).eq('id', GROUP_ID).then(() => {});

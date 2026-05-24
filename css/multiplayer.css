@@ -1728,6 +1728,7 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
   --cat-forense:      var(--gold, #c89a20);
   --cat-inteligencia: #9b6dd9;
   --cat-recuperacion: var(--success, #2e9e60);
+  --cat-servicios:    #d97757;
 }
 
 .toolkit-panel {
@@ -1809,12 +1810,14 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
 .lg-item.cat-forense      { color: var(--cat-forense); }
 .lg-item.cat-inteligencia { color: var(--cat-inteligencia); }
 .lg-item.cat-recuperacion { color: var(--cat-recuperacion); }
+.lg-item.cat-servicios    { color: var(--cat-servicios); }
 .lg-item { color: var(--muted); }  /* texto base muted */
-.lg-item .lg-dot              { background: var(--muted); }
+.lg-item .lg-dot                  { background: var(--muted); }
 .lg-item.cat-deteccion .lg-dot    { background: var(--cat-deteccion); }
 .lg-item.cat-forense .lg-dot      { background: var(--cat-forense); }
 .lg-item.cat-inteligencia .lg-dot { background: var(--cat-inteligencia); }
 .lg-item.cat-recuperacion .lg-dot { background: var(--cat-recuperacion); }
+.lg-item.cat-servicios .lg-dot    { background: var(--cat-servicios); }
 
 /* ── Grid ── */
 .tk-grid {
@@ -1843,6 +1846,7 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
 .toolkit-card.cat-forense      { border-left-color: var(--cat-forense); }
 .toolkit-card.cat-inteligencia { border-left-color: var(--cat-inteligencia); }
 .toolkit-card.cat-recuperacion { border-left-color: var(--cat-recuperacion); }
+.toolkit-card.cat-servicios    { border-left-color: var(--cat-servicios); }
 
 /* Estado base: disponible */
 .toolkit-card:not(.tool-purchased):not(.tool-locked):hover {
@@ -1913,6 +1917,7 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
 .cat-forense      .tk-icon { color: var(--cat-forense); }
 .cat-inteligencia .tk-icon { color: var(--cat-inteligencia); }
 .cat-recuperacion .tk-icon { color: var(--cat-recuperacion); }
+.cat-servicios    .tk-icon { color: var(--cat-servicios); }
 
 .tk-cat {
   font-family: 'DM Mono', monospace;
@@ -2046,4 +2051,81 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
   margin-top: .5rem;
   padding-top: .5rem;
   border-top: 1px dashed var(--border);
+}
+
+/* ══════════════════════════════════════════
+   Toolkit — Estado "future" (todavía no revelada)
+   ══════════════════════════════════════════ */
+.toolkit-card.tool-future {
+  opacity: .42;
+  filter: saturate(.55);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 8px, rgba(255,255,255,.018) 8px 9px),
+    var(--bg);
+  cursor: not-allowed;
+}
+.toolkit-card.tool-future:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--border);
+}
+.toolkit-card.tool-future::before {
+  content: "DISPONIBLE STAGE " attr(data-reveal);
+  position: absolute;
+  top: 8px; right: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: .48rem;
+  letter-spacing: .14em;
+  color: var(--muted);
+  border: 1px dashed var(--muted);
+  padding: 2px 5px;
+  background: rgba(0,0,0,.2);
+  border-radius: 2px;
+}
+.toolkit-card.tool-future::after {
+  /* desactiva scanline interno */
+  display: none;
+}
+.toolkit-card.tool-future .tk-cost {
+  color: var(--muted);
+  opacity: .5;
+}
+.toolkit-card.tool-future .tk-buy {
+  background: transparent;
+  color: var(--muted);
+  border: 1px dashed var(--muted);
+  opacity: .8;
+}
+
+/* ══════════════════════════════════════════
+   Pantalla final — desglose de eficiencia
+   ══════════════════════════════════════════ */
+.eff-fstat {
+  min-width: 200px;
+}
+.eff-breakdown {
+  margin-top: .65rem;
+  padding-top: .55rem;
+  border-top: 1px dashed var(--border);
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: .04em;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+.eff-row {
+  display: flex;
+  justify-content: space-between;
+  gap: .65rem;
+}
+.eff-row.eff-good   { color: var(--success); }
+.eff-row.eff-bad    { color: var(--accent); }
+.eff-row.eff-total {
+  border-top: 1px solid var(--border);
+  padding-top: .25rem;
+  margin-top: .15rem;
+  color: var(--text);
+  font-weight: 600;
 }
