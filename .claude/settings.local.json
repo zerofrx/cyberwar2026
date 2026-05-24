@@ -11,7 +11,9 @@
       "Bash(python -m http.server 8765)",
       "Bash(echo \"Server PID: $!\")",
       "Bash(curl -s http://localhost:8765/group.html)",
-      "Bash(node -e \"import\\('./js/game-data.js'\\).then\\(m => { console.log\\('TOOLS', m.TOOLS_CATALOG.length\\); console.log\\('helpers', !!m.toolsForStage, !!m.ownedIds, !!m.computeAnticipationBonus, !!m.efficiencyBreakdown\\); }\\).catch\\(e => console.error\\('ERR', e.message\\)\\)\")"
+      "Bash(node -e \"import\\('./js/game-data.js'\\).then\\(m => { console.log\\('TOOLS', m.TOOLS_CATALOG.length\\); console.log\\('helpers', !!m.toolsForStage, !!m.ownedIds, !!m.computeAnticipationBonus, !!m.efficiencyBreakdown\\); }\\).catch\\(e => console.error\\('ERR', e.message\\)\\)\")",
+      "Bash(cat >> *)",
+      "Bash(node -e \"import\\('./js/game-data.js'\\).then\\(m => { const s1 = m.STAGES[0]; console.log\\('Stage 1 options:'\\); s1.options.forEach\\(o => console.log\\('  ' + o.letter + ': ' + o.text\\)\\); }\\).catch\\(e => console.error\\(e.message\\)\\)\")"
     ]
   },
   "enableAllProjectMcpServers": true,

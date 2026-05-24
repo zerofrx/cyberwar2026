@@ -68,24 +68,23 @@ export const STAGES = [
       penalty:0, nextCtx:'A'
     },
     {
-      letter:'D', text:'Retener Negociador',
-      sub:'Contratar un negociador de rescate antes de saber si hay un ataque de ransomware activo',
+      letter:'D', text:'Línea de Crisis Premium',
+      sub:'Activar de inmediato una línea de respuesta ejecutiva 24/7 con consultoría externa, antes de saber si hay un ataque real',
       cost:300000, hours:8,
       type:'trap', typeLabel:'PREMATURA', repCost:5,
       correctTools:['threatintel'],
-      consequence:'Gastan recursos sin que haya una nota de rescate todavía. El negociador no tiene nada con qué trabajar. El malware sigue propagándose durante las 8 horas que tardó en llegar el negociador.',
-      waitStory:'El negociador llegó cargando un maletín y sin nada con qué trabajar. No había nota de rescate. No había contacto del atacante. No había datos cifrados confirmados. El equipo pasó 8 horas en una sala de conferencias sin información útil, mientras el malware seguía propagándose silenciosamente por los servidores del banco.\n\nAl final de las ocho horas, el negociador facturó sus honorarios. El malware había avanzado hacia los servidores de archivos corporativos y estaba sondeando el segmento de datos de clientes. Los $300,000 gastados fueron, en esencia, tiempo de propagación pagado. El atacante usó esas 8 horas para fortalecer su posición dentro de la red.\n\nEl próximo stage comienza con recursos comprometidos y el atacante en posición mucho más sólida. Cuando llegue la nota de rescate, el monto reflejará exactamente cuánto avanzó el ataque durante esas horas. Un negociador es una herramienta útil —pero solo cuando hay algo que negociar. La secuencia de las acciones importa tanto como las acciones mismas.',
+      consequence:'Gastan recursos en una consultoría ejecutiva sin tener todavía información concreta del incidente. Los consultores se quedan esperando datos forenses que el equipo aún no produjo. El malware sigue propagándose durante las 8 horas que tardó en coordinarse la línea.',
+      waitStory:'La firma de consultoría ejecutiva activó su protocolo de crisis a las 11:00 AM: tres consultores senior conectados por video, dos analistas en sede, una abogada y un experto en comunicaciones. Costo de activación: $300,000. Costo de información disponible para entregarles: cero.\n\nDurante ocho horas, los consultores hicieron exactamente lo que se supone que hacen en una crisis: pidieron informes forenses, evaluaciones de impacto y registros de evidencia. El equipo técnico, todavía sin haber contenido el incidente, no tenía nada concreto que entregar. Los consultores facturaron sus tarifas premium por hora mientras el malware avanzaba hacia los servidores de archivos corporativos y sondeaba el segmento de datos de clientes.\n\nEl próximo stage comienza con recursos comprometidos y el atacante en posición mucho más sólida. La consultoría de crisis ejecutiva es valiosa —pero solo cuando hay datos forenses concretos sobre los cuales decidir. La secuencia de las acciones importa tanto como las acciones mismas.',
       branchNote:'→ Stage 2, Contexto B (recursos desperdiciados)',
       penalty:0, nextCtx:'B'
     },
     {
-      letter:'E', text:'Comprar EDR',
-      sub:'Adquirir e instalar una solución de Endpoint Detection & Response de emergencia',
+      letter:'E', text:'Despliegue MDR Empresarial',
+      sub:'Contratar un servicio gestionado (MDR) de emergencia que prometen desplegar en menos de 24 horas',
       cost:150000, hours:18,
       type:'trap', typeLabel:'PREMATURA', repCost:5,
-      correctTools:['edr'],
-      consequence:'La instalación del EDR tarda 18 horas. Durante ese tiempo el ataque avanza sin freno. El EDR queda operativo cuando ya es tarde para la fase de infección inicial. Falsa sensación de seguridad.',
-      waitStory:'Dieciocho horas. Ese fue el tiempo que tardó el equipo de instalación del EDR en licenciar el software, desplegarlo en los 847 endpoints del banco, configurar las reglas de detección y validar la consola central. Dieciocho horas en las que el ransomware trabajó completamente sin obstáculos, con acceso libre a toda la red interna.\n\nEl EDR quedó operativo a las 4:00 AM del sábado —precisamente cuando el malware había completado su misión de cifrado. Las primeras alertas que generó la nueva herramienta documentaban un ataque ya consumado: 23,000 archivos cifrados, 4 servidores comprometidos, y una nota de rescate activa desde la medianoche. La herramienta funcionaba perfectamente. Solo que llegó tarde.\n\nEl próximo stage comienza con una plataforma de detección impecable y nada útil que detectar. El dinero gastado en el EDR no tiene retorno inmediato —aunque podría tener valor en stages futuros si el equipo sabe usarlo. Lo que no puede recuperarse son las 18 horas de ventana donde el ataque avanzó sin respuesta. Piensen en qué pueden hacer todavía con los recursos que les quedan.',
+      consequence:'El despliegue del servicio MDR tarda 18 horas en quedar operativo. Durante ese tiempo el ataque avanza sin freno. El servicio queda activo cuando ya es tarde para la fase de infección inicial. Falsa sensación de seguridad.',
+      waitStory:'Dieciocho horas. Ese fue el tiempo que tardó el proveedor de MDR (Managed Detection and Response) en aprovisionar las licencias corporativas, desplegar los agentes en los 847 endpoints del banco, integrarse con la consola del SOC externo y completar la línea base de comportamiento. Dieciocho horas en las que el ransomware trabajó completamente sin obstáculos, con acceso libre a toda la red interna.\n\nEl servicio gestionado quedó operativo a las 4:00 AM del sábado —precisamente cuando el malware había completado su misión de cifrado. Las primeras alertas que generó el SOC externo documentaban un ataque ya consumado: 23,000 archivos cifrados, 4 servidores comprometidos, y una nota de rescate activa desde la medianoche. El servicio funcionaba perfectamente. Solo que llegó tarde.\n\nEl próximo stage comienza con un servicio de detección impecable y nada útil que detectar. El dinero gastado no tiene retorno inmediato. Lo que no puede recuperarse son las 18 horas de ventana donde el ataque avanzó sin respuesta. Piensen en qué pueden hacer todavía con los recursos que les quedan.',
       branchNote:'→ Stage 2, Contexto B (ataque avanzó sin contención)',
       penalty:0, nextCtx:'B'
     }

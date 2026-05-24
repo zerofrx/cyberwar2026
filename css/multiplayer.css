@@ -2129,3 +2129,86 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
   color: var(--text);
   font-weight: 600;
 }
+
+/* ══════════════════════════════════════════
+   Responsive — Toolkit + Topbar + Sidebar
+   ══════════════════════════════════════════ */
+
+/* Tablet ─ topbar wraps, toolkit grid 2 cols min, sidebar normal */
+@media (max-width: 980px) {
+  .topbar {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 52px;
+    padding: .5rem .75rem;
+    row-gap: .35rem;
+  }
+  .topbar-left, .topbar-right {
+    flex-wrap: wrap;
+    gap: .45rem;
+  }
+  .tk-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  .toolkit-card { min-height: 200px; }
+  .tk-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .35rem;
+  }
+}
+
+/* Mobile ─ stack everything */
+@media (max-width: 640px) {
+  .topbar {
+    padding: .5rem .6rem;
+    font-size: .82rem;
+  }
+  .brand { font-size: .78rem; }
+  .meta-pill, .budget-pill, .time-pill, .stage-timer, .role-badge {
+    font-size: .68rem;
+    padding: .28rem .5rem;
+  }
+  .game-layout {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto;
+  }
+  .sidebar {
+    border-left: none;
+    border-top: 1px solid var(--border);
+    max-height: 60vh;
+  }
+  .game-main { padding: 1rem .85rem; }
+
+  .toolkit-panel { padding: .85rem .8rem; }
+  .tk-grid {
+    grid-template-columns: 1fr;
+    gap: .55rem;
+  }
+  .toolkit-card { min-height: auto; padding: .65rem .75rem .7rem; }
+  .tk-name { font-size: .92rem; }
+  .tk-desc { font-size: .76rem; min-height: 0; }
+  .tk-cost { font-size: 1rem; }
+
+  .tk-legend {
+    flex-direction: column;
+    gap: .25rem;
+    font-size: .58rem;
+  }
+  .tk-title-row { gap: .25rem; }
+
+  .incident-card { padding: 1rem .8rem; }
+  .ic-title { font-size: 1.4rem; }
+  .dec-opt { padding: .65rem .7rem; }
+
+  .final-screen { grid-template-columns: 1fr !important; }
+  .fac-mini-row { font-size: .62rem; }
+}
+
+/* Very narrow ─ < 380px (older phones) */
+@media (max-width: 380px) {
+  .stage-timer, .time-pill, .budget-pill { min-width: 0; }
+  .stage-timer span:first-child { display: none; } /* hide ⏱ icon */
+  .meta-pill { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-right { gap: .3rem; }
+}

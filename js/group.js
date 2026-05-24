@@ -280,23 +280,24 @@ function buildToolkitPanel() {
   const locked = !IS_LEADER;
   const stageIdx = group.stage; // 0-indexed
 
-  const cards = TOOLS_CATALOG.map(t => {
+  // Solo herramientas reveladas — las futuras NO se muestran (sin teaser)
+  const visibleTools = TOOLS_CATALOG.filter(t => t.revealedAt <= stageIdx + 1);
+
+  const cards = visibleTools.map(t => {
     const slug      = TOOL_CAT_SLUG[t.category] || 'deteccion';
     const icon      = TOOL_CAT_ICON[slug] || '';
     const isOwned   = owned.includes(t.id);
-    const isFuture  = t.revealedAt > stageIdx + 1;
     const canAfford = group.budget >= t.cost;
-    const isLocked  = !isOwned && !isFuture && !canAfford;
+    const isLocked  = !isOwned && !canAfford;
     const cls = [
       'toolkit-card',
       `cat-${slug}`,
-      isOwned   ? 'tool-purchased' : '',
-      isFuture  ? 'tool-future'    : '',
-      isLocked  ? 'tool-locked'    : ''
+      isOwned  ? 'tool-purchased' : '',
+      isLocked ? 'tool-locked'    : ''
     ].filter(Boolean).join(' ');
 
     return `
-      <div class="${cls}" data-reveal="${t.revealedAt}">
+      <div class="${cls}">
         <div class="tk-cat-row">
           <span class="tk-icon">${icon}</span>
           <span class="tk-cat">${t.category}</span>
@@ -305,10 +306,9 @@ function buildToolkitPanel() {
         ${t.description ? `<div class="tk-desc">${t.description}</div>` : ''}
         <div class="tk-cost">${fmt(t.cost)}</div>
         <button class="tk-buy" data-tool="${t.id}"
-          ${(isOwned || locked || isFuture || !canAfford) ? 'disabled' : ''}
-          ${IS_LEADER && !isOwned && !isFuture && canAfford ? `onclick="purchaseTool('${t.id}')"` : ''}>
-          ${isOwned   ? '✓ ADQUIRIDA'
-           : isFuture ? `STAGE ${t.revealedAt}`
+          ${(isOwned || locked || !canAfford) ? 'disabled' : ''}
+          ${IS_LEADER && !isOwned && canAfford ? `onclick="purchaseTool('${t.id}')"` : ''}>
+          ${isOwned ? '✓ ADQUIRIDA'
            : canAfford ? 'COMPRAR'
            : 'SIN PRESUPUESTO'}
         </button>
@@ -323,15 +323,14 @@ function buildToolkitPanel() {
         <div class="tk-budget">PRESUPUESTO <span>${fmt(group.budget)}</span></div>
       </div>
       <div class="tk-sub">${IS_LEADER
-        ? 'Compra herramientas para revelar inteligencia. Las que están bloqueadas se revelarán en stages posteriores — comprarlas adelantado da bonus de eficiencia.'
+        ? 'Compra herramientas para revelar inteligencia. Algunas son útiles ahora, otras lo serán más adelante — invertir temprano puede tener recompensa.'
         : 'El CISO decide qué herramientas compra el equipo. Las pistas reveladas aparecen en Alertas.'}</div>
-      <div class="tk-legend">
-        <span class="lg-item cat-deteccion"><span class="lg-dot"></span>DETECCIÓN</span>
-        <span class="lg-item cat-forense"><span class="lg-dot"></span>FORENSE</span>
-        <span class="lg-item cat-inteligencia"><span class="lg-dot"></span>INTELIGENCIA</span>
-        <span class="lg-item cat-recuperacion"><span class="lg-dot"></span>RECUPERACIÓN</span>
-        <span class="lg-item cat-servicios"><span class="lg-dot"></span>SERVICIOS</span>
-      </div>
+      <div class="tk-legend">${
+        ['deteccion','forense','inteligencia','recuperacion','servicios']
+          .filter(slug => visibleTools.some(t => (TOOL_CAT_SLUG[t.category] || 'deteccion') === slug))
+          .map(slug => `<span class="lg-item cat-${slug}"><span class="lg-dot"></span>${({deteccion:'DETECCIÓN',forense:'FORENSE',inteligencia:'INTELIGENCIA',recuperacion:'RECUPERACIÓN',servicios:'SERVICIOS'})[slug]}</span>`)
+          .join('')
+      }</div>
     </div>
     <div class="tk-grid">${cards}</div>
   </section>`;
