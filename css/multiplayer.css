@@ -719,7 +719,8 @@ body {
 /* Los cards no deben encogerse (flex-shrink default=1); el scroll lo maneja game-main */
 .game-main .incident-card,
 .game-main .decision-card,
-.game-main .consequence-reveal { flex-shrink: 0; }
+.game-main .consequence-reveal,
+.game-main .toolkit-panel { flex-shrink: 0; }
 
 .sidebar {
   border-left: 1px solid var(--border);
@@ -1739,22 +1740,8 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
   background:
     linear-gradient(180deg, rgba(255,255,255,.015), transparent 40%),
     var(--surface);
-  position: relative;
-  overflow: hidden;
+  display: block;
 }
-.toolkit-panel::before {
-  /* Scanline sutil de fondo, fija al panel */
-  content: "";
-  position: absolute; inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent 0 3px,
-    rgba(255,255,255,.012) 3px 4px
-  );
-  pointer-events: none;
-  z-index: 0;
-}
-.toolkit-panel > * { position: relative; z-index: 1; }
 
 /* ── Header ── */
 .tk-header { margin-bottom: 1rem; }
@@ -1824,6 +1811,7 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: .7rem;
+  width: 100%;
 }
 
 /* ── Card ── */
@@ -1833,7 +1821,7 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
   border: 1px solid var(--border);
   border-left: 3px solid var(--border);
   border-radius: 4px;
-  background: var(--bg);
+  background: var(--bg, #0d1320);
   display: flex;
   flex-direction: column;
   gap: .45rem;

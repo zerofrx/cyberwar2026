@@ -8,7 +8,7 @@ import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          fmt, applyDecision, computeStage5State,
          TOOLS_CATALOG, STAGE_TIME_TARGETS, findTool,
          toolsForStage, ownedIds,
-         computeEfficiencyScore, efficiencyStars, efficiencyBreakdown } from './game-data.js';
+         computeEfficiencyScore, efficiencyStars, efficiencyBreakdown } from './game-data.js?v=3';
 
 // ── Parsear URL params ───────────────────────
 const params    = new URLSearchParams(location.search);
@@ -586,7 +586,7 @@ function showCyberConfirm(opt) {
     '0123456789abcdef'[Math.floor(Math.random() * 16)]).join('');
   const ts = new Date().toISOString().replace('T', ' ').substring(0, 19);
   document.getElementById('ccoLog').innerHTML = [
-    `OPCIÓN ${opt.letter} — ${opt.typeLabel || 'REGISTRADA'}`,
+    `OPCIÓN ${opt.letter} — REGISTRADA`,
     `HASH: ${hash}`,
     `TIMESTAMP: ${ts}`,
     `TRANSMISIÓN COMPLETADA`

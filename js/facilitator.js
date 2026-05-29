@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════
 
 import { supabase }                              from './supabase-client.js';
-import { STAGES, fmt, computeStage5State }       from './game-data.js';
+import { STAGES, fmt, computeStage5State }       from './game-data.js?v=3';
 
 const NUM_GROUPS  = 6;
 const ROLES       = ['ciso', 'analyst', 'legal', 'comms', 'ops'];
