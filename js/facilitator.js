@@ -32,6 +32,20 @@ async function init() {
     document.getElementById('prelimOverlay').classList.add('mp-hidden');
   });
 
+  // ── Atajos ─────────────────────────────────
+  document.getElementById('btnOpenSplash').addEventListener('click', () => {
+    window.open('splash.html', '_blank', 'noopener');
+  });
+  document.getElementById('btnOpenPlayer').addEventListener('click', () => {
+    if (!groups?.length || !sessionId) return;
+    const g = groups[0];
+    window.open(`group.html?session=${sessionId}&group=${g.id}&role=ciso`, '_blank', 'noopener');
+  });
+  document.getElementById('btnOpenResults').addEventListener('click', () => {
+    if (!sessionId) return;
+    window.open(`results.html?session=${sessionId}`, '_blank', 'noopener');
+  });
+
   if (savedSessionId) {
     sessionId = savedSessionId;
     await loadSession();
@@ -263,6 +277,10 @@ function renderControls() {
   document.getElementById('btnReset').classList.toggle('mp-hidden', isLobby && session.current_stage === 0);
   document.getElementById('overrideWrap').classList.toggle('mp-hidden', !isActive);
   document.getElementById('decisionProgress').classList.toggle('mp-hidden', !isActive);
+
+  // Atajos
+  document.getElementById('btnOpenPlayer').disabled  = !groups?.length;
+  document.getElementById('btnOpenResults').disabled = isLobby;
 
   if (isActive) {
     const nextNum = session.current_stage + 2;
