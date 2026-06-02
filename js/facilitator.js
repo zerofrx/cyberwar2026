@@ -3,7 +3,9 @@
 // ══════════════════════════════════════════
 
 import { supabase }                              from './supabase-client.js';
-import { STAGES, fmt, computeStage5State }       from './game-data.js?v=3';
+import { STAGES, fmt, computeStage5State,
+         computeEfficiencyScore, efficiencyStars } from './game-data.js?v=8';
+import { buildLeaderboardTable }                  from './ranking.js?v=8';
 
 const NUM_GROUPS  = 6;
 const ROLES       = ['ciso', 'analyst', 'legal', 'comms', 'ops'];
@@ -44,6 +46,10 @@ async function init() {
   document.getElementById('btnOpenResults').addEventListener('click', () => {
     if (!sessionId) return;
     window.open(`results.html?session=${sessionId}`, '_blank', 'noopener');
+  });
+  document.getElementById('btnOpenLeaderboard').addEventListener('click', () => {
+    if (!sessionId) return;
+    window.open(`leaderboard.html?session=${sessionId}`, '_blank', 'noopener');
   });
 
   if (savedSessionId) {
@@ -279,8 +285,9 @@ function renderControls() {
   document.getElementById('decisionProgress').classList.toggle('mp-hidden', !isActive);
 
   // Atajos
-  document.getElementById('btnOpenPlayer').disabled  = !groups?.length;
-  document.getElementById('btnOpenResults').disabled = isLobby;
+  document.getElementById('btnOpenPlayer').disabled      = !groups?.length;
+  document.getElementById('btnOpenResults').disabled     = isLobby;
+  document.getElementById('btnOpenLeaderboard').disabled = isLobby || !groups?.length;
 
   if (isActive) {
     const nextNum = session.current_stage + 2;
@@ -531,6 +538,15 @@ function showPreliminary() {
       </div>`;
   } else {
     leaderEl.innerHTML = '';
+  }
+
+  // ── Tabla de ranking detallada ─────────────
+  const lbEl = document.getElementById('prelimLeaderboard');
+  if (lbEl) {
+    lbEl.innerHTML = `
+      <div class="prelim-divider"></div>
+      <div class="prelim-section-label">// CLASIFICACIÓN — STAGE ${stageIdx + 1} DE ${STAGES.length}</div>
+      ${buildLeaderboardTable(groups, 'detailed', stageIdx + 1)}`;
   }
 
   // ── Teaser de la siguiente etapa ──────────

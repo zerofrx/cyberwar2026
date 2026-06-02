@@ -863,7 +863,11 @@ function showFinal() {
       <div class="eff-breakdown">
         <div class="eff-row"><span>Base</span><span>+${effBreakdown.base}</span></div>
         ${effBreakdown.anticipation ? `<div class="eff-row eff-good"><span>Anticipación</span><span>+${effBreakdown.anticipation}</span></div>` : ''}
-        ${effBreakdown.timePenalty ? `<div class="eff-row eff-bad"><span>Tiempo excedido</span><span>−${effBreakdown.timePenalty}</span></div>` : ''}
+        ${effBreakdown.timeScore > 0
+          ? `<div class="eff-row eff-good"><span>Velocidad</span><span>+${effBreakdown.timeScore}</span></div>`
+          : effBreakdown.timeScore < 0
+          ? `<div class="eff-row eff-bad"><span>Tiempo</span><span>${effBreakdown.timeScore}</span></div>`
+          : ''}
         ${effBreakdown.wasted ? `<div class="eff-row eff-bad"><span>Herramientas inútiles</span><span>−${effBreakdown.wasted}</span></div>` : ''}
         <div class="eff-row eff-total"><span>Total</span><span>${effScore}</span></div>
       </div>

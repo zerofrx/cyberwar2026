@@ -708,22 +708,42 @@ export function computeWastedPenalty(toolsOwned = []) {
   return wasted * 2;
 }
 
-// Penalización por tiempo (sobre los targets)
-export function computeTimePenalty(stageDurations = {}) {
-  let penalty = 0;
+// Score de tiempo por milestones discretos (signed: bonus o penalty)
+// Por cada stage cerrado, suma según porcentaje del target consumido:
+//   ≤  50% → +10 (ÁGIL)
+//   ≤  80% → +5  (RÁPIDO)
+//   ≤ 100% → 0   (A TIEMPO)
+//   ≤ 130% → -5  (LENTO)
+//   >  130% → -10 (DEMORADO)
+const TIME_THRESHOLDS = [
+  { pct: 0.50,     score:  10 },
+  { pct: 0.80,     score:   5 },
+  { pct: 1.00,     score:   0 },
+  { pct: 1.30,     score:  -5 },
+  { pct: Infinity, score: -10 }
+];
+
+export function computeTimeScore(stageDurations = {}) {
+  let total = 0;
   for (const [stage, secs] of Object.entries(stageDurations)) {
     const target = STAGE_TIME_TARGETS[stage] || 600;
-    const over   = Math.max(0, Number(secs) - target);
-    penalty += Math.floor(over / 30);
+    const ratio  = Number(secs) / target;
+    const tier   = TIME_THRESHOLDS.find(t => ratio <= t.pct);
+    total += tier.score;
   }
-  return penalty;
+  return total;
 }
 
-// Score de eficiencia (base 100 + anticipación − tiempo − inútiles). Sin cap superior.
+// Wrapper de retrocompatibilidad (devuelve solo el componente negativo como positivo)
+export function computeTimePenalty(stageDurations = {}) {
+  return Math.max(0, -computeTimeScore(stageDurations));
+}
+
+// Score de eficiencia: base 100 + anticipación + tiempo (signed) − inútiles. Sin cap superior.
 export function computeEfficiencyScore(stageDurations = {}, toolsOwned = []) {
   return Math.max(0,
     100 + computeAnticipationBonus(toolsOwned)
-        - computeTimePenalty(stageDurations)
+        + computeTimeScore(stageDurations)
         - computeWastedPenalty(toolsOwned)
   );
 }
@@ -732,10 +752,10 @@ export function computeEfficiencyScore(stageDurations = {}, toolsOwned = []) {
 export function efficiencyBreakdown(stageDurations = {}, toolsOwned = []) {
   const base         = 100;
   const anticipation = computeAnticipationBonus(toolsOwned);
-  const timePenalty  = computeTimePenalty(stageDurations);
+  const timeScore    = computeTimeScore(stageDurations);   // signed
   const wasted       = computeWastedPenalty(toolsOwned);
-  const total        = Math.max(0, base + anticipation - timePenalty - wasted);
-  return { base, anticipation, timePenalty, wasted, total };
+  const total        = Math.max(0, base + anticipation + timeScore - wasted);
+  return { base, anticipation, timeScore, wasted, total };
 }
 
 // Mapea score → estrellas (1–5)

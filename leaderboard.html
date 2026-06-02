@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Clasificación · Cyber War 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Outfit:wght@600;700&family=DM+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="gm.css?v=14">
+  <link rel="stylesheet" href="css/multiplayer.css?v=14">
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at top, rgba(74,144,217,.18) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom, rgba(200,154,32,.10) 0%, transparent 50%),
+        var(--dark);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3vh 4vw;
+      overflow-x: hidden;
+    }
+    .lb-page-header {
+      text-align: center;
+      margin-bottom: 2vh;
+    }
+    .lb-page-eyebrow {
+      font-size: .9rem;
+      letter-spacing: .35em;
+      color: var(--gold);
+      margin-bottom: .4rem;
+    }
+    .lb-page-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      letter-spacing: .08em;
+      color: var(--text);
+      text-shadow: 0 0 24px rgba(74,144,217,.4);
+      margin: 0;
+    }
+    .lb-page-status {
+      font-size: 1rem;
+      letter-spacing: .18em;
+      color: var(--info);
+      margin-top: .4rem;
+    }
+    #lbContainer {
+      width: 100%;
+      max-width: 1400px;
+    }
+    .lb-loading {
+      text-align: center;
+      padding: 4rem;
+      color: var(--muted);
+      letter-spacing: .15em;
+      font-size: .9rem;
+    }
+    .lb-page-footer {
+      margin-top: 3vh;
+      font-size: .65rem;
+      letter-spacing: .25em;
+      color: var(--muted);
+      opacity: .6;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="lb-page-header">
+    <div class="lb-page-eyebrow">// CYBER WAR 2026 · LIVE</div>
+    <h1 class="lb-page-title">CLASIFICACIÓN</h1>
+    <div class="lb-page-status" id="lbStatus">CONECTANDO…</div>
+    <div class="lb-page-legend">
+      <span><i class="lb-legend-dot lb-legend-budget"></i>Presupuesto</span>
+      <span><i class="lb-legend-dot lb-legend-rep"></i>Reputación</span>
+      <span><i class="lb-legend-dot lb-legend-eff"></i>Eficiencia</span>
+    </div>
+  </div>
+
+  <div id="lbContainer">
+    <div class="lb-loading">Cargando clasificación…</div>
+  </div>
+
+  <div class="lb-page-footer">ACTUALIZACIÓN EN TIEMPO REAL · BANCO MERIDIAN</div>
+
+  <script type="module" src="js/leaderboard.js?v=14"></script>
+</body>
+</html>
