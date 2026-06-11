@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>Guía del Simulacro · Cyber War 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Outfit:wght@500;600;700&family=DM+Sans:wght@300;400;600&family=DM+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dark:    #080c12;
+      --bg:      #0d1320;
+      --surface: #111a2c;
+      --border:  #1e2e48;
+      --text:    #c8d8ee;
+      --muted:   #7a8eaa;
+      --accent:  #c0392b;
+      --success: #2e9e60;
+      --info:    #4a90d9;
+      --gold:    #c89a20;
+      --violet:  #9b6dd9;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at top, rgba(74,144,217,.14) 0%, transparent 50%),
+        var(--dark);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      padding: 4vh 5vw 8vh;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+
+    .page-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: .8rem; letter-spacing: .3em;
+      color: var(--gold); text-align: center; margin-bottom: .5rem;
+    }
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900; font-size: clamp(2rem, 4.5vw, 3.4rem);
+      letter-spacing: .06em; text-align: center;
+      text-shadow: 0 0 24px rgba(74,144,217,.35);
+      margin-bottom: .4rem;
+    }
+    .page-sub {
+      text-align: center; color: var(--muted);
+      font-size: 1rem; margin-bottom: 3.5rem;
+    }
+
+    section { margin-bottom: 3rem; }
+    .sec-label {
+      font-family: 'DM Mono', monospace;
+      font-size: .78rem; letter-spacing: .22em;
+      color: var(--accent); margin-bottom: 1.1rem;
+      text-transform: uppercase;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 1rem;
+      line-height: 1.7;
+    }
+    .card strong { color: #e8f1fb; }
+    .card h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem; margin-bottom: .5rem;
+      color: var(--info);
+    }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+
+    /* Flujo de juego */
+    .flow {
+      display: flex; flex-wrap: wrap; gap: .6rem;
+      align-items: stretch; justify-content: center;
+      margin: 1.2rem 0;
+    }
+    .flow-step {
+      flex: 1 1 150px; max-width: 200px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: .9rem .8rem; text-align: center;
+    }
+    .flow-num {
+      font-family: 'Orbitron', sans-serif; font-weight: 900;
+      font-size: 1.4rem; color: var(--info); margin-bottom: .3rem;
+    }
+    .flow-step .t { font-weight: 600; font-size: .88rem; margin-bottom: .25rem; }
+    .flow-step .d { font-size: .74rem; color: var(--muted); line-height: 1.45; }
+
+    /* Tablas */
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    th {
+      font-family: 'DM Mono', monospace; font-size: .62rem;
+      letter-spacing: .15em; color: var(--gold);
+      text-align: left; padding: .55rem .7rem;
+      border-bottom: 1px solid var(--border); text-transform: uppercase;
+    }
+    td { padding: .55rem .7rem; border-bottom: 1px solid rgba(126,140,170,.12); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    .num { font-family: 'DM Mono', monospace; }
+    .pos { color: var(--success); font-weight: 600; }
+    .neg { color: var(--accent); font-weight: 600; }
+
+    /* Fórmula */
+    .formula {
+      font-family: 'DM Mono', monospace;
+      background: var(--bg); border: 1px solid var(--border);
+      border-left: 3px solid var(--gold);
+      border-radius: 6px; padding: 1rem 1.2rem;
+      font-size: .95rem; letter-spacing: .03em;
+      margin: .8rem 0; overflow-x: auto; white-space: nowrap;
+    }
+    .formula .gold  { color: var(--gold); }
+    .formula .green { color: var(--success); }
+    .formula .blue  { color: var(--info); }
+
+    /* Roles */
+    .role-chip {
+      display: inline-block; font-family: 'DM Mono', monospace;
+      font-size: .68rem; letter-spacing: .1em;
+      padding: .2rem .6rem; border-radius: 4px;
+      border: 1px solid currentColor; margin-right: .4rem;
+    }
+    .r-ciso { color: var(--violet); }
+    .r-rest { color: var(--info); }
+
+    /* Perfiles */
+    .profile-pill {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-family: 'DM Mono', monospace; font-size: .76rem;
+      padding: .35rem .8rem; border-radius: 18px;
+      border: 1.5px solid currentColor; letter-spacing: .08em;
+    }
+
+    .tip {
+      border-left: 3px solid var(--gold);
+      background: rgba(200,154,32,.06);
+      padding: .8rem 1rem; border-radius: 0 6px 6px 0;
+      font-size: .88rem; margin-top: .8rem;
+    }
+    .tip::before { content: "💡 "; }
+
+    .footer-note {
+      text-align: center; font-family: 'DM Mono', monospace;
+      font-size: .62rem; letter-spacing: .2em; color: var(--muted);
+      margin-top: 4rem; opacity: .6;
+    }
+
+    @media print {
+      body { background: white; color: #222; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="page-eyebrow">// CYBER WAR 2026 · MANUAL DEL SIMULACRO</div>
+  <h1>CÓMO JUGAR</h1>
+  <p class="page-sub">Banco Meridian sufre un ataque de ransomware. Su equipo tiene 5 etapas para salvarlo.</p>
+
+  <!-- ══════════ EL ESCENARIO ══════════ -->
+  <section>
+    <div class="sec-label">// 01 · El escenario</div>
+    <div class="card">
+      Es <strong>viernes a las 10:00 AM</strong>. Varios sistemas de Banco Meridian reportan lentitud y aparecen archivos cifrados.
+      Su equipo es el comité de crisis del banco: deben tomar decisiones bajo presión durante un fin de semana completo
+      —de viernes a lunes— para lograr que el banco <strong>abra sus puertas el lunes a las 10:00 AM</strong>.
+      <br><br>
+      Cada equipo arranca con <strong>$5,000,000 de presupuesto</strong>, <strong>100% de reputación institucional</strong>
+      y un límite operativo de <strong>72 horas</strong>. Cada decisión consume dinero, horas y, si es mala, reputación.
+    </div>
+  </section>
+
+  <!-- ══════════ ROLES ══════════ -->
+  <section>
+    <div class="sec-label">// 02 · Roles del equipo</div>
+    <div class="grid-2">
+      <div class="card">
+        <h3><span class="role-chip r-ciso">CISO</span> El decisor</h3>
+        Es el único rol que puede <strong>comprar herramientas</strong>, <strong>seleccionar opciones</strong> y
+        <strong>confirmar la decisión</strong> del equipo. Lo que confirma el CISO es definitivo: no hay vuelta atrás.
+      </div>
+      <div class="card">
+        <h3><span class="role-chip r-rest">ANALISTA · LEGAL · COMMS · OPS</span> Los asesores</h3>
+        Cada rol ve <strong>información exclusiva</strong> sobre las opciones: el Analista ve la consecuencia técnica,
+        Legal ve los riesgos regulatorios, Comms el impacto reputacional y OPS los costos y horas.
+        <strong>Su trabajo es asesorar al CISO</strong> — compartan lo que ven, debatan, convenzan.
+      </div>
+    </div>
+    <div class="tip">El equipo que no conversa pierde: ningún rol tiene la imagen completa por sí solo.</div>
+  </section>
+
+  <!-- ══════════ FLUJO ══════════ -->
+  <section>
+    <div class="sec-label">// 03 · Flujo de cada etapa</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="t">Lean la situación</div>
+        <div class="d">Narrativa del incidente + pistas en la pestaña Alertas</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="t">Compren inteligencia</div>
+        <div class="d">El Toolkit SOC ofrece herramientas que revelan información clave</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="t">Debatan en equipo</div>
+        <div class="d">Cada rol aporta su panel exclusivo sobre las 5 opciones</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="t">El CISO confirma</div>
+        <div class="d">"Aplicar Decisión" es irreversible y detiene el cronómetro</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="t">Esperen al facilitador</div>
+        <div class="d">El facilitador presenta resultados y avanza a la siguiente etapa</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>⏱ Tiempo objetivo por etapa</h3>
+      <table>
+        <tr><th>Etapa</th><th>Título</th><th>Tiempo objetivo</th></tr>
+        <tr><td class="num">1</td><td>La Infección Silenciosa</td><td class="num">18 minutos</td></tr>
+        <tr><td class="num">2</td><td>La Extorsión y el Doble Robo</td><td class="num">12 minutos</td></tr>
+        <tr><td class="num">3</td><td>El Paciente Cero y la Prensa</td><td class="num">7 minutos</td></tr>
+        <tr><td class="num">4</td><td>La Carrera de Recuperación</td><td class="num">4 minutos</td></tr>
+        <tr><td class="num">5</td><td>El Día de Cuentas</td><td class="num">2 minutos</td></tr>
+      </table>
+      <div class="tip">El cronómetro no corta el juego al llegar a cero — pero el tiempo consumido afecta su puntaje de eficiencia.</div>
+    </div>
+  </section>
+
+  <!-- ══════════ TOOLKIT ══════════ -->
+  <section>
+    <div class="sec-label">// 04 · El Toolkit SOC</div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>🛠 Cómo funciona</h3>
+        En cada etapa hay <strong>herramientas de ciberseguridad</strong> disponibles para comprar (EDR, SIEM, forensia,
+        negociadores, asesoría legal…). Al comprarlas, muchas <strong>revelan inteligencia</strong> que aparece en la
+        pestaña Alertas — información que puede cambiar completamente su decisión.
+        <br><br>
+        Las herramientas se pagan del presupuesto general y son <strong>permanentes</strong>: lo que compran en una
+        etapa lo conservan el resto del juego.
+      </div>
+      <div class="card">
+        <h3>🎯 Estrategia y anticipación</h3>
+        Se revelan nuevas herramientas en cada etapa (5 al inicio, 10 al final). Algunas son útiles <strong>de inmediato</strong>;
+        otras valen oro <strong>etapas más adelante</strong>.
+        <br><br>
+        Comprar una herramienta <strong>antes</strong> de la etapa donde es ideal otorga <strong>bonus de anticipación</strong>:
+        +3 puntos de eficiencia por cada etapa de adelanto. El equipo que piensa a futuro gana más.
+        <br><br>
+        Además: si al decidir poseen las herramientas que respaldan su opción, la decisión se ejecuta con
+        <strong>−15% de costo y −10% de horas</strong>.
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ REGLAS ══════════ -->
+  <section>
+    <div class="sec-label">// 05 · Reglas de oro</div>
+    <div class="grid-3">
+      <div class="card"><h3>💰 Presupuesto</h3>Arrancan con $5M. Las decisiones, herramientas y multas lo consumen. Quedarse sin dinero limita drásticamente las opciones del final.</div>
+      <div class="card"><h3>❤ Reputación</h3>De 0 a 100%. Las malas decisiones públicas la destruyen; las decisiones transparentes y bien comunicadas la recuperan. Bajar de 40% agrava el resultado final.</div>
+      <div class="card"><h3>⏳ Las 72 horas</h3>Cada opción consume horas del fin de semana. Superar las 72h operativas activa penalizaciones regulatorias en el desenlace.</div>
+      <div class="card"><h3>⚠ Hay trampas</h3>De las 5 opciones por etapa, varias son trampas diseñadas para parecer razonables. Las pistas y la inteligencia comprada ayudan a detectarlas.</div>
+      <div class="card"><h3>🔀 Sus decisiones ramifican</h3>Cada decisión cambia el contexto de la siguiente etapa. Dos equipos en la misma etapa pueden estar viviendo realidades muy distintas.</div>
+      <div class="card"><h3>☠ Se puede perder todo</h3>Existen combinaciones de decisiones que llevan al colapso total del banco (GAME OVER) antes del final. Lean bien antes de actuar.</div>
+    </div>
+  </section>
+
+  <!-- ══════════ PUNTAJE ══════════ -->
+  <section>
+    <div class="sec-label">// 06 · Cómo se calcula el puntaje</div>
+
+    <div class="card">
+      <h3>🏆 PUNTOS (la clasificación)</h3>
+      El ranking entre equipos se ordena por un puntaje compuesto que combina las tres dimensiones del juego:
+      <div class="formula">
+        PUNTOS = <span class="gold">Presupuesto ÷ 100,000</span> + <span class="green">Reputación</span> + <span class="blue">Eficiencia</span>
+      </div>
+      <table>
+        <tr><th>Componente</th><th>Rango</th><th>Qué mide</th></tr>
+        <tr><td><span class="gold" style="color:var(--gold)">💰 Presupuesto</span></td><td class="num">0 – 50 pts</td><td>Cada $100,000 que conservan vale 1 punto</td></tr>
+        <tr><td><span style="color:var(--success)">❤ Reputación</span></td><td class="num">0 – 100 pts</td><td>El porcentaje de reputación se suma directo</td></tr>
+        <tr><td><span style="color:var(--info)">⚡ Eficiencia</span></td><td class="num">0 – 165 pts</td><td>Inteligencia estratégica y velocidad (ver abajo)</td></tr>
+      </table>
+      <div class="tip">En la clasificación proyectada, la barra tricolor bajo su puntaje muestra la proporción de cada componente.</div>
+    </div>
+
+    <div class="card">
+      <h3>⚡ Eficiencia (el desempate inteligente)</h3>
+      <div class="formula">
+        EFICIENCIA = 100 <span class="green">+ anticipación</span> <span class="blue">± velocidad</span> <span class="neg">− compras inútiles</span>
+      </div>
+      <table>
+        <tr><th>Factor</th><th>Efecto</th><th>Detalle</th></tr>
+        <tr><td>🎯 Anticipación</td><td class="pos">+3 por etapa de adelanto</td><td>Comprar una herramienta antes de su etapa ideal</td></tr>
+        <tr><td>🚀 Muy rápidos (≤50% del tiempo)</td><td class="pos">+10 por etapa</td><td>Decidieron en menos de la mitad del objetivo</td></tr>
+        <tr><td>⚡ Rápidos (≤80%)</td><td class="pos">+5 por etapa</td><td>Decidieron con margen</td></tr>
+        <tr><td>⏱ A tiempo (≤100%)</td><td class="num">0</td><td>Dentro del objetivo</td></tr>
+        <tr><td>🐌 Lentos (≤130%)</td><td class="neg">−5 por etapa</td><td>Se pasaron del objetivo</td></tr>
+        <tr><td>💤 Muy lentos (>130%)</td><td class="neg">−10 por etapa</td><td>Se pasaron por mucho</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>🏷 Perfiles de equipo</h3>
+      Según cómo juegan, la clasificación les asigna un perfil visible para todos:
+      <div style="display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.9rem">
+        <span class="profile-pill" style="color:var(--gold)">🎯⚡ COMPLETO — anticipan y deciden rápido</span>
+        <span class="profile-pill" style="color:var(--violet)">🎯 ESTRATEGA — compran herramientas a futuro</span>
+        <span class="profile-pill" style="color:var(--info)">⚡ ÁGIL — deciden con velocidad</span>
+        <span class="profile-pill" style="color:var(--text)">⚖ EQUILIBRADO — sin extremos</span>
+        <span class="profile-pill" style="color:var(--muted)">🐌 DEMORADO — pierden puntos por tiempo</span>
+        <span class="profile-pill" style="color:var(--accent)">🔥 EN CRISIS — reputación o presupuesto crítico</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🏛 El desenlace final</h3>
+      Además del ranking, cada equipo recibe un <strong>estado final</strong> que resume su gestión de la crisis:
+      <table>
+        <tr><th>Estado</th><th>Condición típica</th></tr>
+        <tr><td><span class="pos">🟢 LEVE</span></td><td>Abrieron el lunes, pocas multas, presupuesto sano — crisis contenida</td></tr>
+        <tr><td><span style="color:var(--gold)">🟡 MEDIO</span></td><td>Abrieron el lunes pero la gestión fue costosa o cuestionable</td></tr>
+        <tr><td><span style="color:#e67e22">🟠 GRAVE</span></td><td>No lograron abrir el lunes — supervisión regulatoria activa</td></tr>
+        <tr><td><span class="neg">🔴 CRÍTICO</span></td><td>Backups destruidos, licencia en riesgo o multas masivas — crisis existencial</td></tr>
+      </table>
+      <div class="tip">Exceder las 72 horas o terminar con reputación baja puede degradar el estado final aunque hayan abierto el lunes.</div>
+    </div>
+  </section>
+
+  <div class="footer-note">SEGURIDAD CORPORATIVA · SOC/CSIRT · BANCO MERIDIAN ES FICTICIO</div>
+</div>
+</body>
+</html>
