@@ -172,8 +172,10 @@ function render() {
   if (session.status === 'lobby') {
     showScreen('screenLobby');
     setupLobbyNameField();
+    startLobbyFeed();
     return;
   }
+  stopLobbyFeed();
   if (session.status === 'finished' || group.final_state) {
     showFinal();
     return;
@@ -346,6 +348,20 @@ window.purchaseTool = async function(toolId) {
   if (owned.includes(toolId)) return;
   if (group.budget < tool.cost) return;
 
+  // Feedback inmediato: flash en la card + pulse en la pestaña Alertas
+  const btn = document.querySelector(`.tk-buy[data-tool="${toolId}"]`);
+  const card = btn?.closest('.toolkit-card');
+  if (card) {
+    card.classList.add('tool-acquiring');
+    card.addEventListener('animationend', () => card.classList.remove('tool-acquiring'), { once: true });
+  }
+  const alertsTab = document.getElementById('tabAlerts');
+  if (alertsTab && tool.reveals) {
+    alertsTab.classList.remove('tab-pulse');
+    void alertsTab.offsetWidth;
+    alertsTab.classList.add('tab-pulse');
+  }
+
   // Nueva shape: array de objetos {id, stage}
   const newOwned  = [...(group.tools_owned || []), { id: toolId, stage: group.stage }];
   const newBudget = group.budget - tool.cost;
@@ -414,15 +430,25 @@ function startStageTimer() {
       const m = String(Math.floor(remainSec / 60)).padStart(2, '0');
       const s = String(remainSec % 60).padStart(2, '0');
       el.textContent = `${m}:${s}`;
-      wrap.classList.toggle('timer-warn', remainSec < 120);
+      wrap.classList.toggle('timer-warn',     remainSec < 120 && remainSec >= 60);
+      wrap.classList.toggle('timer-critical', remainSec < 60);
       wrap.classList.remove('timer-over');
+      document.body.classList.toggle('time-pressure', remainSec < 60);
+      if (remainSec > 1) delete wrap.dataset.zeroFlashed;
     } else {
       const over = -remainSec;
+      // Flash de pantalla una sola vez al cruzar el cero
+      if (over <= 1 && !wrap.dataset.zeroFlashed) {
+        wrap.dataset.zeroFlashed = '1';
+        document.body.classList.add('timer-zero-flash');
+        setTimeout(() => document.body.classList.remove('timer-zero-flash'), 900);
+      }
       const m = String(Math.floor(over / 60)).padStart(2, '0');
       const s = String(over % 60).padStart(2, '0');
       el.textContent = `+${m}:${s}`;
       wrap.classList.add('timer-over');
-      wrap.classList.remove('timer-warn');
+      wrap.classList.remove('timer-warn', 'timer-critical');
+      document.body.classList.remove('time-pressure');
     }
   };
   tick();
@@ -439,6 +465,82 @@ function stopStageTimer() {
 function elapsedStageSeconds() {
   if (!group?.stage_start_at) return 0;
   return Math.max(0, Math.floor((Date.now() - new Date(group.stage_start_at).getTime()) / 1000));
+}
+
+// ══════════════════════════════════════════
+// JUICE — feedback visual del estado del juego
+// ══════════════════════════════════════════
+
+// Animar un número de from→to con rAF (efecto "el sistema está calculando")
+function animateNumber(el, from, to, ms = 600, formatter = v => fmt(Math.round(v))) {
+  if (!el || from === to) { if (el) el.textContent = formatter(to); return; }
+  const t0 = performance.now();
+  function tick(now) {
+    const p = Math.min(1, (now - t0) / ms);
+    const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
+    el.textContent = formatter(from + (to - from) * eased);
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// Chip flotante de delta (-15% / -$600,000) que sube y se desvanece
+function floatDelta(anchorEl, text, isNegative = true) {
+  if (!anchorEl) return;
+  const chip = document.createElement('span');
+  chip.className = `stat-delta ${isNegative ? 'stat-delta-bad' : 'stat-delta-good'}`;
+  chip.textContent = text;
+  anchorEl.style.position = 'relative';
+  anchorEl.appendChild(chip);
+  chip.addEventListener('animationend', () => chip.remove(), { once: true });
+}
+
+// Sacudida + flash rojo en un elemento (daño recibido)
+function statHit(el) {
+  if (!el) return;
+  el.classList.remove('stat-hit');
+  void el.offsetWidth; // reflow para reiniciar la animación
+  el.classList.add('stat-hit');
+}
+
+// Valores previos para detectar cambios entre renders
+let _prevBudget = null;
+let _prevRep    = null;
+
+// ── Lobby: feed de terminal SOC ──────────────
+const LOBBY_FEED_LINES = [
+  '> escaneando perímetro de red... OK',
+  '> verificando integridad del Core Bancario... OK',
+  '> monitoreando tráfico saliente... sin anomalías',
+  '> sincronizando feeds de threat intel... OK',
+  '> backup incremental completado · 02:00 AM',
+  '> 847 endpoints reportando... OK',
+  '> certificados TLS verificados... OK',
+  '> SOC en monitoreo pasivo... esperando inicio',
+  '> revisando logs de autenticación... sin alertas',
+  '> firewall perimetral: 14,202 paquetes descartados',
+  '> análisis heurístico programado... en cola',
+  '> canal cifrado con BCP establecido... OK'
+];
+let _lobbyFeedTimer = null;
+
+function startLobbyFeed() {
+  const feed = document.getElementById('lobbyFeed');
+  if (!feed || _lobbyFeedTimer) return;
+  let i = 0;
+  _lobbyFeedTimer = setInterval(() => {
+    const line = document.createElement('div');
+    line.className = 'lobby-feed-line';
+    line.textContent = LOBBY_FEED_LINES[i % LOBBY_FEED_LINES.length];
+    feed.appendChild(line);
+    while (feed.children.length > 6) feed.removeChild(feed.firstChild);
+    i++;
+  }, 2200);
+}
+
+function stopLobbyFeed() {
+  clearInterval(_lobbyFeedTimer);
+  _lobbyFeedTimer = null;
 }
 
 function buildIncidentCard(s, variant, state5) {
@@ -672,9 +774,19 @@ window.toggleGMInfo = function(i) {
 function updateSidebar() {
   if (!group) return;
 
-  // Budget pill
-  document.getElementById('budgetPill').textContent = fmt(group.budget);
-  document.getElementById('timePill').textContent   = `${group.hours}h / ${HOURS_LIMIT}h`;
+  // Budget pill — animado si cambió, con shake + chip de delta al bajar
+  const budgetPill = document.getElementById('budgetPill');
+  if (_prevBudget !== null && _prevBudget !== group.budget) {
+    animateNumber(budgetPill, _prevBudget, group.budget);
+    if (group.budget < _prevBudget) {
+      statHit(budgetPill);
+      floatDelta(budgetPill, '-' + fmt(_prevBudget - group.budget));
+    }
+  } else {
+    budgetPill.textContent = fmt(group.budget);
+  }
+  _prevBudget = group.budget;
+  document.getElementById('timePill').textContent = `${group.hours}h / ${HOURS_LIMIT}h`;
 
   // Hours bar
   const pct = Math.min((group.hours / HOURS_LIMIT) * 100, 100);
@@ -683,9 +795,21 @@ function updateSidebar() {
   bar.style.width = pct + '%';
   bar.style.background = pct > 85 ? 'var(--accent)' : pct > 60 ? 'var(--gold)' : 'var(--info)';
 
-  // Reputation bar
-  const rep = group.reputation ?? 100;
-  document.getElementById('repVal').textContent = rep + '%';
+  // Reputation bar — shake + chip al recibir daño
+  const rep    = group.reputation ?? 100;
+  const repVal = document.getElementById('repVal');
+  if (_prevRep !== null && _prevRep !== rep) {
+    animateNumber(repVal, _prevRep, rep, 600, v => Math.round(v) + '%');
+    if (rep < _prevRep) {
+      statHit(repVal.closest('.rep-track') || repVal);
+      floatDelta(repVal, `-${_prevRep - rep}%`);
+    } else {
+      floatDelta(repVal, `+${rep - _prevRep}%`, false);
+    }
+  } else {
+    repVal.textContent = rep + '%';
+  }
+  _prevRep = rep;
   const repBar = document.getElementById('repBar');
   repBar.style.width = rep + '%';
   repBar.style.background =
@@ -878,10 +1002,10 @@ function showFinal() {
 
   // ── Historia final ───────────────────────────
   const stories = {
-    A: `Banco Meridian superó el ataque de ransomware más grave de su historia sin perder la confianza de sus clientes ni su posición ante el regulador. El lunes a las 10:00 AM las puertas abrieron con normalidad, y los 180,000 clientes encontraron sus servicios funcionando como si nada hubiera ocurrido el fin de semana anterior.\n\nLas decisiones técnicas correctas en las primeras horas —contención lógica, preservación de evidencia, comunicación protocolizada— marcaron la diferencia entre una crisis gestionada y un colapso institucional. El BCP reconoció públicamente la respuesta como modelo de gestión de incidentes para el sector financiero. Las penalizaciones fueron mínimas o inexistentes.\n\nBanco Meridian emerge de esta crisis no solo intacto sino fortalecido. La reputación institucional se mantiene sólida, los sistemas están limpios y documentados, y el equipo demostró que la preparación y las decisiones correctas bajo presión extrema son posibles. Este es el estándar que el sector necesita.`,
+    A: `Banco Meridian superó el ataque de ransomware más grave de su historia sin perder la confianza de sus clientes ni su posición ante el regulador. El lunes a las 10:00 AM las puertas abrieron en modo controlado, y los 180,000 clientes encontraron los servicios esenciales funcionando sin interrupciones pese al fin de semana más difícil en la historia del banco.\n\nLas decisiones técnicas correctas en las primeras horas —contención lógica, preservación de evidencia, comunicación protocolizada— marcaron la diferencia entre una crisis gestionada y un colapso institucional. El BCP reconoció públicamente la respuesta como modelo de gestión de incidentes para el sector financiero. Las penalizaciones fueron mínimas o inexistentes.\n\nBanco Meridian emerge de esta crisis no solo intacto sino fortalecido. La reputación institucional se mantiene sólida, los sistemas están limpios y documentados, y el equipo demostró que la preparación y las decisiones correctas bajo presión extrema son posibles. Este es el estándar que el sector necesita.`,
     B: `Banco Meridian abrió el lunes —ese objetivo crítico se cumplió— pero el costo del camino fue significativamente mayor de lo necesario. Las decisiones subóptimas durante la crisis generaron gastos que erosionaron el presupuesto operativo y dejaron al regulador con preguntas legítimas sobre la calidad de la gestión del equipo.\n\nEl BCP abrió un expediente de seguimiento formal. No hay multas catastróficas, pero las observaciones acompañarán al banco durante los próximos doce meses de auditorías reforzadas. Los accionistas recibieron el informe con reservas: se abrió, sí, pero ¿a qué precio y con qué precedentes?\n\nEl banco sobrevive. La lección es clara: abrir el lunes no es suficiente si el camino para lograrlo fue innecesariamente costoso. Una próxima crisis —y siempre hay una próxima— llegará con las reservas ya parcialmente comprometidas por las decisiones de este fin de semana.`,
     C: `Banco Meridian no abrió el lunes. Los cajeros permanecieron apagados. Las sucursales colocaron carteles improvisados en sus ventanas. Las redes sociales ardieron con el hashtag #MeridianCerrado. Para las 2:00 PM, el BCP había iniciado formalmente una supervisión especial y tres medios de comunicación tenían corresponsales frente a la sede central.\n\nEl BCP no tiene margen de flexibilidad cuando una institución financiera de importancia sistémica no puede operar en la fecha comprometida. Las penalizaciones son significativas y el banco entra en modo de supervisión reforzada: cada decisión futura requerirá aprobación regulatoria previa, lo que ralentizará dramáticamente la recuperación.\n\nNo todo está perdido. Con un plan de remediación creíble presentado antes del jueves y ejecución disciplinada, Banco Meridian puede recuperar su posición operativa en el próximo trimestre. Pero la confianza —de clientes, reguladores y mercado— tardará años en reconstruirse.`,
-    D: `A las 11:47 AM del lunes, el Superintendente de Bancos emitió la Resolución de Intervención Temporal número 2024-BM-001 sobre Banco Meridian. El banco —con 180,000 clientes y cuarenta años de historia ininterrumpida en el sistema financiero— dejó de operar de forma independiente en ese momento.\n\nLas decisiones tomadas durante la crisis no solo destruyeron el presupuesto y la reputación institucional: activaron simultáneamente todos los mecanismos de protección regulatoria disponibles. Backups destruidos, pagos ilegales de rescate, obstrucción activa de la investigación, silencio ante el regulador en momentos críticos —la acumulación de errores fue demasiado para cualquier sistema de defensa institucional.\n\nLos próximos pasos no son recuperación sino procesos. Auditorías forenses completas, demandas colectivas de depositantes, posible liquidación controlada o fusión forzada con otro banco intervenido. El análisis post-mortem de esta crisis se utilizará durante años en programas de formación en ciberseguridad financiera. Como ejemplo definitivo de qué no hacer.`
+    D: `A las 2:47 PM del lunes, el Superintendente de Bancos emitió la Resolución de Intervención Temporal número 2026-BM-001 sobre Banco Meridian. El banco —con 180,000 clientes y cuarenta años de historia ininterrumpida en el sistema financiero— dejó de operar de forma independiente en ese momento.\n\nLas decisiones tomadas durante la crisis no solo destruyeron el presupuesto y la reputación institucional: activaron simultáneamente todos los mecanismos de protección regulatoria disponibles. Backups destruidos, pagos ilegales de rescate, obstrucción activa de la investigación, silencio ante el regulador en momentos críticos —la acumulación de errores fue demasiado para cualquier sistema de defensa institucional.\n\nLos próximos pasos no son recuperación sino procesos. Auditorías forenses completas, demandas colectivas de depositantes, posible liquidación controlada o fusión forzada con otro banco intervenido. El análisis post-mortem de esta crisis se utilizará durante años en programas de formación en ciberseguridad financiera. Como ejemplo definitivo de qué no hacer.`
   };
 
   // ── Reputación ────────────────────────────────

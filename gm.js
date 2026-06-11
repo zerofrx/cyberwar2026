@@ -25,7 +25,7 @@ const STAGES = [
   title: 'La Infección Silenciosa',
   variants: {
     default: {
-      narrative: 'Los sistemas de RRHH reportan lentitud inusual desde hace 30 minutos. Varios empleados encuentran archivos con extensión <strong>.locked</strong> en sus carpetas de trabajo. El equipo de TI no puede determinar la causa. El Core Bancario (CBS) sigue operando con normalidad. No hay alertas en el SOC. La situación parece ser un problema menor de software.',
+      narrative: 'Varios sistemas reportan lentitud inusual desde hace 30 minutos. Varios empleados encuentran archivos con extensión <strong>.locked</strong> en sus carpetas de trabajo. Un desarrollador del área de TI menciona que hace unos días instaló una herramienta de <strong>Inteligencia Artificial</strong> que encontró en internet para automatizar tareas. El Core Bancario sigue operando con normalidad. No hay alertas en el SOC. La situación parece ser un problema menor de software.',
       update: null,
       branchCtx: null
     }
@@ -47,7 +47,7 @@ const STAGES = [
       sub:'Apagar toda la infraestructura bancaria como medida de contención total',
       cost:2000000, hours:2,
       type:'trap', typeLabel:'TRAMPA DE PÁNICO',
-      consequence:'El apagón masivo causa un lucro cesante millonario injustificado. Al no haber investigado, no se sabe si era necesario. Además el Core CBS se corrompe parcialmente durante el apagado de emergencia.',
+      consequence:'El apagón masivo causa un lucro cesante millonario injustificado. Al no haber investigado, no se sabe si era necesario. Además el Core Bancario se corrompe parcialmente durante el apagado de emergencia.',
       branchNote:'→ Stage 2, Contexto B (caos y sin evidencia)',
       penalty:0, nextCtx:'B'
     },
@@ -89,7 +89,7 @@ const STAGES = [
   variants: {
     A: {
       narrative: 'El análisis forense capturó la imagen RAM. Se identificó la variante de ransomware <strong>LockBit 3.0</strong>. Aparece una nota de rescate exigiendo <strong>$3,000,000 USD</strong> en Bitcoin en 48 horas. El Core Bancario está a salvo dentro del segmento aislado. El equipo tiene evidencia sólida y tiempo para actuar con inteligencia.',
-      update: '⚡ Forense confirma: el vector de entrada fue un correo de phishing hace 21 días. El malware estuvo en modo sigiloso 3 semanas antes de activarse.',
+      update: '⚡ Forense confirma: el vector de entrada fue una app de IA descargada por un desarrollador de TI hace 18 días. Al tener permisos elevados, el malware se instaló sin obstáculos.',
       branchCtx: '✓ CONTEXTO A — Evidencia asegurada. Core a salvo. Actuaron bien en Stage 1.'
     },
     B: {
@@ -156,7 +156,7 @@ const STAGES = [
   title: 'El Paciente Cero y la Prensa',
   variants: {
     A: {
-      narrative: 'El equipo forense identificó el vector de entrada: un correo de phishing en LinkedIn dirigido a <strong>Claudia M., analista de RRHH</strong>, hace 21 días. El malware estuvo latente tres semanas antes de activarse. La prensa pregunta por rumores de una "interrupción operativa mayor". No hay pánico todavía pero la ventana de comunicación se cierra.',
+      narrative: 'El equipo forense completó la trazabilidad del vector de entrada: una <strong>herramienta de IA</strong> descargada de un sitio no oficial por un <strong>desarrollador del área de TI</strong> hace 18 días. La aplicación se ejecutó con permisos elevados y depositó silenciosamente el payload de LockBit. La prensa pregunta por rumores de una "interrupción operativa mayor". No hay pánico todavía pero la ventana de comunicación se cierra.',
       update: '⚡ El BCP envió un correo formal solicitando un informe preliminar en 4 horas. La respuesta que den determinará el tono de la relación con la autoridad.',
       branchCtx: '✓ CONTEXTO A — Control forense. Tiempo para comunicar correctamente.'
     },
@@ -171,10 +171,10 @@ const STAGES = [
   options: [
     {
       letter:'A', text:'Caza de Brujas',
-      sub:'Suspender de inmediato a la empleada de RRHH y comunicarlo públicamente como medida correctiva',
+      sub:'Suspender de inmediato al desarrollador responsable y comunicarlo públicamente como medida correctiva',
       cost:50000, hours:2,
       type:'trap', typeLabel:'TRAMPA',
-      consequence:'La empleada no era un insider —fue víctima de phishing. Su abogado presenta una demanda por daño moral. El regulador multa al banco por incumplir protocolos de investigación. Penalización: $1,000,000.',
+      consequence:'El desarrollador fue negligente, pero la causa raíz fue la ausencia de controles institucionales. El regulador interpreta la suspensión pública como evasión de responsabilidades. Su abogado presenta una demanda por despido mediático sin debido proceso. Penalización: $1,000,000.',
       branchNote:'PENALIZACIÓN: -$1,000,000. Demanda laboral activa. → Stage 4, Contexto B',
       penalty:1000000, isPendingPenalty:false, laborLawsuit:true, nextCtx:'B'
     },

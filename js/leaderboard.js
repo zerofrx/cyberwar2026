@@ -20,7 +20,7 @@ if (!SESSION_ID) {
 let session = null;
 let groups  = [];
 
-// ── Render ───────────────────────────────────
+// ── Render con animación FLIP (las filas que cambian de posición se deslizan) ──
 function render() {
   if (!session) return;
   const stageIdx = session.current_stage ?? 0;
@@ -39,7 +39,33 @@ function render() {
     container.innerHTML = '<div class="lb-loading">Sin grupos activos.</div>';
     return;
   }
+
+  // FIRST: capturar posiciones actuales por grupo
+  const before = {};
+  container.querySelectorAll('.lb-row[data-gid]').forEach(row => {
+    before[row.dataset.gid] = row.getBoundingClientRect().top;
+  });
+
   container.innerHTML = buildLeaderboardTable(groups, 'public', stageIdx + 1);
+
+  // LAST + INVERT + PLAY: deslizar las filas que se movieron
+  container.querySelectorAll('.lb-row[data-gid]').forEach(row => {
+    const prevTop = before[row.dataset.gid];
+    if (prevTop === undefined) return;
+    const delta = prevTop - row.getBoundingClientRect().top;
+    if (Math.abs(delta) < 2) return;
+    row.style.transform  = `translateY(${delta}px)`;
+    row.style.transition = 'none';
+    requestAnimationFrame(() => {
+      row.style.transition = 'transform .6s cubic-bezier(.2,.8,.2,1)';
+      row.style.transform  = '';
+      if (delta > 0) {
+        // Subió de posición → destello dorado
+        row.classList.add('lb-row-overtake');
+        row.addEventListener('transitionend', () => row.classList.remove('lb-row-overtake'), { once: true });
+      }
+    });
+  });
 }
 
 // ── Init ─────────────────────────────────────

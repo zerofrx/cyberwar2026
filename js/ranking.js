@@ -137,7 +137,7 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
       const effPts    = effScore;
 
       return `
-        <tr class="lb-row lb-row-${tier}">
+        <tr class="lb-row lb-row-${tier}" data-gid="${g.id}">
           <td class="lb-rank">${r.position}</td>
           <td class="lb-team">${g.name || `Equipo ${g.slot}`}</td>
           <td class="lb-profile-cell">

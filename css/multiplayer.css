@@ -2476,3 +2476,195 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
 .lb-legend-budget { background: var(--gold); }
 .lb-legend-rep    { background: var(--success); }
 .lb-legend-eff    { background: var(--info); }
+
+/* ══════════════════════════════════════════
+   JUICE — feedback visual y drama
+   ══════════════════════════════════════════ */
+
+/* ── Timer crítico (últimos 60s) ── */
+.stage-timer.timer-critical {
+  border-color: var(--accent);
+  color: var(--accent);
+  animation: timer-critical-pulse .5s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(192,57,43,.45);
+}
+@keyframes timer-critical-pulse {
+  50% { opacity: .5; box-shadow: 0 0 20px rgba(192,57,43,.7); }
+}
+
+/* Viñeta roja sutil en toda la pantalla bajo presión */
+body.time-pressure::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9000;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(192,57,43,.10) 100%);
+  animation: pressure-breathe 1.6s ease-in-out infinite;
+}
+@keyframes pressure-breathe {
+  50% { opacity: .45; }
+}
+
+/* Flash de pantalla al cruzar 00:00 */
+body.timer-zero-flash::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9001;
+  background: rgba(192,57,43,.22);
+  animation: zero-flash .9s ease-out forwards;
+}
+@keyframes zero-flash {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── Daño en stats: shake + flash ── */
+.stat-hit {
+  animation: stat-shake .45s ease;
+}
+@keyframes stat-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+
+/* Chip flotante de delta */
+.stat-delta {
+  position: absolute;
+  top: -2px;
+  right: 0;
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  font-weight: 700;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: delta-float 1.4s ease-out forwards;
+  z-index: 50;
+}
+.stat-delta-bad  { color: var(--accent); }
+.stat-delta-good { color: var(--success); }
+@keyframes delta-float {
+  0%   { opacity: 0; transform: translateY(0); }
+  15%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-26px); }
+}
+
+/* ── Lobby: feed de terminal SOC ── */
+.lobby-feed {
+  margin-top: 2rem;
+  width: min(420px, 88vw);
+  font-family: 'DM Mono', monospace;
+  font-size: .64rem;
+  letter-spacing: .04em;
+  color: var(--muted);
+  text-align: left;
+  opacity: .75;
+  min-height: 7.5em;
+}
+.lobby-feed-line {
+  animation: feed-in .4s ease;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: 1.55;
+}
+.lobby-feed-line:last-child { color: var(--info); }
+@keyframes feed-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Compra de herramienta: flash verde ── */
+.toolkit-card.tool-acquiring {
+  animation: tool-acquire .7s ease;
+}
+@keyframes tool-acquire {
+  0%   { box-shadow: 0 0 0 0 rgba(46,158,96,.0); }
+  30%  { box-shadow: 0 0 24px 4px rgba(46,158,96,.55); border-color: var(--success); }
+  100% { box-shadow: 0 0 0 0 rgba(46,158,96,.0); }
+}
+
+/* Pulse de la pestaña Alertas al recibir intel */
+.stab.tab-pulse {
+  animation: tab-pulse 1s ease 2;
+}
+@keyframes tab-pulse {
+  50% { color: var(--info); transform: scale(1.06); }
+}
+
+/* ── Consequence reveal: entrada tipo recibo ── */
+.consequence-reveal {
+  animation: cr-slide-in .5s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes cr-slide-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.consequence-reveal .cr2-brow {
+  opacity: 0;
+  animation: cr-row-print .35s ease forwards;
+}
+.consequence-reveal .cr2-brow:nth-child(1) { animation-delay: .25s; }
+.consequence-reveal .cr2-brow:nth-child(2) { animation-delay: .45s; }
+.consequence-reveal .cr2-brow:nth-child(3) { animation-delay: .65s; }
+@keyframes cr-row-print {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Wait overlay: secciones escalonadas ── */
+#swoNarrative .swo-section {
+  opacity: 0;
+  animation: swo-section-in .55s ease forwards;
+}
+#swoNarrative .swo-section:nth-of-type(1) { animation-delay: .2s; }
+#swoNarrative .swo-section:nth-of-type(2) { animation-delay: .9s; }
+@keyframes swo-section-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* Glitch en el título de la próxima etapa */
+#swoNarrative .swo-next-title {
+  animation: title-glitch 2.4s steps(1) 1.2s 1;
+}
+@keyframes title-glitch {
+  0%, 4%  { clip-path: inset(0 0 0 0); transform: translateX(0); }
+  1%      { clip-path: inset(20% 0 40% 0); transform: translateX(-3px); }
+  2%      { clip-path: inset(60% 0 10% 0); transform: translateX(3px); }
+  3%      { clip-path: inset(10% 0 70% 0); transform: translateX(-2px); }
+}
+
+/* ── Leaderboard: destello dorado al adelantar posición ── */
+.lb-row-overtake {
+  animation: overtake-flash 1.2s ease;
+}
+@keyframes overtake-flash {
+  0%   { background: rgba(200,154,32,.35); }
+  100% { background: transparent; }
+}
+
+/* ── Accesibilidad: respetar reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .stat-hit,
+  .stat-delta,
+  .lobby-feed-line,
+  .toolkit-card.tool-acquiring,
+  .stab.tab-pulse,
+  .consequence-reveal,
+  .consequence-reveal .cr2-brow,
+  #swoNarrative .swo-section,
+  #swoNarrative .swo-next-title,
+  .lb-row-overtake,
+  .stage-timer.timer-critical {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  body.time-pressure::after,
+  body.timer-zero-flash::before { display: none; }
+}
