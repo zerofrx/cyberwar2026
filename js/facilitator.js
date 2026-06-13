@@ -4,8 +4,8 @@
 
 import { supabase }                              from './supabase-client.js';
 import { STAGES, fmt, computeStage5State,
-         computeEfficiencyScore, efficiencyStars } from './game-data.js?v=8';
-import { buildLeaderboardTable }                  from './ranking.js?v=8';
+         computeEfficiencyScore, efficiencyStars } from './game-data.js?v=18';
+import { buildLeaderboardTable }                  from './ranking.js?v=18';
 
 const NUM_GROUPS  = 6;
 const ROLES       = ['ciso', 'analyst', 'legal', 'comms', 'ops'];
@@ -35,6 +35,9 @@ async function init() {
   });
 
   // ── Atajos ─────────────────────────────────
+  document.getElementById('btnOpenGuide').addEventListener('click', () => {
+    window.open('guia.html', '_blank', 'noopener');
+  });
   document.getElementById('btnOpenSplash').addEventListener('click', () => {
     window.open('splash.html', '_blank', 'noopener');
   });

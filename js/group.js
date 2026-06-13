@@ -8,7 +8,7 @@ import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          fmt, applyDecision, computeStage5State,
          TOOLS_CATALOG, STAGE_TIME_TARGETS, findTool,
          toolsForStage, ownedIds,
-         computeEfficiencyScore, efficiencyStars, efficiencyBreakdown } from './game-data.js?v=3';
+         computeEfficiencyScore, efficiencyStars, efficiencyBreakdown } from './game-data.js?v=18';
 
 // ── Parsear URL params ───────────────────────
 const params    = new URLSearchParams(location.search);
@@ -971,7 +971,7 @@ function showFinal() {
   const correct = log.filter(l => l.type === 'correct').length;
   const traps   = log.filter(l => l.type === 'trap').length;
   // ── Eficiencia (medalla + desglose) ───────────────
-  const effBreakdown = efficiencyBreakdown(group.stage_durations || {}, group.tools_owned || []);
+  const effBreakdown = efficiencyBreakdown(group.stage_durations || {}, group.tools_owned || [], group.decision_log || []);
   const effScore     = effBreakdown.total;
   const stars        = efficiencyStars(effScore);
   const starsHtml    = Array.from({ length: 5 },
@@ -987,6 +987,7 @@ function showFinal() {
       <div class="eff-breakdown">
         <div class="eff-row"><span>Base</span><span>+${effBreakdown.base}</span></div>
         ${effBreakdown.anticipation ? `<div class="eff-row eff-good"><span>Anticipación</span><span>+${effBreakdown.anticipation}</span></div>` : ''}
+        ${effBreakdown.equip ? `<div class="eff-row eff-good"><span>Herramientas usadas</span><span>+${effBreakdown.equip}</span></div>` : ''}
         ${effBreakdown.timeScore > 0
           ? `<div class="eff-row eff-good"><span>Velocidad</span><span>+${effBreakdown.timeScore}</span></div>`
           : effBreakdown.timeScore < 0

@@ -4,18 +4,20 @@
 // ══════════════════════════════════════════
 
 import { STAGES, fmt, computeEfficiencyScore, efficiencyStars,
-         computeAnticipationBonus, computeTimeScore } from './game-data.js?v=14';
+         computeAnticipationBonus, computeTimeScore } from './game-data.js?v=18';
 
 // ── Score compuesto ──────────────────────────
-// Presupuesto/100k + Reputación + Eficiencia. Rango aprox: 0–265.
+// Presupuesto/10k + Reputación×10 + Eficiencia×10.
+// Estado inicial: 500 + 1000 + 1000 = 2,500 puntos exactos.
+// Rango aprox: 0–2,650. Cada decisión mueve cientos de puntos.
 export function compositeScore(g) {
   if (!g) return 0;
   const flags = g.flags || {};
   const budgetFinal = (g.budget || 0)
     - (flags.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
   const rep         = g.reputation ?? 100;
-  const effScore    = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || []);
-  return Math.max(0, Math.round(budgetFinal / 100000 + rep + effScore));
+  const effScore    = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || [], g.decision_log || []);
+  return Math.max(0, Math.round(budgetFinal / 10000 + rep * 10 + effScore * 10));
 }
 
 // ── Perfil del equipo (etiqueta gamificada según drivers dominantes) ──
@@ -128,13 +130,13 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
       const budgetFin = (g.budget || 0)
         - (flags.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
       const rep       = g.reputation ?? 100;
-      const effScore  = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || []);
+      const effScore  = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || [], g.decision_log || []);
       const profile   = profileOf(g);
 
-      // Componentes proporcionales para la mini-bar
-      const budgetPts = Math.max(0, budgetFin / 100000);
-      const repPts    = rep;
-      const effPts    = effScore;
+      // Componentes proporcionales para la mini-bar (misma escala que compositeScore)
+      const budgetPts = Math.max(0, budgetFin / 10000);
+      const repPts    = rep * 10;
+      const effPts    = effScore * 10;
 
       return `
         <tr class="lb-row lb-row-${tier}" data-gid="${g.id}">
@@ -162,7 +164,7 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
     const budgetFin  = (g.budget || 0)
       - (flags.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
     const rep        = g.reputation ?? 100;
-    const effScore   = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || []);
+    const effScore   = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || [], g.decision_log || []);
     const stars      = efficiencyStars(effScore);
     const starsHtml  = '★'.repeat(stars) + '☆'.repeat(5 - stars);
     const budgetColor = budgetFin > 3000000 ? 'var(--success)'

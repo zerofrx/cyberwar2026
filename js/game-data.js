@@ -739,23 +739,39 @@ export function computeTimePenalty(stageDurations = {}) {
   return Math.max(0, -computeTimeScore(stageDurations));
 }
 
-// Score de eficiencia: base 100 + anticipación + tiempo (signed) − inútiles. Sin cap superior.
-export function computeEfficiencyScore(stageDurations = {}, toolsOwned = []) {
+// Bonus por usar las herramientas correctas en decisiones correctas.
+// Lee el toolBonus congelado en cada entrada del decision_log al momento de decidir.
+// +5 eficiencia por decisión correcta totalmente equipada (proporcional si parcial).
+export function computeEquipBonus(decisionLog = []) {
+  let bonus = 0;
+  for (const e of decisionLog) {
+    if (e?.type !== 'correct') continue;          // solo decisiones correctas/lifesaver
+    const tb = e.toolBonus;
+    if (!tb || !tb.total || tb.matched <= 0) continue;
+    bonus += Math.round(5 * (tb.matched / tb.total));
+  }
+  return bonus;
+}
+
+// Score de eficiencia: base 100 + anticipación + tiempo + equipamiento − inútiles. Sin cap superior.
+export function computeEfficiencyScore(stageDurations = {}, toolsOwned = [], decisionLog = []) {
   return Math.max(0,
     100 + computeAnticipationBonus(toolsOwned)
         + computeTimeScore(stageDurations)
+        + computeEquipBonus(decisionLog)
         - computeWastedPenalty(toolsOwned)
   );
 }
 
 // Desglose para la pantalla final
-export function efficiencyBreakdown(stageDurations = {}, toolsOwned = []) {
+export function efficiencyBreakdown(stageDurations = {}, toolsOwned = [], decisionLog = []) {
   const base         = 100;
   const anticipation = computeAnticipationBonus(toolsOwned);
   const timeScore    = computeTimeScore(stageDurations);   // signed
+  const equip        = computeEquipBonus(decisionLog);
   const wasted       = computeWastedPenalty(toolsOwned);
-  const total        = Math.max(0, base + anticipation + timeScore - wasted);
-  return { base, anticipation, timeScore, wasted, total };
+  const total        = Math.max(0, base + anticipation + timeScore + equip - wasted);
+  return { base, anticipation, timeScore, equip, wasted, total };
 }
 
 // Mapea score → estrellas (1–5)
