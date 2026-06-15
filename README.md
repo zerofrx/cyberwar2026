@@ -16,12 +16,16 @@ cyberwar2026/
 ├── index.html           # Login de participantes
 ├── group.html           # Pantalla del jugador (por rol)
 ├── facilitator.html     # Panel del facilitador
-├── results.html         # Pantalla de proyección de resultados
+├── results.html         # Pantalla de proyección de resultados finales
+├── leaderboard.html     # Clasificación pública proyectable (en vivo)
+├── guia.html            # Manual: cómo jugar, reglas y puntajes
 │
 ├── js/
-│   ├── game-data.js     # Datos y lógica pura del juego (5 etapas)
+│   ├── game-data.js     # Datos y lógica pura (5 etapas, toolkit, eficiencia)
+│   ├── ranking.js       # Puntaje compuesto, perfiles, tendencia, tabla
 │   ├── supabase-client.js  # Inicialización de Supabase
 │   ├── group.js         # Lógica de la pantalla del jugador
+│   ├── leaderboard.js   # Lógica de la clasificación pública
 │   └── facilitator.js   # Lógica del panel del facilitador
 │
 ├── css/
@@ -45,16 +49,16 @@ SUPABASE (bus de estado en tiempo real)
 
 Facilitador                    Grupos (6 equipos × 5 roles)
 facilitator.html  ─────────►  group.html
-advanceStage()                 Líder: decide y confirma
-                               CISO / Legal / Comms / Ops: read-only
+advanceStage()                 CISO: compra tools, decide y confirma
+                               Analista / Legal / Comms / Ops: read-only
 ```
 
 ### Roles por equipo
 
-| Rol | Puede confirmar decisiones | Vista especial |
+| Rol | Puede comprar tools y confirmar decisiones | Vista especial |
 |-----|--------------------------|----------------|
-| **Líder** | ✅ Sí | Consecuencia completa de cada opción |
-| CISO | ❌ No | Análisis técnico de cada opción |
+| **CISO** | ✅ Sí | Consecuencia completa de cada opción + Toolkit SOC |
+| Analista de Seguridad | ❌ No | Análisis técnico de cada opción |
 | Legal | ❌ No | Penalizaciones y riesgos legales |
 | Comunicaciones | ❌ No | Impacto reputacional |
 | Operaciones | ❌ No | Costos y tiempo operativo |
@@ -173,19 +177,90 @@ supabase.channel(`room-${roomCode}`)
 
 ---
 
-## Resultados y ranking
+## Cálculo del puntaje
 
-Al finalizar las 5 etapas, el sistema calcula automáticamente el resultado de cada equipo según sus decisiones acumuladas:
+El puntaje vive en `js/ranking.js` (`compositeScore`) y se nutre de funciones de eficiencia definidas en `js/game-data.js`. Todos los equipos **arrancan en 2,500 puntos** y cada decisión puede mover **cientos de puntos**.
 
-| Resultado | Condición |
-|-----------|-----------|
-| **GESTIÓN EXITOSA** | Abrieron el lunes, presupuesto saludable, penalizaciones bajas |
-| **GESTIÓN ACEPTABLE** | Abrieron el lunes, pero con costos o penalizaciones elevadas |
-| **GESTIÓN DEFICIENTE** | No lograron abrir el lunes a tiempo |
-| **COLAPSO INSTITUCIONAL** | Backups destruidos, licencia revocada, o penalizaciones > $3M sin abrir |
-| **ELIMINADO** | Game Over por decisión fatal |
+### Fórmula del puntaje compuesto (columna PUNTOS)
 
-El ranking se ordena por resultado y luego por presupuesto final. La pantalla `results.html` se puede proyectar en el aula y se actualiza en tiempo real.
+```
+PUNTOS = Presupuesto ÷ 10,000  +  Reputación × 10  +  Eficiencia × 10
+```
+
+| Componente | Rango | Cómo se calcula |
+|-----------|-------|-----------------|
+| 💰 **Presupuesto** | 0 – 500 pts | `(budget − penalizaciones diferidas) ÷ 10,000`. Cada $10,000 conservados = 1 punto |
+| ❤ **Reputación** | 0 – 1,000 pts | `reputation × 10`. Cada 1 % de reputación = 10 puntos |
+| ⚡ **Eficiencia** | 0 – 1,900 pts | `efficiencyScore × 10` (ver abajo) |
+
+Estado inicial: `500 (budget $5M) + 1000 (rep 100%) + 1000 (efic 100) = 2,500 puntos`.
+
+### Eficiencia (`computeEfficiencyScore`)
+
+```
+EFICIENCIA = 100 (base) + anticipación + tiempo + equipamiento − compras inútiles
+```
+
+Sin cap superior. Cada factor:
+
+| Factor | Función | Efecto |
+|--------|---------|--------|
+| 🛠 **Equipamiento** | `computeEquipBonus` | **+5 por decisión correcta equipada** (proporcional si parcial). Máx +25. Premia tener las herramientas que respaldan la opción correcta al confirmarla |
+| 🎯 **Anticipación** | `computeAnticipationBonus` | **+3 por etapa de adelanto** al comprar una herramienta antes de su `idealStage`. Máx +15 |
+| ⏱ **Tiempo** | `computeTimeScore` | Por etapa según % del tiempo objetivo: ≤50 % → **+10**, ≤80 % → **+5**, ≤100 % → 0, ≤130 % → **−5**, >130 % → **−10** |
+| 🗑 **Compras inútiles** | `computeWastedPenalty` | **−2** por herramienta comprada que no aporta inteligencia (`reveals: null`) |
+
+Rango total de eficiencia: `0` a `100 + 15 + 50 + 25 = 190` → ×10 = hasta **1,900 puntos**.
+
+### Bonus de equipamiento (anti-acaparamiento)
+
+Las herramientas cuestan presupuesto, así que un equipo podría acaparar dinero y no comprar nada. Para evitarlo, **usar la herramienta correcta da puntos**: cuando se confirma una decisión `type: 'correct'` y el equipo posee las herramientas declaradas en `correctTools`, gana eficiencia proporcional al grado de equipamiento.
+
+```js
+equipBonus += round( 5 × (matched / total) )   // por cada decisión correcta
+```
+
+El `matched/total` se congela en el `decision_log` al momento de decidir: comprar la herramienta **después** de confirmar no cuenta. Resultado verificado: un equipo bien equipado supera a uno que no compra nada por **~187 puntos** con las mismas decisiones correctas.
+
+### Bonus de matching en la ejecución
+
+Además del puntaje, tener las herramientas correctas abarata la decisión en el momento: **−15 % de costo y −10 % de horas** proporcional al match (`applyToolBonus` en `game-data.js`).
+
+### Tendencia (▲▼ =)
+
+El leaderboard reconstruye el ranking al final de la etapa anterior (`rankingAtStage` reproduce el `decision_log`) y lo compara con el actual para mostrar cuántas posiciones subió o bajó cada equipo.
+
+### Perfil del equipo (`profileOf`)
+
+Etiqueta gamificada según los drivers dominantes, en orden de prioridad:
+
+| Perfil | Condición |
+|--------|-----------|
+| ☠ **ELIMINADO** | `final_state === 'game_over'` |
+| 🔥 **EN CRISIS** | reputación < 40 % o presupuesto < 30 % |
+| 🐌 **DEMORADO** | penalización de tiempo acumulada < −5 |
+| 🎯⚡ **COMPLETO** | anticipación > 5 **y** velocidad > 5 |
+| 🎯 **ESTRATEGA** | anticipación > 5 |
+| ⚡ **ÁGIL** | velocidad > 5 |
+| ⚖ **EQUILIBRADO** | ninguno de los anteriores |
+
+### Estado final del banco (`computeStage5State`)
+
+Independiente del puntaje, resume la gestión de la crisis. Se agrava si exceden 72 h o terminan con reputación baja:
+
+| Estado | Condición |
+|--------|-----------|
+| 🟢 **LEVE** | Abrieron el lunes, presupuesto sano, pocas multas |
+| 🟡 **MEDIO** | Abrieron el lunes pero con costos o multas elevadas |
+| 🟠 **GRAVE** | No lograron abrir el lunes — supervisión regulatoria |
+| 🔴 **CRÍTICO** | Backups destruidos, licencia revocada o multas masivas |
+
+### Dónde se muestra
+
+- **`leaderboard.html`** — clasificación pública proyectable (en vivo): `# · EQUIPO · PERFIL · PUNTOS · TENDENCIA`, con barra tricolor que muestra la proporción presupuesto/reputación/eficiencia bajo cada puntaje. **No revela** los valores exactos.
+- **Resultados Preliminares** del facilitador — tabla detallada con todas las columnas (presupuesto, reputación, eficiencia, decisiones).
+- **Pantalla final del jugador** — desglose completo de su eficiencia (base, anticipación, equipamiento, velocidad).
+- **`guia.html`** — manual proyectable que explica todo esto a los participantes (atajo en el panel del facilitador).
 
 ---
 
