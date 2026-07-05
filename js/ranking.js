@@ -4,14 +4,17 @@
 // ══════════════════════════════════════════
 
 import { STAGES, fmt, computeEfficiencyScore, efficiencyStars,
-         computeAnticipationBonus, computeTimeScore } from './game-data.js?v=18';
+         computeAnticipationBonus, computeTimeScore } from './game-data.js?v=19';
 
 // ── Score compuesto ──────────────────────────
 // Presupuesto/10k + Reputación×10 + Eficiencia×10.
-// Estado inicial: 500 + 1000 + 1000 = 2,500 puntos exactos.
+// El marcador muestra 0 hasta que el equipo confirma su primera decisión;
+// a partir de ahí parte de la base 2,500 (500 + 1000 + 1000) menos lo consumido.
 // Rango aprox: 0–2,650. Cada decisión mueve cientos de puntos.
 export function compositeScore(g) {
   if (!g) return 0;
+  // Sin decisiones confirmadas → marcador en 0
+  if (!(g.decision_log || []).length) return 0;
   const flags = g.flags || {};
   const budgetFinal = (g.budget || 0)
     - (flags.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
@@ -67,6 +70,7 @@ function replayGroupAtStage(g, targetNum) {
   return {
     ...g,
     budget,
+    decision_log: log,   // log filtrado: sin decisiones → marcador 0, y equip bonus histórico correcto
     flags: { ...(g.flags || {}), pendingPenalties: [] }
   };
 }

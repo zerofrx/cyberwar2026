@@ -179,7 +179,7 @@ supabase.channel(`room-${roomCode}`)
 
 ## Cálculo del puntaje
 
-El puntaje vive en `js/ranking.js` (`compositeScore`) y se nutre de funciones de eficiencia definidas en `js/game-data.js`. Todos los equipos **arrancan en 2,500 puntos** y cada decisión puede mover **cientos de puntos**.
+El puntaje vive en `js/ranking.js` (`compositeScore`) y se nutre de funciones de eficiencia definidas en `js/game-data.js`. El marcador muestra **0** mientras el equipo no haya confirmado ninguna decisión; con la primera confirmación se activa partiendo de una **base de 2,500 puntos** menos lo consumido. Cada decisión puede mover **cientos de puntos**.
 
 ### Fórmula del puntaje compuesto (columna PUNTOS)
 

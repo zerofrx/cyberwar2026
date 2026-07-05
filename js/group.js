@@ -8,7 +8,7 @@ import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          fmt, applyDecision, computeStage5State,
          TOOLS_CATALOG, STAGE_TIME_TARGETS, findTool,
          toolsForStage, ownedIds,
-         computeEfficiencyScore, efficiencyStars, efficiencyBreakdown } from './game-data.js?v=18';
+         computeEfficiencyScore, efficiencyStars, efficiencyBreakdown } from './game-data.js?v=19';
 
 // ── Parsear URL params ───────────────────────
 const params    = new URLSearchParams(location.search);
