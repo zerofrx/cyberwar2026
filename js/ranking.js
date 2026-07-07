@@ -4,7 +4,7 @@
 // ══════════════════════════════════════════
 
 import { STAGES, fmt, computeEfficiencyScore, efficiencyStars,
-         computeAnticipationBonus, computeTimeScore } from './game-data.js?v=20';
+         computeAnticipationBonus, computeTimeScore } from './game-data.js?v=21';
 
 // ── Score compuesto ──────────────────────────
 // Presupuesto/10k + Reputación×10 + Eficiencia×10.
@@ -114,12 +114,31 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
   const lastClosedStage = Math.max(0, currentStageNum - 1);
   const ranked = rankingAtStage(groups, lastClosedStage);
 
+  // Puntos ganados/perdidos en el último stage cerrado (vs el stage anterior).
+  // En el stage 1 el baseline es la base 2,500 con la que arrancan al confirmar.
+  const BASE_SCORE = 2500;
+  let prevScoreMap = {};
+  if (lastClosedStage >= 1) {
+    prevScoreMap = lastClosedStage === 1
+      ? Object.fromEntries(groups.map(g => [g.id, BASE_SCORE]))
+      : Object.fromEntries(rankingAtStage(groups, lastClosedStage - 1).map(r => [r.id, r.score]));
+  }
+
   const rows = ranked.map(r => {
     const g          = groups.find(x => x.id === r.id);
     const tier       = groupStatusTier(g);
     const trend      = trendForGroup(g.id, groups, lastClosedStage);
     const decisions  = (g.decision_log || []).length;
     const totalStages = STAGES.length;
+
+    // Delta de puntos del último stage cerrado
+    const scoreDelta = lastClosedStage >= 1
+      ? r.score - (prevScoreMap[r.id] ?? BASE_SCORE)
+      : null;
+    const deltaHtml = scoreDelta === null ? ''
+      : scoreDelta > 0 ? `<span class="lb-pts-delta lb-delta-up">+${scoreDelta}</span>`
+      : scoreDelta < 0 ? `<span class="lb-pts-delta lb-delta-down">${scoreDelta}</span>`
+      : `<span class="lb-pts-delta lb-delta-flat">±0</span>`;
 
     const trendHtml = trend
       ? (trend.dir === 'up'
@@ -153,7 +172,10 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
             </span>
           </td>
           <td class="lb-pts">
-            <div class="lb-pts-value">${r.score}</div>
+            <div class="lb-pts-row">
+              <span class="lb-pts-value">${r.score}</span>
+              ${deltaHtml}
+            </div>
             <div class="lb-pts-breakdown" title="Presupuesto · Reputación · Eficiencia">
               <div class="lb-pts-bar lb-pts-bar-budget" style="flex:${budgetPts}"></div>
               <div class="lb-pts-bar lb-pts-bar-rep"    style="flex:${repPts}"></div>

@@ -2424,6 +2424,12 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
   font-weight: inherit;
   letter-spacing: 0;
 }
+.lb-pts-row {
+  display: flex;
+  align-items: baseline;
+  gap: .6rem;
+  justify-content: center;
+}
 .lb-public .lb-pts-value {
   font-size: 3.6rem;
   font-family: 'Orbitron', sans-serif;
@@ -2432,6 +2438,18 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
   line-height: 1;
   color: var(--info);
 }
+/* Delta de puntos del último stage (ganó / perdió) */
+.lb-pts-delta {
+  font-family: 'DM Mono', monospace;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: .02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.lb-delta-up   { color: var(--success); }
+.lb-delta-down { color: var(--accent); }
+.lb-delta-flat { color: var(--muted); }
 .lb-pts-breakdown {
   display: flex;
   gap: 2px;
