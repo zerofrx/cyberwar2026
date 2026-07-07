@@ -9,7 +9,7 @@ import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          TOOLS_CATALOG, STAGE_TIME_TARGETS, findTool,
          toolsForStage, ownedIds,
          computeEfficiencyScore, efficiencyStars, efficiencyBreakdown,
-         computeDecisionQualityBonus } from './game-data.js?v=23';
+         computeDecisionQualityBonus } from './game-data.js?v=25';
 
 // ── Parsear URL params ───────────────────────
 const params    = new URLSearchParams(location.search);
