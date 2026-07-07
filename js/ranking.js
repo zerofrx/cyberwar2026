@@ -5,7 +5,7 @@
 
 import { STAGES, fmt, computeEfficiencyScore, efficiencyStars,
          computeAnticipationBonus, computeTimeScore,
-         computeDecisionQualityBonus } from './game-data.js?v=23';
+         computeDecisionQualityBonus, findTool } from './game-data.js?v=23';
 
 // ── Score compuesto ──────────────────────────
 // Presupuesto/20k + Reputación×20 + Eficiencia×10 + Calidad de decisión (directa).
@@ -70,14 +70,36 @@ export function groupStatusTier(g) {
 }
 
 // ── Replay del decision_log al final del stage targetNum (1-indexed) ──
+// Reconstruye: budget (decisiones + herramientas del período), stage_durations,
+// tools_owned y decision_log filtrados al stage targetNum para que el delta
+// entre stages refleje exactamente lo que cambió en ese stage.
 function replayGroupAtStage(g, targetNum) {
   const log = (g.decision_log || []).filter(e => e.stage <= targetNum);
+
+  // Herramientas compradas hasta targetNum (entry.stage es 0-indexed → stage 1-indexed = entry.stage+1)
+  const toolsAtStage = (g.tools_owned || []).filter(t =>
+    typeof t === 'object' && t && (t.stage + 1) <= targetNum
+  );
+
+  // Budget = presupuesto inicial − costos de decisiones − costos de herramientas del período
   let budget = 5000000;
   for (const e of log) budget -= (e.cost || 0);
+  for (const t of toolsAtStage) {
+    const tool = findTool(t.id);
+    if (tool) budget -= tool.cost;
+  }
+
+  // Duraciones solo de stages cerrados hasta targetNum
+  const stageDurations = Object.fromEntries(
+    Object.entries(g.stage_durations || {}).filter(([k]) => parseInt(k) <= targetNum)
+  );
+
   return {
     ...g,
     budget,
-    decision_log: log,   // log filtrado: sin decisiones → marcador 0, y equip bonus histórico correcto
+    decision_log:   log,
+    tools_owned:    toolsAtStage,
+    stage_durations: stageDurations,
     flags: { ...(g.flags || {}), pendingPenalties: [] }
   };
 }
