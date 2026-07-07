@@ -466,6 +466,17 @@ export function computeStage5State(flags, budget, penalties, hours = 0, reputati
     reasons.push(`Reputación institucional baja (${reputation}%): el regulador considera el daño reputacional como agravante.`);
   }
 
+  // ── Penalización condicional (Stage 5 · Transparencia SGSI) ──
+  // La Opción B aplica multa regulatoria reducida según el estado final:
+  // LEVE/MEDIO → $0   GRAVE → $500k   CRÍTICO → $1M
+  if (flags.conditionalPenalty) {
+    const condPen = level === 2 ? 500000 : level === 3 ? 1000000 : 0;
+    if (condPen > 0) {
+      extraPenalties += condPen;
+      reasons.push(`Multa regulatoria reducida por presentación de transparencia SGSI (+$${(condPen / 1000).toFixed(0)}k).`);
+    }
+  }
+
   // ── Construir resultado ─────────────────────────────────────
   const STATES = [
     { ctx:'A', label:'LEVE',    baseReason:'Abrieron el lunes con presupuesto saludable y gestión sólida.' },
@@ -518,12 +529,13 @@ export function applyDecision(groupState, stageIndex, optionIndex) {
     ];
   }
 
-  if (opt.destroysBackups) newFlags.backupsDestroyed = true;
-  if (opt.openedMonday)    newFlags.openedMonday     = true;
-  if (opt.paidRansom)      newFlags.paidRansom       = true;
-  if (opt.laborLawsuit)    newFlags.laborLawsuit     = true;
-  if (opt.silentCorp)      newFlags.silentCorp       = true;
-  if (opt.licenseRevoked)  newFlags.licenseRevoked   = true;
+  if (opt.destroysBackups)    newFlags.backupsDestroyed       = true;
+  if (opt.openedMonday)       newFlags.openedMonday           = true;
+  if (opt.paidRansom)         newFlags.paidRansom             = true;
+  if (opt.laborLawsuit)       newFlags.laborLawsuit           = true;
+  if (opt.silentCorp)         newFlags.silentCorp             = true;
+  if (opt.licenseRevoked)     newFlags.licenseRevoked         = true;
+  if (opt.conditionalPenalty) newFlags.conditionalPenalty     = true;
 
   const logType = (opt.type === 'correct' || opt.type === 'lifesaver')
     ? 'correct' : (opt.type === 'recycled' ? 'ok' : 'trap');
