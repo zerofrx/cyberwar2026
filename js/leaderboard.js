@@ -26,11 +26,20 @@ function render() {
   const stageIdx = session.current_stage ?? 0;
 
   // Status header
-  const status = session.status === 'lobby'
-    ? 'EN ESPERA · LOBBY'
-    : session.status === 'finished'
-    ? 'CLASIFICACIÓN FINAL'
-    : `STAGE ${stageIdx + 1} DE ${STAGES.length}`;
+  let status;
+  if (session.status === 'lobby') {
+    status = 'EN ESPERA · LOBBY';
+  } else if (session.status === 'finished') {
+    status = 'CLASIFICACIÓN FINAL';
+  } else {
+    const stageNum = stageIdx + 1;
+    const confirmed = groups.filter(g =>
+      (g.decision_log || []).some(e => e.stage === stageNum)
+    ).length;
+    const total = groups.length;
+    const liveTag = confirmed < total ? ` · ${confirmed}/${total} CONFIRMADOS` : ' · TODOS CONFIRMADOS';
+    status = `STAGE ${stageNum} DE ${STAGES.length}${liveTag}`;
+  }
   document.getElementById('lbStatus').textContent = status;
 
   // Tabla pública

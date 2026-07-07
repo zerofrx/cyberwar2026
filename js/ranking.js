@@ -117,30 +117,27 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
     dead: '<span class="lb-dot lb-dot-dead" title="Eliminado">✕</span>'
   };
 
-  // Snapshot a final del último stage cerrado
-  const lastClosedStage = Math.max(0, currentStageNum - 1);
-  const ranked = rankingAtStage(groups, lastClosedStage);
+  // Snapshot en vivo: incluye decisiones confirmadas del stage actual
+  const ranked = rankingAtStage(groups, currentStageNum);
 
-  // Puntos ganados/perdidos en el último stage cerrado (vs el stage anterior).
+  // Delta de puntos vs el stage anterior.
   // En el stage 1 el baseline es la referencia de 3,250 (budget/rep/eficiencia
   // en su valor inicial, antes de aplicar la calidad de la primera decisión).
   const BASE_SCORE = 3250;
-  let prevScoreMap = {};
-  if (lastClosedStage >= 1) {
-    prevScoreMap = lastClosedStage === 1
-      ? Object.fromEntries(groups.map(g => [g.id, BASE_SCORE]))
-      : Object.fromEntries(rankingAtStage(groups, lastClosedStage - 1).map(r => [r.id, r.score]));
-  }
+  const prevScoreMap = currentStageNum === 1
+    ? Object.fromEntries(groups.map(g => [g.id, BASE_SCORE]))
+    : Object.fromEntries(rankingAtStage(groups, currentStageNum - 1).map(r => [r.id, r.score]));
 
   const rows = ranked.map(r => {
     const g          = groups.find(x => x.id === r.id);
     const tier       = groupStatusTier(g);
-    const trend      = trendForGroup(g.id, groups, lastClosedStage);
+    const trend      = trendForGroup(g.id, groups, currentStageNum);
     const decisions  = (g.decision_log || []).length;
     const totalStages = STAGES.length;
 
-    // Delta de puntos del último stage cerrado
-    const scoreDelta = lastClosedStage >= 1
+    // Delta: solo para grupos que ya confirmaron en el stage actual
+    const hasDecidedNow = (g.decision_log || []).some(e => e.stage === currentStageNum);
+    const scoreDelta = hasDecidedNow
       ? r.score - (prevScoreMap[r.id] ?? BASE_SCORE)
       : null;
     const deltaHtml = scoreDelta === null ? ''
