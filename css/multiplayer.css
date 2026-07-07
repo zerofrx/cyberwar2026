@@ -2668,3 +2668,79 @@ body.timer-zero-flash::before {
   body.time-pressure::after,
   body.timer-zero-flash::before { display: none; }
 }
+
+/* ══════════════════════════════════════════
+   Modal de confirmación (facilitador)
+   ══════════════════════════════════════════ */
+.confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 8, 14, .72);
+  backdrop-filter: blur(3px);
+  padding: 1rem;
+}
+.confirm-modal-panel {
+  width: min(440px, 92vw);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--gold);
+  border-radius: 10px;
+  padding: 1.5rem 1.6rem 1.4rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  animation: confirm-modal-in .22s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes confirm-modal-in {
+  from { opacity: 0; transform: translateY(10px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.confirm-modal-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: .58rem;
+  letter-spacing: .2em;
+  color: var(--gold);
+  margin-bottom: .6rem;
+}
+.confirm-modal-title {
+  font-family: 'Outfit', 'DM Sans', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: .5rem;
+}
+.confirm-modal-body {
+  font-size: .86rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .6rem;
+}
+.confirm-modal-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  letter-spacing: .1em;
+  padding: .55rem 1.1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+}
+.confirm-modal-btn:hover  { opacity: .85; }
+.confirm-modal-btn:active { transform: translateY(1px); }
+.confirm-modal-cancel {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.confirm-modal-ok {
+  background: var(--info);
+  color: #fff;
+  border: none;
+  font-weight: 600;
+}

@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Facilitador — Crisis Cibernética Bancaria</title>
-  <link rel="stylesheet" href="css/multiplayer.css?v=19">
+  <link rel="stylesheet" href="css/multiplayer.css?v=20">
 </head>
 <body>
 
@@ -191,6 +191,19 @@
     </div>
   </div>
 
-  <script type="module" src="js/facilitator.js?v=19"></script>
+  <!-- ── Modal: confirmación de acciones ─────── -->
+  <div id="confirmModal" class="confirm-modal mp-hidden">
+    <div class="confirm-modal-panel">
+      <div class="confirm-modal-eyebrow">// CONFIRMACIÓN REQUERIDA</div>
+      <div class="confirm-modal-title" id="confirmModalTitle">¿Avanzar de etapa?</div>
+      <div class="confirm-modal-body" id="confirmModalBody"></div>
+      <div class="confirm-modal-actions">
+        <button class="confirm-modal-btn confirm-modal-cancel" id="btnModalCancel">Cancelar</button>
+        <button class="confirm-modal-btn confirm-modal-ok" id="btnModalOk">Avanzar →</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/facilitator.js?v=20"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
 // ══════════════════════════════════════════
 
 import { STAGES, fmt, computeEfficiencyScore, efficiencyStars,
-         computeAnticipationBonus, computeTimeScore } from './game-data.js?v=19';
+         computeAnticipationBonus, computeTimeScore } from './game-data.js?v=20';
 
 // ── Score compuesto ──────────────────────────
 // Presupuesto/10k + Reputación×10 + Eficiencia×10.

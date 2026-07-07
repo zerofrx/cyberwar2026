@@ -4,8 +4,8 @@
 
 import { supabase }                              from './supabase-client.js';
 import { STAGES, fmt, computeStage5State,
-         computeEfficiencyScore, efficiencyStars } from './game-data.js?v=19';
-import { buildLeaderboardTable }                  from './ranking.js?v=19';
+         computeEfficiencyScore, efficiencyStars } from './game-data.js?v=20';
+import { buildLeaderboardTable }                  from './ranking.js?v=20';
 
 const NUM_GROUPS  = 6;
 const ROLES       = ['ciso', 'analyst', 'legal', 'comms', 'ops'];
@@ -24,7 +24,14 @@ async function init() {
   document.getElementById('btnCreateSession').addEventListener('click', createSession);
   document.getElementById('btnStart').addEventListener('click', startSession);
   document.getElementById('btnAdvance').addEventListener('click', advanceStage);
-  document.getElementById('btnFinish').addEventListener('click', finishSession);
+  document.getElementById('btnFinish').addEventListener('click', async () => {
+    const ok = await showConfirm(
+      '¿Finalizar el simulacro?',
+      'Se cerrará el juego y se mostrarán los resultados finales a todos los grupos. Esta acción no se puede deshacer.',
+      'Finalizar'
+    );
+    if (ok) finishSession();
+  });
   document.getElementById('btnReset').addEventListener('click', resetSession);
   document.getElementById('btnGenCodes').addEventListener('click', generateCodes);
   document.getElementById('facRoomCode').addEventListener('click', copyRoomCode);
@@ -130,6 +137,29 @@ async function loadGroups() {
   players = plrs || [];
 }
 
+// ── Modal de confirmación ────────────────────
+function showConfirm(title, body, okLabel = 'Confirmar') {
+  return new Promise(resolve => {
+    const overlay   = document.getElementById('confirmModal');
+    const okBtn     = document.getElementById('btnModalOk');
+    const cancelBtn = document.getElementById('btnModalCancel');
+    document.getElementById('confirmModalTitle').textContent = title;
+    document.getElementById('confirmModalBody').textContent  = body;
+    okBtn.textContent = okLabel;
+    overlay.classList.remove('mp-hidden');
+    const done = (val) => {
+      overlay.classList.add('mp-hidden');
+      okBtn.onclick = null;
+      cancelBtn.onclick = null;
+      overlay.onclick = null;
+      resolve(val);
+    };
+    okBtn.onclick     = () => done(true);
+    cancelBtn.onclick = () => done(false);
+    overlay.onclick   = (e) => { if (e.target === overlay) done(false); };
+  });
+}
+
 // ── Controles ────────────────────────────────
 async function startSession() {
   if (!session) return;
@@ -145,8 +175,23 @@ async function startSession() {
 
 async function advanceStage() {
   if (!session) return;
-  const next = session.current_stage + 1;
-  if (next > 4) {
+  const next    = session.current_stage + 1;
+  const isFinal = next > 4;
+
+  // Ventana de confirmación antes de avanzar
+  const active  = groups.filter(g => g.final_state !== 'game_over');
+  const decided = active.filter(g => g.revealed).length;
+  const ok = await showConfirm(
+    isFinal ? '¿Finalizar el simulacro?' : `¿Avanzar a la etapa ${next + 1}?`,
+    `${decided} de ${active.length} grupos han confirmado su decisión. ` +
+    (isFinal
+      ? 'Se cerrará el juego y se mostrarán los resultados finales a todos los grupos.'
+      : 'El cronómetro de la nueva etapa arrancará para todos los grupos. Esta acción no se puede deshacer.'),
+    isFinal ? 'Finalizar' : 'Avanzar →'
+  );
+  if (!ok) return;
+
+  if (isFinal) {
     await finishSession();
     return;
   }

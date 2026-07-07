@@ -8,7 +8,7 @@ import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          fmt, applyDecision, computeStage5State,
          TOOLS_CATALOG, STAGE_TIME_TARGETS, findTool,
          toolsForStage, ownedIds,
-         computeEfficiencyScore, efficiencyStars, efficiencyBreakdown } from './game-data.js?v=19';
+         computeEfficiencyScore, efficiencyStars, efficiencyBreakdown } from './game-data.js?v=20';
 
 // ── Parsear URL params ───────────────────────
 const params    = new URLSearchParams(location.search);
@@ -348,6 +348,15 @@ window.purchaseTool = async function(toolId) {
   if (owned.includes(toolId)) return;
   if (group.budget < tool.cost) return;
 
+  // Ventana de confirmación — la compra es definitiva
+  const ok = await showConfirm(
+    `¿Comprar ${tool.name}?`,
+    `Se descontarán <strong>${fmt(tool.cost)}</strong> del presupuesto del equipo ` +
+    `(quedarían <strong>${fmt(group.budget - tool.cost)}</strong>). La compra es definitiva y no tiene devolución.`,
+    'Comprar'
+  );
+  if (!ok) return;
+
   // Feedback inmediato: flash en la card + pulse en la pestaña Alertas
   const btn = document.querySelector(`.tk-buy[data-tool="${toolId}"]`);
   const card = btn?.closest('.toolkit-card');
@@ -506,6 +515,30 @@ function statHit(el) {
 // Valores previos para detectar cambios entre renders
 let _prevBudget = null;
 let _prevRep    = null;
+
+// ── Modal de confirmación (fricción intencional para el CISO) ──
+function showConfirm(title, body, okLabel = 'Confirmar') {
+  return new Promise(resolve => {
+    const overlay   = document.getElementById('confirmModal');
+    const okBtn     = document.getElementById('btnModalOk');
+    const cancelBtn = document.getElementById('btnModalCancel');
+    if (!overlay) { resolve(true); return; }
+    document.getElementById('confirmModalTitle').textContent = title;
+    document.getElementById('confirmModalBody').innerHTML    = body;
+    okBtn.textContent = okLabel;
+    overlay.classList.remove('mp-hidden');
+    const done = (val) => {
+      overlay.classList.add('mp-hidden');
+      okBtn.onclick = null;
+      cancelBtn.onclick = null;
+      overlay.onclick = null;
+      resolve(val);
+    };
+    okBtn.onclick     = () => done(true);
+    cancelBtn.onclick = () => done(false);
+    overlay.onclick   = (e) => { if (e.target === overlay) done(false); };
+  });
+}
 
 // ── Lobby: feed de terminal SOC ──────────────
 const LOBBY_FEED_LINES = [

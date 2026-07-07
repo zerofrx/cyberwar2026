@@ -3,8 +3,8 @@
 // ══════════════════════════════════════════
 
 import { supabase }                                      from './supabase-client.js';
-import { STAGES }                                        from './game-data.js?v=19';
-import { buildLeaderboardTable }                         from './ranking.js?v=19';
+import { STAGES }                                        from './game-data.js?v=20';
+import { buildLeaderboardTable }                         from './ranking.js?v=20';
 
 // ── Parsear sesión ───────────────────────────
 const params    = new URLSearchParams(location.search);
