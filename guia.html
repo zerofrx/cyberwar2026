@@ -288,36 +288,145 @@
 
     <div class="card">
       <h3>🏆 PUNTOS (la clasificación)</h3>
-      El marcador arranca en <strong>0</strong> y se activa al confirmar la primera decisión, partiendo de una base
-      de <strong>2,500 puntos</strong> menos lo que hayan consumido. El ranking se ordena por un puntaje compuesto
-      que combina las tres dimensiones del juego — cada decisión puede mover <strong>cientos de puntos</strong>:
+      El marcador arranca en <strong>0</strong> y se activa al confirmar la primera decisión. El ranking se ordena
+      por un puntaje compuesto de <strong>4 componentes</strong> — el peso está puesto a propósito en <strong>cómo
+      deciden</strong>, no en cuánto ahorran: conservar presupuesto pesa poco y nunca compensa una mala decisión.
+      Cada decisión puede mover <strong>cientos de puntos</strong>:
       <div class="formula">
-        PUNTOS = <span class="gold">Presupuesto ÷ 10,000</span> + <span class="green">Reputación × 10</span> + <span class="blue">Eficiencia × 10</span>
+        PUNTOS = <span class="gold">Presupuesto ÷ 20,000</span> + <span class="green">Reputación × 20</span> + <span class="blue">Eficiencia × 10</span> + <span style="color:#d97757">Calidad de decisiones</span>
       </div>
       <table>
-        <tr><th>Componente</th><th>Rango</th><th>Qué mide</th></tr>
-        <tr><td><span class="gold" style="color:var(--gold)">💰 Presupuesto</span></td><td class="num">0 – 500 pts</td><td>Cada $10,000 que conservan vale 1 punto</td></tr>
-        <tr><td><span style="color:var(--success)">❤ Reputación</span></td><td class="num">0 – 1,000 pts</td><td>Cada 1% de reputación vale 10 puntos</td></tr>
-        <tr><td><span style="color:var(--info)">⚡ Eficiencia</span></td><td class="num">0 – 1,900 pts</td><td>Inteligencia estratégica, velocidad y uso de herramientas (ver abajo) × 10</td></tr>
+        <tr><th>Componente</th><th>Fórmula</th><th>Rango posible</th><th>Qué lo mueve</th></tr>
+        <tr>
+          <td><span style="color:var(--gold)">💰 Presupuesto</span></td>
+          <td class="num" style="font-size:.82rem">$ restante ÷ 20,000</td>
+          <td class="num">0 – 250 pts</td>
+          <td>Dinero que sobra al final. <em>El peso más bajo del juego</em> — nunca compensa una mala decisión.</td>
+        </tr>
+        <tr>
+          <td><span style="color:var(--success)">❤ Reputación</span></td>
+          <td class="num" style="font-size:.82rem">% reputación × 20</td>
+          <td class="num">0 – 2,000 pts</td>
+          <td>Cada 1% de reputación perdida cuesta 20 puntos directamente. Bajar de 100% a 80% ya es −400 pts.</td>
+        </tr>
+        <tr>
+          <td><span style="color:var(--info)">⚡ Eficiencia</span></td>
+          <td class="num" style="font-size:.82rem">score × 10</td>
+          <td class="num">0 – 3,000+ pts</td>
+          <td>Herramientas compradas a tiempo, velocidad de decisión y equipamiento correcto. <em>El más flexible del juego.</em></td>
+        </tr>
+        <tr>
+          <td><span style="color:#d97757">🎯 Calidad de decisiones</span></td>
+          <td class="num" style="font-size:.82rem">directo (sin × 10)</td>
+          <td class="num">−300 a +400 pts</td>
+          <td>Se suma sin multiplicar. El efecto más inmediato y visible: cada trampa borra el equivalente a $1,200,000 de presupuesto ahorrado.</td>
+        </tr>
       </table>
-      <div class="tip">Ejemplos de impacto: caer en una trampa de $600,000 con daño reputacional del 15% cuesta <strong>−210 puntos</strong>; decidir muy rápido una etapa suma <strong>+100</strong>; anticipar la herramienta correcta puede valer hasta <strong>+90</strong>; confirmar una decisión correcta con las herramientas adecuadas suma <strong>+50</strong> por etapa (hasta +250 en toda la partida).</div>
+      <div class="tip">Ejemplos de impacto reales: un equipo que compra <strong>todo</strong> el toolkit y acierta las 5 decisiones supera por <strong>+1,400 puntos</strong> a uno que no compró nada con los mismos aciertos; un equipo que cae en 3 trampas (sin gastar nada en herramientas) queda <strong>−1,370 puntos</strong> por debajo del que no compró nada pero acertó. Ahorrar nunca gana — decidir bien sí.</div>
     </div>
 
     <div class="card">
-      <h3>⚡ Eficiencia (el desempate inteligente)</h3>
+      <h3>🎯 Calidad de decisiones (el componente más notorio)</h3>
+      Se suma <strong>directo</strong> al puntaje por cada decisión confirmada, sin depender del presupuesto ni de las
+      herramientas compradas. Es la forma más clara de ver el impacto de acertar o fallar:
+      <table>
+        <tr><th>Tipo de decisión</th><th>Efecto</th><th>Detalle</th></tr>
+        <tr><td>✅ Correcta</td><td class="pos">+80 por decisión</td><td>Eligieron la opción correcta de la etapa</td></tr>
+        <tr><td>◐ Aceptable / reciclada</td><td class="pos">+20 por decisión</td><td>Opción recuperable pero no óptima</td></tr>
+        <tr><td>✗ Trampa</td><td class="neg">−60 por decisión</td><td>Cayeron en una trampa (incluye las fatales)</td></tr>
+      </table>
+      <div class="tip">Máximo posible en 5 etapas: <strong>+400 pts</strong> (5 correctas) hasta <strong>−300 pts</strong> (5 trampas). Esta es la diferencia más grande y más visible del marcador.</div>
+    </div>
+
+    <div class="card">
+      <h3>⚡ Eficiencia (velocidad y estrategia)</h3>
       <div class="formula">
         EFICIENCIA = 100 <span class="green">+ anticipación + equipamiento</span> <span class="blue">± velocidad</span> <span class="neg">− compras inútiles</span>
       </div>
       <table>
         <tr><th>Factor</th><th>Efecto</th><th>Detalle</th></tr>
-        <tr><td>🛠 Herramientas usadas</td><td class="pos">+5 por decisión correcta equipada</td><td>Tener las herramientas que respaldan la opción correcta al confirmarla</td></tr>
+        <tr><td>🛠 Herramientas usadas</td><td class="pos">+8 por decisión correcta equipada</td><td>Tener las herramientas que respaldan la opción correcta al confirmarla</td></tr>
         <tr><td>🎯 Anticipación</td><td class="pos">+3 por etapa de adelanto</td><td>Comprar una herramienta antes de su etapa ideal</td></tr>
-        <tr><td>🚀 Muy rápidos (≤50% del tiempo)</td><td class="pos">+10 por etapa</td><td>Decidieron en menos de la mitad del objetivo</td></tr>
-        <tr><td>⚡ Rápidos (≤80%)</td><td class="pos">+5 por etapa</td><td>Decidieron con margen</td></tr>
+        <tr><td>🚀 Muy rápidos (≤50% del tiempo)</td><td class="pos">+20 por etapa</td><td>Decidieron en menos de la mitad del objetivo</td></tr>
+        <tr><td>⚡ Rápidos (≤80%)</td><td class="pos">+10 por etapa</td><td>Decidieron con margen</td></tr>
         <tr><td>⏱ A tiempo (≤100%)</td><td class="num">0</td><td>Dentro del objetivo</td></tr>
-        <tr><td>🐌 Lentos (≤130%)</td><td class="neg">−5 por etapa</td><td>Se pasaron del objetivo</td></tr>
-        <tr><td>💤 Muy lentos (>130%)</td><td class="neg">−10 por etapa</td><td>Se pasaron por mucho</td></tr>
+        <tr><td>🐌 Lentos (≤130%)</td><td class="neg">−10 por etapa</td><td>Se pasaron del objetivo</td></tr>
+        <tr><td>💤 Muy lentos (>130%)</td><td class="neg">−20 por etapa</td><td>Se pasaron por mucho</td></tr>
       </table>
+    </div>
+
+    <div class="card">
+      <h3>🧮 Ejemplo paso a paso — ¿Cuánto vale cada decisión?</h3>
+      Tres equipos, mismas 5 etapas, resultados muy distintos. Así se ve la fórmula en números reales:
+
+      <table style="margin-top:.8rem">
+        <tr>
+          <th>Componente</th>
+          <th style="color:var(--success)">🏆 Equipo Élite<br><small style="font-weight:400;color:var(--muted)">5 correctas · toolkit completo · rápidos</small></th>
+          <th style="color:var(--gold)">⚖ Equipo Promedio<br><small style="font-weight:400;color:var(--muted)">3 correctas · sin herramientas · a tiempo</small></th>
+          <th style="color:var(--accent)">🔥 Equipo en Crisis<br><small style="font-weight:400;color:var(--muted)">2 correctas · 3 trampas · sin herramientas</small></th>
+        </tr>
+        <tr>
+          <td><strong>💰 Presupuesto restante</strong><br><span style="font-size:.8rem;color:var(--muted)">÷ 20,000</span></td>
+          <td class="num">$2,050,000<br><span class="pos">= +103 pts</span></td>
+          <td class="num">$3,900,000<br><span class="pos">= +195 pts</span></td>
+          <td class="num">$4,200,000<br><span class="pos">= +210 pts</span></td>
+        </tr>
+        <tr>
+          <td><strong>❤ Reputación</strong><br><span style="font-size:.8rem;color:var(--muted)">× 20</span></td>
+          <td class="num">100%<br><span class="pos">= +2,000 pts</span></td>
+          <td class="num">80%<br><span class="pos">= +1,600 pts</span></td>
+          <td class="num">55%<br><span class="pos">= +1,100 pts</span></td>
+        </tr>
+        <tr>
+          <td><strong>⚡ Eficiencia</strong><br><span style="font-size:.8rem;color:var(--muted)">× 10</span></td>
+          <td>
+            <span style="font-size:.8rem;color:var(--muted)">Base 100 + anticip. +15 + velocidad +25 + equip. +40 = <strong>180</strong></span><br>
+            <span class="pos">= +1,800 pts</span>
+          </td>
+          <td>
+            <span style="font-size:.8rem;color:var(--muted)">Base 100 + anticip. 0 + velocidad 0 + equip. 0 = <strong>100</strong></span><br>
+            <span class="pos">= +1,000 pts</span>
+          </td>
+          <td>
+            <span style="font-size:.8rem;color:var(--muted)">Base 100 + anticip. 0 − velocidad 20 + equip. 0 = <strong>80</strong></span><br>
+            <span class="pos">= +800 pts</span>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>🎯 Calidad de decisiones</strong><br><span style="font-size:.8rem;color:var(--muted)">directo (sin multiplicar)</span></td>
+          <td class="num">5 × +80<br><span class="pos">= +400 pts</span></td>
+          <td class="num">3×+80 + 2×−60<br><span class="pos">= +120 pts</span></td>
+          <td class="num">2×+80 + 3×−60<br><span class="neg">= −20 pts</span></td>
+        </tr>
+        <tr style="border-top:2px solid var(--border)">
+          <td><strong>TOTAL</strong></td>
+          <td class="num" style="font-size:1.1rem"><span class="pos"><strong>≈ 4,303 pts</strong></span></td>
+          <td class="num" style="font-size:1.1rem"><span style="color:var(--gold)"><strong>≈ 2,915 pts</strong></span></td>
+          <td class="num" style="font-size:1.1rem"><span class="neg"><strong>≈ 2,090 pts</strong></span></td>
+        </tr>
+      </table>
+
+      <div style="margin-top:1rem;padding:.9rem 1rem;background:var(--bg);border-radius:6px;border:1px solid var(--border);font-size:.85rem;line-height:1.7">
+        <strong style="color:var(--gold)">Lección clave del ejemplo:</strong>
+        El Equipo en Crisis ahorró <em>más dinero</em> que el Equipo Élite ($4.2M vs $2.05M),
+        pero termina <strong>2,213 puntos más abajo</strong> porque esa diferencia de presupuesto
+        solo vale <strong>+107 pts</strong>, mientras que las 3 trampas que cayeron costaron
+        <strong>−660 pts en eficiencia y calidad combinadas</strong>.
+        Ahorrar nunca gana — decidir bien sí.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🔢 Cómo calcular tu puntaje en vivo</h3>
+      Si quieren estimar su puntaje en cualquier momento del juego, sigan estos cuatro pasos:
+      <ol style="margin:.8rem 0 0 1.2rem;line-height:2">
+        <li><strong>Presupuesto:</strong> tomen el dinero que les queda y divídanlo entre 20,000 → ese es el componente más pequeño</li>
+        <li><strong>Reputación:</strong> su % actual × 20 → si están al 80%, eso son 1,600 puntos</li>
+        <li><strong>Eficiencia:</strong> arrancan en 1,000 (100×10). Suman +80 por cada herramienta anticipada, +200/+100 si decidieron muy rápido/rápido por etapa, +80 por decisión correcta con herramientas. Restan si tardaron.</li>
+        <li><strong>Calidad:</strong> cuenten decisiones correctas × 80, aceptables × 20, trampas × −60 → eso se suma directo</li>
+      </ol>
+      <div class="tip">El componente que más duele perder es Reputación: bajar de 100% a 55% equivale a perder 900 puntos de golpe — lo mismo que caer en 15 trampas.</div>
     </div>
 
     <div class="card">
