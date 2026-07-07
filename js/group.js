@@ -751,9 +751,23 @@ window.confirmDecision = async function() {
   const chosen = group.chosen_option;
   if (chosen === null || chosen === undefined || group.revealed) return;
 
-  // Efecto cybernético
   const opt = STAGES[group.stage]?.options?.[chosen];
-  if (opt) showCyberConfirm(opt);
+  if (!opt) return;
+
+  // Ventana de confirmación — la decisión es irreversible
+  const eff = (group.ctx === 'B' && opt.ctxBMultiplier) ? opt.cost * opt.ctxBMultiplier : opt.cost;
+  const ok = await showConfirm(
+    `¿Aplicar la opción ${opt.letter}?`,
+    `<strong>${opt.text}</strong><br><br>` +
+    `Costo de la decisión: <strong>${eff === 0 ? '$0' : fmt(eff)}</strong>` +
+    `${opt.hours > 0 ? ` · <strong>+${opt.hours}h</strong>` : ''}.<br>` +
+    `Una vez aplicada, la decisión del equipo es <strong>definitiva</strong> y no se puede cambiar.`,
+    'Aplicar decisión'
+  );
+  if (!ok) return;
+
+  // Efecto cybernético
+  showCyberConfirm(opt);
 
   const result = applyDecision(group, group.stage, chosen);
 
