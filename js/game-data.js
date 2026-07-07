@@ -773,7 +773,7 @@ export function computeEquipBonus(decisionLog = []) {
 //   ok (recycled)             → +20   decisión aceptable/recuperada
 //   trap                      → −60   trampa (incluye fatal/extreme, que ya
 //                                     se registran como 'trap' en el log)
-const DECISION_QUALITY_POINTS = { correct: 150, ok: 40, trap: -80 };
+const DECISION_QUALITY_POINTS = { correct: 800, ok: 200, trap: -600 };
 
 export function computeDecisionQualityBonus(decisionLog = []) {
   let bonus = 0;
