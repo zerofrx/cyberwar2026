@@ -710,17 +710,17 @@ export function computeWastedPenalty(toolsOwned = []) {
 
 // Score de tiempo por milestones discretos (signed: bonus o penalty)
 // Por cada stage cerrado, suma según porcentaje del target consumido:
-//   ≤  50% → +10 (ÁGIL)
-//   ≤  80% → +5  (RÁPIDO)
+//   ≤  50% → +20 (ÁGIL)
+//   ≤  80% → +10 (RÁPIDO)
 //   ≤ 100% → 0   (A TIEMPO)
-//   ≤ 130% → -5  (LENTO)
-//   >  130% → -10 (DEMORADO)
+//   ≤ 130% → -10 (LENTO)
+//   >  130% → -20 (DEMORADO)
 const TIME_THRESHOLDS = [
-  { pct: 0.50,     score:  10 },
-  { pct: 0.80,     score:   5 },
+  { pct: 0.50,     score:  20 },
+  { pct: 0.80,     score:  10 },
   { pct: 1.00,     score:   0 },
-  { pct: 1.30,     score:  -5 },
-  { pct: Infinity, score: -10 }
+  { pct: 1.30,     score: -10 },
+  { pct: Infinity, score: -20 }
 ];
 
 export function computeTimeScore(stageDurations = {}) {
@@ -741,14 +741,32 @@ export function computeTimePenalty(stageDurations = {}) {
 
 // Bonus por usar las herramientas correctas en decisiones correctas.
 // Lee el toolBonus congelado en cada entrada del decision_log al momento de decidir.
-// +5 eficiencia por decisión correcta totalmente equipada (proporcional si parcial).
+// +8 eficiencia por decisión correcta totalmente equipada (proporcional si parcial).
 export function computeEquipBonus(decisionLog = []) {
   let bonus = 0;
   for (const e of decisionLog) {
     if (e?.type !== 'correct') continue;          // solo decisiones correctas/lifesaver
     const tb = e.toolBonus;
     if (!tb || !tb.total || tb.matched <= 0) continue;
-    bonus += Math.round(5 * (tb.matched / tb.total));
+    bonus += Math.round(8 * (tb.matched / tb.total));
+  }
+  return bonus;
+}
+
+// Bonus/malus DIRECTO por tipo de decisión — independiente del presupuesto.
+// Hace que acertar o caer en trampa sea notorio en el marcador sin depender
+// de cuánto se gastó en herramientas. Se suma tal cual al puntaje compuesto
+// (no se multiplica x10 como los demás componentes).
+//   correct (incl. lifesaver) → +80   decisión correcta
+//   ok (recycled)             → +20   decisión aceptable/recuperada
+//   trap                      → −60   trampa (incluye fatal/extreme, que ya
+//                                     se registran como 'trap' en el log)
+const DECISION_QUALITY_POINTS = { correct: 80, ok: 20, trap: -60 };
+
+export function computeDecisionQualityBonus(decisionLog = []) {
+  let bonus = 0;
+  for (const e of decisionLog) {
+    bonus += DECISION_QUALITY_POINTS[e?.type] || 0;
   }
   return bonus;
 }

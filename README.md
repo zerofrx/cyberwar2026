@@ -179,21 +179,32 @@ supabase.channel(`room-${roomCode}`)
 
 ## Cálculo del puntaje
 
-El puntaje vive en `js/ranking.js` (`compositeScore`) y se nutre de funciones de eficiencia definidas en `js/game-data.js`. El marcador muestra **0** mientras el equipo no haya confirmado ninguna decisión; con la primera confirmación se activa partiendo de una **base de 2,500 puntos** menos lo consumido. Cada decisión puede mover **cientos de puntos**.
+El puntaje vive en `js/ranking.js` (`compositeScore`) y se nutre de funciones definidas en `js/game-data.js`. El marcador muestra **0** mientras el equipo no haya confirmado ninguna decisión. Los pesos están calibrados a propósito para que **decidir bien importe mucho más que ahorrar dinero** — el presupuesto es el componente de menor peso y nunca compensa una mala decisión.
 
 ### Fórmula del puntaje compuesto (columna PUNTOS)
 
 ```
-PUNTOS = Presupuesto ÷ 10,000  +  Reputación × 10  +  Eficiencia × 10
+PUNTOS = Presupuesto ÷ 20,000  +  Reputación × 20  +  Eficiencia × 10  +  Calidad de decisiones
 ```
 
 | Componente | Rango | Cómo se calcula |
 |-----------|-------|-----------------|
-| 💰 **Presupuesto** | 0 – 500 pts | `(budget − penalizaciones diferidas) ÷ 10,000`. Cada $10,000 conservados = 1 punto |
-| ❤ **Reputación** | 0 – 1,000 pts | `reputation × 10`. Cada 1 % de reputación = 10 puntos |
-| ⚡ **Eficiencia** | 0 – 1,900 pts | `efficiencyScore × 10` (ver abajo) |
+| 💰 **Presupuesto** | 0 – 250 pts | `(budget − penalizaciones diferidas) ÷ 20,000`. Cada $20,000 conservados = 1 punto — el de menor peso, a propósito |
+| ❤ **Reputación** | 0 – 2,000 pts | `reputation × 20`. Cada 1 % de reputación = 20 puntos |
+| ⚡ **Eficiencia** | 0 – 3,000 pts | `efficiencyScore × 10` (ver abajo) |
+| 🎯 **Calidad de decisiones** | −300 a +400 pts | `computeDecisionQualityBonus` — directo, sin multiplicar (ver abajo) |
 
-Estado inicial: `500 (budget $5M) + 1000 (rep 100%) + 1000 (efic 100) = 2,500 puntos`.
+### Calidad de decisiones (`computeDecisionQualityBonus`) — el componente más notorio
+
+Se suma **directo** al puntaje por cada decisión del `decision_log`, sin depender del presupuesto ni de las herramientas compradas:
+
+```js
+correct (incl. lifesaver) → +80   // decisión correcta
+ok (recycled)             → +20   // decisión aceptable/recuperada
+trap                      → −60   // trampa (incluye fatal/extreme, que ya se registran como 'trap')
+```
+
+Máximo en 5 etapas: **+400** (todas correctas) a **−300** (todas trampas). Es el componente que hace el impacto de cada acción obvio en el marcador, sin importar cuánto gastó el equipo.
 
 ### Eficiencia (`computeEfficiencyScore`)
 
@@ -205,22 +216,16 @@ Sin cap superior. Cada factor:
 
 | Factor | Función | Efecto |
 |--------|---------|--------|
-| 🛠 **Equipamiento** | `computeEquipBonus` | **+5 por decisión correcta equipada** (proporcional si parcial). Máx +25. Premia tener las herramientas que respaldan la opción correcta al confirmarla |
+| 🛠 **Equipamiento** | `computeEquipBonus` | **+8 por decisión correcta equipada** (proporcional si parcial). Máx +40. Premia tener las herramientas que respaldan la opción correcta al confirmarla |
 | 🎯 **Anticipación** | `computeAnticipationBonus` | **+3 por etapa de adelanto** al comprar una herramienta antes de su `idealStage`. Máx +15 |
-| ⏱ **Tiempo** | `computeTimeScore` | Por etapa según % del tiempo objetivo: ≤50 % → **+10**, ≤80 % → **+5**, ≤100 % → 0, ≤130 % → **−5**, >130 % → **−10** |
+| ⏱ **Tiempo** | `computeTimeScore` | Por etapa según % del tiempo objetivo: ≤50 % → **+20**, ≤80 % → **+10**, ≤100 % → 0, ≤130 % → **−10**, >130 % → **−20** |
 | 🗑 **Compras inútiles** | `computeWastedPenalty` | **−2** por herramienta comprada que no aporta inteligencia (`reveals: null`) |
 
-Rango total de eficiencia: `0` a `100 + 15 + 50 + 25 = 190` → ×10 = hasta **1,900 puntos**.
+### Anti-acaparamiento (por qué el presupuesto pesa poco)
 
-### Bonus de equipamiento (anti-acaparamiento)
+Las herramientas cuestan presupuesto, así que un equipo podría acaparar dinero y no comprar nada. Se evita por partida doble: el presupuesto es el componente de **menor peso** (÷20,000) y la Calidad de decisiones + el bono de Equipamiento premian directamente decidir bien y usar las herramientas correctas, sin importar el gasto. El `matched/total` del equipamiento se congela en el `decision_log` al momento de decidir: comprar la herramienta **después** de confirmar no cuenta.
 
-Las herramientas cuestan presupuesto, así que un equipo podría acaparar dinero y no comprar nada. Para evitarlo, **usar la herramienta correcta da puntos**: cuando se confirma una decisión `type: 'correct'` y el equipo posee las herramientas declaradas en `correctTools`, gana eficiencia proporcional al grado de equipamiento.
-
-```js
-equipBonus += round( 5 × (matched / total) )   // por cada decisión correcta
-```
-
-El `matched/total` se congela en el `decision_log` al momento de decidir: comprar la herramienta **después** de confirmar no cuenta. Resultado verificado: un equipo bien equipado supera a uno que no compra nada por **~187 puntos** con las mismas decisiones correctas.
+**Resultado verificado:** un equipo que compra todo el toolkit y acierta las 5 decisiones supera por **~1,400 puntos** a uno que no compró nada con los mismos aciertos. Un equipo que cae en 3 trampas queda **~1,370 puntos** por debajo de uno que no compró nada pero acertó. Ahorrar nunca gana — decidir bien sí.
 
 ### Bonus de matching en la ejecución
 

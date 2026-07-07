@@ -4,13 +4,17 @@
 // ══════════════════════════════════════════
 
 import { STAGES, fmt, computeEfficiencyScore, efficiencyStars,
-         computeAnticipationBonus, computeTimeScore } from './game-data.js?v=21';
+         computeAnticipationBonus, computeTimeScore,
+         computeDecisionQualityBonus } from './game-data.js?v=23';
 
 // ── Score compuesto ──────────────────────────
-// Presupuesto/10k + Reputación×10 + Eficiencia×10.
+// Presupuesto/20k + Reputación×20 + Eficiencia×10 + Calidad de decisión (directa).
+// El peso del presupuesto se redujo a propósito: conservar dinero por sí solo
+// NUNCA debe compensar una mala decisión. Lo que mueve el marcador con fuerza
+// es acertar/errar cada decisión (Calidad) y decidir bien informado y rápido
+// (Eficiencia) — no cuánto se ahorró en herramientas.
 // El marcador muestra 0 hasta que el equipo confirma su primera decisión;
-// a partir de ahí parte de la base 2,500 (500 + 1000 + 1000) menos lo consumido.
-// Rango aprox: 0–2,650. Cada decisión mueve cientos de puntos.
+// a partir de ahí parte de una base de referencia de 3,250 menos lo consumido.
 export function compositeScore(g) {
   if (!g) return 0;
   // Sin decisiones confirmadas → marcador en 0
@@ -19,8 +23,11 @@ export function compositeScore(g) {
   const budgetFinal = (g.budget || 0)
     - (flags.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
   const rep         = g.reputation ?? 100;
-  const effScore    = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || [], g.decision_log || []);
-  return Math.max(0, Math.round(budgetFinal / 10000 + rep * 10 + effScore * 10));
+  const effScore     = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || [], g.decision_log || []);
+  const qualityBonus = computeDecisionQualityBonus(g.decision_log || []);
+  return Math.max(0, Math.round(
+    budgetFinal / 20000 + rep * 20 + effScore * 10 + qualityBonus
+  ));
 }
 
 // ── Perfil del equipo (etiqueta gamificada según drivers dominantes) ──
@@ -115,8 +122,9 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
   const ranked = rankingAtStage(groups, lastClosedStage);
 
   // Puntos ganados/perdidos en el último stage cerrado (vs el stage anterior).
-  // En el stage 1 el baseline es la base 2,500 con la que arrancan al confirmar.
-  const BASE_SCORE = 2500;
+  // En el stage 1 el baseline es la referencia de 3,250 (budget/rep/eficiencia
+  // en su valor inicial, antes de aplicar la calidad de la primera decisión).
+  const BASE_SCORE = 3250;
   let prevScoreMap = {};
   if (lastClosedStage >= 1) {
     prevScoreMap = lastClosedStage === 1
@@ -154,12 +162,14 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
         - (flags.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
       const rep       = g.reputation ?? 100;
       const effScore  = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || [], g.decision_log || []);
+      const quality   = computeDecisionQualityBonus(g.decision_log || []);
       const profile   = profileOf(g);
 
       // Componentes proporcionales para la mini-bar (misma escala que compositeScore)
-      const budgetPts = Math.max(0, budgetFin / 10000);
-      const repPts    = rep * 10;
-      const effPts    = effScore * 10;
+      const budgetPts  = Math.max(0, budgetFin / 20000);
+      const repPts     = rep * 20;
+      const effPts     = effScore * 10;
+      const qualityPts = Math.max(0, quality);
 
       return `
         <tr class="lb-row lb-row-${tier}" data-gid="${g.id}">
@@ -176,10 +186,11 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
               <span class="lb-pts-value">${r.score}</span>
               ${deltaHtml}
             </div>
-            <div class="lb-pts-breakdown" title="Presupuesto · Reputación · Eficiencia">
-              <div class="lb-pts-bar lb-pts-bar-budget" style="flex:${budgetPts}"></div>
-              <div class="lb-pts-bar lb-pts-bar-rep"    style="flex:${repPts}"></div>
-              <div class="lb-pts-bar lb-pts-bar-eff"    style="flex:${effPts}"></div>
+            <div class="lb-pts-breakdown" title="Presupuesto · Reputación · Eficiencia · Calidad de decisiones">
+              <div class="lb-pts-bar lb-pts-bar-budget"  style="flex:${budgetPts}"></div>
+              <div class="lb-pts-bar lb-pts-bar-rep"     style="flex:${repPts}"></div>
+              <div class="lb-pts-bar lb-pts-bar-eff"     style="flex:${effPts}"></div>
+              <div class="lb-pts-bar lb-pts-bar-quality" style="flex:${qualityPts}"></div>
             </div>
           </td>
           <td class="lb-trend-cell">${trendHtml}</td>
@@ -191,11 +202,13 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
       - (flags.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
     const rep        = g.reputation ?? 100;
     const effScore   = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || [], g.decision_log || []);
+    const quality    = computeDecisionQualityBonus(g.decision_log || []);
     const stars      = efficiencyStars(effScore);
     const starsHtml  = '★'.repeat(stars) + '☆'.repeat(5 - stars);
     const budgetColor = budgetFin > 3000000 ? 'var(--success)'
                       : budgetFin > 1500000 ? 'var(--gold)' : 'var(--accent)';
     const repColor   = rep >= 70 ? 'var(--success)' : rep >= 40 ? 'var(--gold)' : 'var(--accent)';
+    const qualityColor = quality > 0 ? 'var(--success)' : quality < 0 ? 'var(--accent)' : 'var(--muted)';
 
     return `
       <tr class="lb-row lb-row-${tier}">
@@ -206,6 +219,7 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
         <td class="lb-budget" style="color:${budgetColor}">${fmt(budgetFin)}</td>
         <td class="lb-rep" style="color:${repColor}">${rep}%</td>
         <td class="lb-eff" title="${effScore} pts"><span class="lb-stars">${starsHtml}</span></td>
+        <td class="lb-quality" style="color:${qualityColor}">${quality > 0 ? '+' : ''}${quality}</td>
         <td class="lb-pts">${r.score}</td>
         <td class="lb-trend-cell">${trendHtml}</td>
       </tr>`;
@@ -228,6 +242,7 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
       <th>PRESUPUESTO</th>
       <th>REPUTACIÓN</th>
       <th>EFICIENCIA</th>
+      <th>CALIDAD</th>
       <th class="lb-pts-h">PUNTOS</th>
       <th class="lb-trend-h">TENDENCIA</th>
     </tr>`;

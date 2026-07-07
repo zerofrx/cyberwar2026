@@ -8,7 +8,8 @@ import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          fmt, applyDecision, computeStage5State,
          TOOLS_CATALOG, STAGE_TIME_TARGETS, findTool,
          toolsForStage, ownedIds,
-         computeEfficiencyScore, efficiencyStars, efficiencyBreakdown } from './game-data.js?v=21';
+         computeEfficiencyScore, efficiencyStars, efficiencyBreakdown,
+         computeDecisionQualityBonus } from './game-data.js?v=23';
 
 // ── Parsear URL params ───────────────────────
 const params    = new URLSearchParams(location.search);
@@ -1017,6 +1018,7 @@ function showFinal() {
   const log     = group.decision_log || [];
   const correct = log.filter(l => l.type === 'correct').length;
   const traps   = log.filter(l => l.type === 'trap').length;
+  const ok      = log.filter(l => l.type === 'ok').length;
   // ── Eficiencia (medalla + desglose) ───────────────
   const effBreakdown = efficiencyBreakdown(group.stage_durations || {}, group.tools_owned || [], group.decision_log || []);
   const effScore     = effBreakdown.total;
@@ -1024,10 +1026,23 @@ function showFinal() {
   const starsHtml    = Array.from({ length: 5 },
     (_, i) => `<span class="${i < stars ? '' : 'eff-empty'}">★</span>`).join('');
 
+  // ── Calidad de decisiones (bonus/malus directo, no depende del gasto) ──
+  const quality      = computeDecisionQualityBonus(log);
+  const qualityColor = quality > 0 ? 'var(--success)' : quality < 0 ? 'var(--accent)' : 'var(--muted)';
+
   document.getElementById('finalStats').innerHTML = `
     <div class="fstat"><div class="fstat-val" style="color:var(--success)">${correct}</div><div class="fstat-lbl">Óptimas</div></div>
     <div class="fstat"><div class="fstat-val" style="color:var(--accent)">${traps}</div><div class="fstat-lbl">Trampas caídas</div></div>
     <div class="fstat"><div class="fstat-val" style="color:var(--info)">${group.hours}h</div><div class="fstat-lbl">Horas usadas</div></div>
+    <div class="fstat">
+      <div class="fstat-val" style="color:${qualityColor}">${quality > 0 ? '+' : ''}${quality}</div>
+      <div class="fstat-lbl">Calidad de decisiones</div>
+      <div class="eff-breakdown">
+        ${correct ? `<div class="eff-row eff-good"><span>Correctas ×${correct}</span><span>+${correct * 80}</span></div>` : ''}
+        ${ok      ? `<div class="eff-row"><span>Aceptables ×${ok}</span><span>+${ok * 20}</span></div>` : ''}
+        ${traps   ? `<div class="eff-row eff-bad"><span>Trampas ×${traps}</span><span>−${traps * 60}</span></div>` : ''}
+      </div>
+    </div>
     <div class="fstat eff-fstat">
       <div class="fstat-val eff-stars">${starsHtml}</div>
       <div class="fstat-lbl">Eficiencia (${effScore} pts)</div>
@@ -1086,18 +1101,30 @@ function showFinal() {
     <div class="fn-rep-desc">${repDesc}</div>
   </div>
 
-  <div class="story-narrative" style="margin-bottom:1.25rem"><div class="sn-title">REGISTRO DE DECISIONES</div>`;
+  <div class="story-narrative" style="margin-bottom:1.25rem">
+    <div class="sn-title">RESUMEN POR ETAPA — QUÉ HICIERON BIEN Y MAL</div>`;
 
   log.forEach(e => {
-    const tierCss = e.type === 'correct' ? 'sn-tier-best' : e.type === 'ok' ? 'sn-tier-good' : 'sn-tier-poor';
+    const tierCss    = e.type === 'correct' ? 'sn-tier-best' : e.type === 'ok' ? 'sn-tier-good' : 'sn-tier-poor';
+    const verdictIcon = e.type === 'correct' ? '✅' : e.type === 'ok' ? '◐' : '✗';
+    const qualityPts  = e.type === 'correct' ? 80 : e.type === 'ok' ? 20 : e.type === 'trap' ? -60 : 0;
+    const qualityCss  = qualityPts > 0 ? 'sn-q-good' : qualityPts < 0 ? 'sn-q-bad' : '';
+
+    // Buscar la explicación de la opción elegida en los datos estáticos de la etapa
+    const stageDef = STAGES[e.stage - 1];
+    const opt      = stageDef?.options?.find(o => o.letter === e.letter);
+    const stageTitle = stageDef?.title || `Etapa ${e.stage}`;
+
     narrative += `
     <div class="sn-chapter">
       <div class="sn-chapter-head">
         <span class="sn-chapter-num">STAGE ${e.stage}</span>
-        <span class="sn-chapter-name">${e.text}</span>
-        <span class="sn-tier-badge ${tierCss}">${e.typeLabel}</span>
+        <span class="sn-chapter-name">${stageTitle}</span>
+        <span class="sn-tier-badge ${tierCss}">${verdictIcon} ${e.typeLabel}</span>
       </div>
-      <div class="sn-action">Opción <strong>${e.letter}</strong> · ${fmt(e.cost)} · ${e.hours}h</div>
+      <div class="sn-action">Opción <strong>${e.letter} — ${e.text}</strong> · ${fmt(e.cost)} · ${e.hours}h</div>
+      ${opt?.consequence ? `<div class="sn-consequence">${opt.consequence}</div>` : ''}
+      <div class="sn-quality-delta ${qualityCss}">${qualityPts > 0 ? '+' : ''}${qualityPts} pts de calidad</div>
     </div>`;
   });
   narrative += `</div>`;
