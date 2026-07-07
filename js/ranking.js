@@ -135,9 +135,9 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
     const decisions  = (g.decision_log || []).length;
     const totalStages = STAGES.length;
 
-    // Delta: solo para grupos que ya confirmaron en el stage actual
+    // Delta: solo desde stage 2 en adelante, y solo si ya confirmaron en el stage actual
     const hasDecidedNow = (g.decision_log || []).some(e => e.stage === currentStageNum);
-    const scoreDelta = hasDecidedNow
+    const scoreDelta = (hasDecidedNow && currentStageNum > 1)
       ? r.score - (prevScoreMap[r.id] ?? BASE_SCORE)
       : null;
     const deltaHtml = scoreDelta === null ? ''
