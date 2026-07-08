@@ -200,7 +200,7 @@ Se suma **directo** al puntaje por cada decisión del `decision_log`, sin depend
 
 ```js
 correct (incl. lifesaver) → +80   // decisión correcta
-ok (recycled)             → +20   // decisión aceptable/recuperada
+ok (tardía)               → +20   // decisión aceptable/recuperada
 trap                      → −60   // trampa (incluye fatal/extreme, que ya se registran como 'trap')
 ```
 

@@ -115,7 +115,7 @@ const STAGES = [
       letter:'B', text:'Contención Lógica Tardía',
       sub:'Aislar sectores y capturar evidencia aunque sea de forma tardía',
       cost:150000, hours:10,
-      type:'recycled', typeLabel:'RECICLADA',
+      type:'recycled', typeLabel:'TARDÍA',
       consequence:'Si están en Contexto B: el costo se triplica a $450,000 por el trabajo extra de reconstruir evidencia destruida. Logran identificar el ransomware y pasan al siguiente stage con evidencia parcial.',
       branchNote:'→ Stage 3, Contexto A (evidencia recuperada, costo elevado si Ctx B)',
       penalty:0, ctxBMultiplier:3, nextCtx:'A'
@@ -277,7 +277,7 @@ const STAGES = [
       letter:'E', text:'Threat Hunting Tardío',
       sub:'Dedicar las próximas 24 horas a limpiar la red antes de intentar cualquier recuperación',
       cost:600000, hours:24,
-      type:'recycled', typeLabel:'RECICLADA',
+      type:'recycled', typeLabel:'TARDÍA',
       consequence:'La red queda perfectamente segura, pero consumen 24 horas en el proceso. Ya no hay tiempo para restaurar los sistemas antes del lunes. El banco no abre. Técnicamente correcto, estratégicamente tardío.',
       branchNote:'→ Stage 5, Estado Grave (red limpia pero no abrieron)',
       penalty:0, nextCtx:'C'
