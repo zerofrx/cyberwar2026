@@ -4,7 +4,7 @@
 
 import { supabase }                              from './supabase-client.js';
 import { STAGES, fmt, computeStage5State,
-         computeEfficiencyScore, efficiencyStars } from './game-data.js?v=25';
+         computeEfficiencyScore, efficiencyStars } from './game-data.js?v=27';
 import { buildLeaderboardTable }                  from './ranking.js?v=26';
 
 const NUM_GROUPS  = 6;

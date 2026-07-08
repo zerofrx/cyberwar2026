@@ -477,6 +477,18 @@ export function computeStage5State(flags, budget, penalties, hours = 0, reputati
     }
   }
 
+  // ── Reputación final: el desenlace institucional daña la reputación
+  // más allá de la suma de repCost por decisión individual. Un banco que
+  // no abre el lunes, o que llega a intervención/licencia revocada, sufre
+  // un golpe público independiente de qué tan "correcta" fue cada decisión
+  // técnica — sin esto, una secuencia de decisiones técnicamente aceptables
+  // podía terminar en GRAVE/CRÍTICO con reputación casi intacta.
+  let reputationPenalty = 0;
+  if (!flags.openedMonday)                          reputationPenalty += 20;
+  if (flags.licenseRevoked || flags.backupsDestroyed) reputationPenalty += 25;
+  if (hours > HOURS_LIMIT)                          reputationPenalty += 5;
+  const finalReputation = Math.max(0, Math.min(100, reputation - reputationPenalty));
+
   // ── Construir resultado ─────────────────────────────────────
   const STATES = [
     { ctx:'A', label:'LEVE',    baseReason:'Abrieron el lunes con presupuesto saludable y gestión sólida.' },
@@ -487,7 +499,7 @@ export function computeStage5State(flags, budget, penalties, hours = 0, reputati
   const s = STATES[level];
   const reason = reasons.length ? s.baseReason + ' ' + reasons.join(' ') : s.baseReason;
 
-  return { ctx: s.ctx, label: s.label, reason, extraPenalties };
+  return { ctx: s.ctx, label: s.label, reason, extraPenalties, finalReputation };
 }
 
 // ── applyDecision ────────────────────────────

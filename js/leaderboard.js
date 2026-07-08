@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════
 
 import { supabase }                                      from './supabase-client.js';
-import { STAGES }                                        from './game-data.js?v=25';
+import { STAGES }                                        from './game-data.js?v=27';
 import { buildLeaderboardTable }                         from './ranking.js?v=26';
 
 // ── Parsear sesión ───────────────────────────

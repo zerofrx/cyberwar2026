@@ -213,7 +213,7 @@
         (flags.pendingPenalties || []).forEach(p => { budgetFinal -= p.amount; penFinal += p.amount; });
 
         const state = g.final_state === 'game_over'
-          ? { ctx: 'X', label: 'ELIMINADO', extraPenalties: 0 }
+          ? { ctx: 'X', label: 'ELIMINADO', extraPenalties: 0, finalReputation: 0 }
           : computeStage5State(flags, budgetFinal, penFinal, g.hours, g.reputation ?? 100);
         budgetFinal -= (state.extraPenalties || 0);
         penFinal    += (state.extraPenalties || 0);
@@ -232,7 +232,7 @@
       const winner = ranked[0];
       if (winner && winner.state.ctx !== 'X') {
         const wColor = ctxColors[winner.state.ctx];
-        const wRep   = winner.reputation ?? 100;
+        const wRep   = winner.state.finalReputation;
         const wRepColor = wRep >= 70 ? 'var(--success)' : wRep >= 40 ? 'var(--gold)' : 'var(--accent)';
         const wRepLabel = wRep >= 70 ? 'Reputación preservada' : wRep >= 40 ? 'Reputación dañada' : 'Reputación crítica';
         const storyEl = document.getElementById('resStory');
@@ -256,7 +256,7 @@
       const grid = document.getElementById('resGrid');
       grid.innerHTML = ranked.map((g, i) => {
         const color    = ctxColors[g.state.ctx] || 'var(--muted)';
-        const rep      = g.reputation ?? 100;
+        const rep      = g.state.finalReputation;
         const repColor = rep >= 70 ? 'var(--success)' : rep >= 40 ? 'var(--gold)' : 'var(--accent)';
         const repLabel = rep >= 70 ? 'Preservada' : rep >= 40 ? 'Dañada' : rep >= 25 ? 'Crítica' : 'Destruida';
         const chips = g.log.map(e =>

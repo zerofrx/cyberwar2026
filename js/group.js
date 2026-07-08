@@ -9,7 +9,7 @@ import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          TOOLS_CATALOG, STAGE_TIME_TARGETS, findTool,
          toolsForStage, ownedIds,
          computeEfficiencyScore, efficiencyStars, efficiencyBreakdown,
-         computeDecisionQualityBonus } from './game-data.js?v=25';
+         computeDecisionQualityBonus } from './game-data.js?v=27';
 
 // ── Parsear URL params ───────────────────────
 const params    = new URLSearchParams(location.search);
@@ -1091,7 +1091,7 @@ function showFinal() {
   };
 
   // ── Reputación ────────────────────────────────
-  const rep      = group.reputation ?? 100;
+  const rep      = state.finalReputation;
   const repColor = rep >= 70 ? 'var(--success)' : rep >= 40 ? 'var(--gold)' : 'var(--accent)';
   const repLabel = rep >= 70 ? 'Reputación preservada' : rep >= 40 ? 'Reputación dañada' : rep >= 25 ? 'Reputación crítica' : 'Reputación destruida';
   const repDesc  = rep >= 70
