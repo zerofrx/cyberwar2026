@@ -1123,7 +1123,7 @@ function showFinal() {
         <span class="sn-tier-badge ${tierCss}">${verdictIcon} ${e.typeLabel}</span>
       </div>
       <div class="sn-action">Opción <strong>${e.letter} — ${e.text}</strong> · ${fmt(e.cost)} · ${e.hours}h</div>
-      ${opt?.consequence ? `<div class="sn-consequence">${opt.consequence}</div>` : ''}
+      ${(opt?.waitStory || opt?.consequence) ? `<div class="sn-consequence"><p>${(opt.waitStory || opt.consequence).replace(/\n\n/g, '</p><p>')}</p></div>` : ''}
       <div class="sn-quality-delta ${qualityCss}">${qualityPts > 0 ? '+' : ''}${qualityPts} pts de calidad</div>
     </div>`;
   });

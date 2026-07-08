@@ -1133,6 +1133,8 @@ body {
   padding-left: .65rem;
   border-left: 2px solid var(--border);
 }
+.sn-consequence p { margin: 0 0 .6rem; }
+.sn-consequence p:last-child { margin-bottom: 0; }
 .sn-quality-delta {
   display: inline-block;
   margin-top: .4rem;
