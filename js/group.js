@@ -100,6 +100,25 @@ async function init() {
     .update({ is_online: true, last_seen: new Date().toISOString() })
     .eq('group_id', GROUP_ID)
     .eq('role', ROLE);
+
+  // Respaldo por polling: si se pierde un evento realtime (websocket caído,
+  // suscripción todavía no activa cuando el facilitador avanzó, etc.) esto
+  // igual sincroniza el estado en unos segundos en vez de dejar la pantalla
+  // congelada indefinidamente.
+  setInterval(syncState, 4000);
+}
+
+async function syncState() {
+  const [{ data: grp }, { data: ses }] = await Promise.all([
+    supabase.from('groups').select('*').eq('id', GROUP_ID).single(),
+    supabase.from('sessions').select('*').eq('id', SESSION_ID).single()
+  ]);
+  if (!grp || !ses) return;
+  const changed = JSON.stringify(grp) !== JSON.stringify(group) || JSON.stringify(ses) !== JSON.stringify(session);
+  if (!changed) return;
+  group   = grp;
+  session = ses;
+  render();
 }
 
 // ── Setup topbar ─────────────────────────────
