@@ -70,9 +70,9 @@ export function groupStatusTier(g) {
 }
 
 // ── Replay del decision_log al final del stage targetNum (1-indexed) ──
-// Reconstruye: budget (decisiones + herramientas del período), stage_durations,
-// tools_owned y decision_log filtrados al stage targetNum para que el delta
-// entre stages refleje exactamente lo que cambió en ese stage.
+// Reconstruye: budget, reputación (penalizaciones inmediatas incluidas),
+// stage_durations, tools_owned y decision_log filtrados al stage targetNum
+// para que el delta entre stages refleje exactamente lo que cambió en ese stage.
 function replayGroupAtStage(g, targetNum) {
   const log = (g.decision_log || []).filter(e => e.stage <= targetNum);
 
@@ -81,9 +81,20 @@ function replayGroupAtStage(g, targetNum) {
     typeof t === 'object' && t && (t.stage + 1) <= targetNum
   );
 
-  // Budget = presupuesto inicial − costos de decisiones − costos de herramientas del período
-  let budget = 5000000;
-  for (const e of log) budget -= (e.cost || 0);
+  // Budget y reputación: recorrer el log buscando la opción original en STAGES
+  // para aplicar repCost y penalizaciones inmediatas (isPendingPenalty: false),
+  // igual que applyDecision — si no, el snapshot histórico queda con la
+  // reputación y el presupuesto ACTUALES del grupo en vez de los de ese momento.
+  let budget     = 5000000;
+  let reputation = 100;
+  for (const e of log) {
+    budget -= (e.cost || 0);
+    const opt = STAGES[e.stage - 1]?.options?.find(o => o.letter === e.letter);
+    if (opt) {
+      reputation = Math.max(0, Math.min(100, reputation - (opt.repCost ?? 0)));
+      if (opt.penalty && !opt.isPendingPenalty) budget -= opt.penalty;
+    }
+  }
   for (const t of toolsAtStage) {
     const tool = findTool(t.id);
     if (tool) budget -= tool.cost;
@@ -97,6 +108,7 @@ function replayGroupAtStage(g, targetNum) {
   return {
     ...g,
     budget,
+    reputation,
     decision_log:   log,
     tools_owned:    toolsAtStage,
     stage_durations: stageDurations,
