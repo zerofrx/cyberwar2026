@@ -1197,6 +1197,121 @@ body {
   background: var(--gold-light);
 }
 
+.fac-btn-bestpath {
+  background: var(--surface);
+  color: var(--success);
+  border: 1px solid #90c8a8;
+}
+.fac-btn-bestpath:hover {
+  background: var(--success-light);
+}
+
+.fac-btn-winnerpath {
+  background: var(--surface);
+  color: var(--gold);
+  border: 1px solid #d4a843;
+}
+.fac-btn-winnerpath:hover {
+  background: var(--gold-light);
+}
+
+.bp-step.bp-step-trap    { border-left-color: var(--accent); }
+.bp-step.bp-step-ok      { border-left-color: var(--gold); }
+
+.bp-step-verdict {
+  font-family: 'DM Mono', monospace;
+  font-size: .55rem;
+  letter-spacing: .08em;
+  padding: .15rem .45rem;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.bp-step-verdict-correct { background: var(--success-light); color: var(--success); border: 1px solid #90c8a8; }
+.bp-step-verdict-trap    { background: var(--accent-light);  color: var(--accent);  border: 1px solid var(--accent-border); }
+.bp-step-verdict-ok      { background: var(--gold-light);    color: var(--gold);    border: 1px solid #e0c880; }
+
+.bp-step {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--success);
+  border-radius: 8px;
+  padding: .9rem 1.1rem;
+  margin-bottom: .75rem;
+}
+
+.bp-step-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .35rem;
+}
+
+.bp-step-stage {
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .12em;
+  color: var(--muted);
+}
+
+.bp-step-cost {
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  color: var(--success);
+  white-space: nowrap;
+}
+
+.bp-step-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e5ddd5;
+  margin-bottom: .2rem;
+}
+
+.bp-step-sub {
+  color: var(--text);
+  font-size: .85rem;
+  line-height: 1.5;
+  margin-bottom: .5rem;
+}
+
+.bp-step-tools {
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  color: var(--gold);
+  line-height: 1.6;
+}
+
+.bp-step-why {
+  margin-top: .6rem;
+  padding-top: .6rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.6;
+}
+
+.bp-step-why-label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: .58rem;
+  letter-spacing: .1em;
+  color: var(--success);
+  margin-bottom: .3rem;
+}
+
+.bp-summary {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
 .prelim-overlay {
   position: fixed;
   inset: 0;

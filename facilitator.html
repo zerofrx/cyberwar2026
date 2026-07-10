@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Facilitador — Crisis Cibernética Bancaria</title>
-  <link rel="stylesheet" href="css/multiplayer.css?v=27">
+  <link rel="stylesheet" href="css/multiplayer.css?v=31">
 </head>
 <body>
 
@@ -60,6 +60,12 @@
         <div style="display:flex;flex-direction:column;gap:.65rem">
           <button class="fac-btn fac-btn-start" id="btnStart">
             Iniciar simulacro
+          </button>
+          <button class="fac-btn fac-btn-bestpath" id="btnBestPath">
+            ★ Ver el mejor camino
+          </button>
+          <button class="fac-btn fac-btn-winnerpath mp-hidden" id="btnWinnerPath">
+            🏆 Ver el camino del Ganador
           </button>
           <button class="fac-btn fac-btn-prelim mp-hidden" id="btnPrelim">
             Ver resultados preliminares
@@ -191,6 +197,48 @@
     </div>
   </div>
 
+  <!-- ── Overlay: el mejor camino ──────────────── -->
+  <div id="bestPathOverlay" class="prelim-overlay mp-hidden">
+    <div class="prelim-panel" style="max-width:900px">
+
+      <div class="prelim-header">
+        <div>
+          <div class="prelim-eyebrow">// RUTA ÓPTIMA · REFERENCIA DEL FACILITADOR</div>
+          <div class="prelim-stage-label">El mejor camino posible</div>
+        </div>
+        <button class="prelim-close" id="btnCloseBestPath">✕ Cerrar</button>
+      </div>
+
+      <div class="prelim-body" style="grid-template-columns:1fr">
+        <div class="prelim-left" style="border-right:none">
+          <div id="bestPathSummary"></div>
+          <div id="bestPathSteps"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Overlay: el camino del ganador ────────── -->
+  <div id="winnerPathOverlay" class="prelim-overlay mp-hidden">
+    <div class="prelim-panel" style="max-width:900px">
+
+      <div class="prelim-header">
+        <div>
+          <div class="prelim-eyebrow">// LO QUE REALMENTE HIZO EL EQUIPO GANADOR</div>
+          <div class="prelim-stage-label" id="winnerPathLabel">Camino del Ganador</div>
+        </div>
+        <button class="prelim-close" id="btnCloseWinnerPath">✕ Cerrar</button>
+      </div>
+
+      <div class="prelim-body" style="grid-template-columns:1fr">
+        <div class="prelim-left" style="border-right:none">
+          <div id="winnerPathSummary"></div>
+          <div id="winnerPathSteps"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Modal: confirmación de acciones ─────── -->
   <div id="confirmModal" class="confirm-modal mp-hidden">
     <div class="confirm-modal-panel">
@@ -204,6 +252,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/facilitator.js?v=28"></script>
+  <script type="module" src="js/facilitator.js?v=36"></script>
 </body>
 </html>

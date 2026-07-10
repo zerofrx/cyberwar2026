@@ -4,8 +4,10 @@
 
 import { supabase }                              from './supabase-client.js';
 import { STAGES, fmt, computeStage5State,
-         computeEfficiencyScore, efficiencyStars } from './game-data.js?v=28';
-import { buildLeaderboardTable }                  from './ranking.js?v=27';
+         computeEfficiencyScore, efficiencyStars,
+         applyDecision, findTool, BUDGET_INIT,
+         computeDecisionQualityBonus, efficiencyBreakdown } from './game-data.js?v=33';
+import { buildLeaderboardTable }                  from './ranking.js?v=33';
 
 const NUM_GROUPS  = 6;
 const ROLES       = ['ciso', 'analyst', 'legal', 'comms', 'ops'];
@@ -16,8 +18,19 @@ let groups   = [];
 let players  = [];
 let sessionId = null;
 
-// Recuperar sesión guardada del facilitador
-const savedSessionId = localStorage.getItem('fac_session_id');
+// localStorage puede lanzar SecurityError en navegadores/perfiles con
+// almacenamiento restringido (modo privado, políticas de terceros, etc.) —
+// sin este wrapper, el error rompe la carga de todo el módulo.
+const safeStorage = {
+  get(key)        { try { return localStorage.getItem(key); }    catch { return null; } },
+  set(key, value) { try { localStorage.setItem(key, value); }    catch {} },
+  remove(key)     { try { localStorage.removeItem(key); }        catch {} }
+};
+
+// Recuperar sesión guardada del facilitador — por URL (para reabrir en otro
+// dispositivo/pestaña) o, si no, por localStorage.
+const urlSessionId    = new URLSearchParams(location.search).get('session');
+const savedSessionId  = urlSessionId || safeStorage.get('fac_session_id');
 
 // ── Init ─────────────────────────────────────
 async function init() {
@@ -39,6 +52,14 @@ async function init() {
   document.getElementById('btnPrelim').addEventListener('click', showPreliminary);
   document.getElementById('btnClosePrelim').addEventListener('click', () => {
     document.getElementById('prelimOverlay').classList.add('mp-hidden');
+  });
+  document.getElementById('btnBestPath').addEventListener('click', showBestPath);
+  document.getElementById('btnCloseBestPath').addEventListener('click', () => {
+    document.getElementById('bestPathOverlay').classList.add('mp-hidden');
+  });
+  document.getElementById('btnWinnerPath').addEventListener('click', showWinnerPath);
+  document.getElementById('btnCloseWinnerPath').addEventListener('click', () => {
+    document.getElementById('winnerPathOverlay').classList.add('mp-hidden');
   });
 
   // ── Atajos ─────────────────────────────────
@@ -88,7 +109,7 @@ async function createSession() {
     if (error) throw error;
 
     sessionId = ses.id;
-    localStorage.setItem('fac_session_id', sessionId);
+    safeStorage.set('fac_session_id', sessionId);
 
     // Crear 6 grupos vacíos
     const groupRows = Array.from({ length: NUM_GROUPS }, (_, i) => ({
@@ -116,7 +137,7 @@ async function loadSession() {
     .from('sessions').select('*').eq('id', sessionId).single();
 
   if (!ses) {
-    localStorage.removeItem('fac_session_id');
+    safeStorage.remove('fac_session_id');
     showScreen('screenSetup');
     return;
   }
@@ -326,6 +347,7 @@ function renderControls() {
 
   document.getElementById('btnStart').classList.toggle('mp-hidden', !isLobby);
   document.getElementById('btnPrelim').classList.toggle('mp-hidden', !isActive);
+  document.getElementById('btnWinnerPath').classList.toggle('mp-hidden', !isFinished);
   document.getElementById('btnAdvance').classList.toggle('mp-hidden', !isActive);
   document.getElementById('btnFinish').classList.toggle('mp-hidden', isLobby || isFinished);
   document.getElementById('btnReset').classList.toggle('mp-hidden', isLobby && session.current_stage === 0);
@@ -529,6 +551,288 @@ function renderResults() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ── El mejor camino ───────────────────────────
+// Ruta óptima curada a mano (opción correcta más barata/rápida en cada
+// bifurcación, más las herramientas que hay que comprar y cuándo para
+// maximizar el bonus de costo/horas y el bonus de anticipación).
+const BEST_PATH = [
+  {
+    stageIdx: 0, optIdx: 2, buyTools: ['edr', 'siem', 'memforensics', 'backupverify'],
+    why: 'Es la única opción que aísla los sistemas afectados y preserva evidencia forense (imagen de RAM) antes de tocar nada. Las otras cuatro destruyen la evidencia (Antivirus Express), causan un apagón injustificado y carísimo (Apagón Preventivo), o gastan tiempo y dinero en servicios externos antes de tener siquiera un diagnóstico (Línea de Crisis, MDR). Sin contener primero, cualquier decisión posterior parte de una posición peor y más cara. El Sandbox de Análisis también respalda esta decisión (confirma la familia del malware), pero en esta ruta se deja sin comprar por la misma razón que el Negociador de la Etapa 2: no se paga solo.'
+  },
+  {
+    stageIdx: 1, optIdx: 2, buyTools: [],
+    why: 'Un equipo de Incident Response congela el reloj de extorsión y estabiliza el Core sin pagar un centavo. Restaurar backups (A) es una trampa si el ransomware sigue activo en la red: cifra también el respaldo. Pagar el rescate (D) es ilegal y termina en una segunda extorsión. Emitir un comunicado (E) sin saber qué se filtró provoca una corrida bancaria. Ganar tiempo primero es lo que permite responder con información en vez de pánico. El Threat Intel Feed y el Negociador Externo dan bonus aquí, pero ninguno de los dos se paga solo con lo que ahorran — ese presupuesto rinde más en la Etapa 3.'
+  },
+  {
+    stageIdx: 2, optIdx: 2, buyTools: ['threathunt', 'credrotation'],
+    why: 'La decisión principal es activar el protocolo SGSI: mensajes preaprobados para regulador, prensa y clientes, cumple el plazo del BCP y mejora la reputación (repCost −5) — más barato y rápido que dedicar el esfuerzo del equipo a Threat Hunting Activo (opción D, también correcta pero $250k y 18h en vez de $180k y 6h). Pero comprar herramientas no consume horas del reloj, así que en paralelo se contrata Threat Hunting Especializado y se fuerza una Rotación de Credenciales Privilegiadas — el vector de entrada fue justamente una cuenta con permisos elevados, así que sin rotar esas credenciales el atacante puede volver a entrar con las mismas llaves aunque el malware ya esté eliminado. Restaurar sistemas en la Etapa 4 sin haber erradicado accesos persistentes es exactamente el error que el Parche Suicida (Etapa 4, opción D) castiga con GAME OVER.'
+  },
+  {
+    stageIdx: 3, optIdx: 1, buyTools: ['legalbcp'],
+    why: 'La restauración completa del Core toma 36h y solo quedan 24 antes de la apertura obligatoria del lunes: no hay forma de abrir a tiempo sin degradar servicio. El DRP al 60% es la única ruta que logra abrir el lunes, lo cual define el piso del resultado final. Gracias a haber comprado Threat Hunting y Rotación de Credenciales en la Etapa 3 (además de la Verificación de Backups de la Etapa 1), esta decisión llega con el bonus completo de herramientas: la red está confirmada limpia y sin credenciales robadas antes de reconectar nada. Script Milagroso, Recovery Broker y Parche Suicida son trampas que corrompen datos, estafan al banco o pueden terminar en colapso total; Threat Hunting Tardío es técnicamente impecable pero llega literalmente sin tiempo para recuperar nada.'
+  },
+  {
+    stageIdx: 4, optIdx: 1, buyTools: [],
+    why: 'Presentar el informe completo de transparencia ante el regulador reduce la multa a $0 en los estados LEVE/MEDIO (y limita el daño incluso en estados peores). La Asesoría Legal BCP comprada en la Etapa 4 ya respalda esta decisión con parte del bonus de herramientas; sumar Crisis Communications Firm ($300k) daría el bonus completo, pero ese gasto extra es justo lo que empuja el presupuesto total sobre el 55% y degrada el resultado de LEVE a MEDIO — se prioriza el documento legal formal, que es lo que el regulador exige. Buscar un chivo expiatorio o prometer inversiones sin evidencia agrava las sanciones cuando el regulador lo descubre; ocultar información u obstruir la investigación son las dos únicas formas de terminar con la licencia revocada.'
+  },
+];
+
+// Nota: tres compras que SÍ dan bonus de costo/tiempo se dejan fuera a propósito
+// porque no se pagan solas — Negociador Externo ($500k, Etapa 2), Sandbox de
+// Análisis ($80k, Etapa 1) y Crisis Communications Firm ($300k, Etapa 5). Cada
+// una, sumada al resto, empuja el gasto total por encima del 55% del
+// presupuesto — el umbral que separa el estado LEVE del MEDIO en
+// computeStage5State(). En cambio Threat Hunting Especializado y Rotación de
+// Credenciales Privilegiadas SÍ entran, aunque cuestan más juntas ($550k),
+// porque respaldan la Etapa 4 (DRP) y representan el paso de erradicación que
+// un IR real no puede saltarse antes de reconectar sistemas recuperados.
+
+function simulateBestPath() {
+  let state = {
+    budget: BUDGET_INIT, costs: 0, penalties: 0, hours: 0, reputation: 100,
+    flags: { pendingPenalties: [] }, decision_log: [], notif_log: [],
+    ctx: 'default', tools_owned: []
+  };
+  const steps = [];
+
+  for (const step of BEST_PATH) {
+    const boughtTools = step.buyTools.map(id => findTool(id)).filter(Boolean);
+    for (const tool of boughtTools) {
+      state.budget -= tool.cost;
+      state.costs  += tool.cost;
+      state.tools_owned = [...state.tools_owned, { id: tool.id, stage: step.stageIdx }];
+    }
+    const opt = STAGES[step.stageIdx].options[step.optIdx];
+    const result = applyDecision(state, step.stageIdx, step.optIdx);
+    steps.push({
+      stage: STAGES[step.stageIdx], opt, boughtTools, why: step.why,
+      effectiveCost: result.effectiveCost, effectiveHours: result.effectiveHours
+    });
+    state = {
+      ...state,
+      budget: result.budget, costs: result.costs, penalties: result.penalties,
+      hours: result.hours, reputation: result.reputation, flags: result.flags,
+      decision_log: result.decision_log, notif_log: result.notif_log,
+      ctx: result.nextCtx
+    };
+  }
+
+  // Resolución final (idéntica a la de group.js showFinal)
+  let budgetFinal = state.budget;
+  let penFinal    = state.penalties;
+  (state.flags.pendingPenalties || []).forEach(p => { budgetFinal -= p.amount; penFinal += p.amount; });
+  const finalState = computeStage5State(state.flags, budgetFinal, penFinal, state.hours, state.reputation);
+  budgetFinal -= finalState.extraPenalties;
+  penFinal    += finalState.extraPenalties;
+
+  const effBreakdown = efficiencyBreakdown({}, state.tools_owned, state.decision_log);
+  const stars        = efficiencyStars(effBreakdown.total);
+  const quality       = computeDecisionQualityBonus(state.decision_log);
+
+  return { steps, state, budgetFinal, penFinal, finalState, effBreakdown, stars, quality };
+}
+
+function showBestPath() {
+  const overlay = document.getElementById('bestPathOverlay');
+  const sim = simulateBestPath();
+
+  const summaryEl = document.getElementById('bestPathSummary');
+  const starsHtml = Array.from({ length: 5 },
+    (_, i) => `<span style="color:${i < sim.stars ? 'var(--gold)' : 'var(--border)'}">★</span>`).join('');
+  summaryEl.innerHTML = `
+    <div class="prelim-section-label">// DESENLACE SI SE SIGUE ESTA RUTA EN TODAS LAS ETAPAS</div>
+    <div class="bp-summary">
+      <div class="prelim-stat">
+        <span class="prelim-stat-label">ESTADO FINAL</span>
+        <span class="prelim-stat-val" style="color:var(--success)">${sim.finalState.label}</span>
+      </div>
+      <div class="prelim-stat">
+        <span class="prelim-stat-label">PRESUPUESTO RESTANTE</span>
+        <span class="prelim-stat-val" style="color:var(--success)">${fmt(sim.budgetFinal)}</span>
+      </div>
+      <div class="prelim-stat">
+        <span class="prelim-stat-label">MULTAS/PENALIZACIONES</span>
+        <span class="prelim-stat-val">${fmt(sim.penFinal)}</span>
+      </div>
+      <div class="prelim-stat">
+        <span class="prelim-stat-label">REPUTACIÓN FINAL</span>
+        <span class="prelim-stat-val">${sim.finalState.finalReputation}%</span>
+      </div>
+      <div class="prelim-stat">
+        <span class="prelim-stat-label">HORAS USADAS</span>
+        <span class="prelim-stat-val">${sim.state.hours}h / 72h</span>
+      </div>
+      <div class="prelim-stat">
+        <span class="prelim-stat-label">EFICIENCIA</span>
+        <span class="prelim-stat-val">${starsHtml} (${sim.effBreakdown.total})</span>
+      </div>
+    </div>
+    <div class="prelim-narrative prelim-narrative-muted">
+      Esta ruta combina en cada etapa la opción marcada como <strong>CORRECTA</strong> más barata y rápida entre
+      las disponibles, equipada con las herramientas que respaldan esa decisión — salvo Negociador Externo,
+      Sandbox de Análisis y Crisis Communications Firm, cuyo costo combinado empujaría el gasto total sobre
+      el 55% del presupuesto y degradaría el resultado de LEVE a MEDIO. Threat Hunting Especializado y
+      Rotación de Credenciales Privilegiadas sí se compran en la Etapa 3 — sin consumir horas del reloj — para
+      erradicar accesos persistentes y credenciales robadas <em>antes</em> de reconectar sistemas en la
+      Etapa 4, el paso que en un incidente real nadie puede saltarse. El "por qué" de cada paso está debajo
+      de cada tarjeta.
+    </div>`;
+
+  const stepsEl = document.getElementById('bestPathSteps');
+  stepsEl.innerHTML = `<div class="prelim-section-label">// DECISIONES Y HERRAMIENTAS, EN ORDEN</div>` +
+    sim.steps.map(s => {
+      // Distinguir herramientas que dan bonus a ESTA decisión de las que se
+      // compran aquí solo porque se revelan en esta etapa, para un bonus en
+      // una etapa futura (p.ej. Legal BCP comprado en la Etapa 4 para la
+      // Etapa 5) — mezclar ambas bajo "comprar antes de decidir" confunde.
+      const required   = s.opt.correctTools || [];
+      const forThisOne = s.boughtTools.filter(t => required.includes(t.id));
+      const forLater   = s.boughtTools.filter(t => !required.includes(t.id));
+      const toolsLines = [];
+      if (forThisOne.length) toolsLines.push(`🛠 Respaldan esta decisión: ${forThisOne.map(t => t.name).join(', ')}`);
+      if (forLater.length)   toolsLines.push(`⏩ Se compran aquí para usarlas en una etapa siguiente: ${forLater.map(t => t.name).join(', ')}`);
+      const toolsHtml = toolsLines.length
+        ? toolsLines.join('<br>')
+        : `🛠 No se necesita comprar herramientas nuevas en esta etapa`;
+      return `
+        <div class="bp-step">
+          <div class="bp-step-head">
+            <span class="bp-step-stage">${s.stage.label} · ${s.stage.title}</span>
+            <span class="bp-step-cost">${fmt(s.effectiveCost)} · +${s.effectiveHours}h</span>
+          </div>
+          <div class="bp-step-title">Opción ${s.opt.letter} — ${s.opt.text}</div>
+          <div class="bp-step-sub">${s.opt.sub}</div>
+          <div class="bp-step-tools">${toolsHtml}</div>
+          <div class="bp-step-why"><span class="bp-step-why-label">// POR QUÉ ES LA MEJOR OPCIÓN</span>${s.why}</div>
+        </div>`;
+    }).join('');
+
+  overlay.classList.remove('mp-hidden');
+}
+
+// ── El camino del ganador ─────────────────────
+// Reconstruye, a partir de decision_log/tools_owned, exactamente lo que hizo
+// el equipo que terminó primero — con la misma explicación (consequence) que
+// el juego les mostró tras cada decisión, para poder contrastarla con
+// "el mejor camino" en la revisión post-simulacro.
+function determineWinner() {
+  if (!groups?.length) return null;
+  const ranked = groups.map(g => {
+    const flags = g.flags || {};
+    let budgetFinal = g.budget;
+    let penFinal    = g.penalties || 0;
+    (flags.pendingPenalties || []).forEach(p => { budgetFinal -= p.amount; penFinal += p.amount; });
+    const state = g.final_state === 'game_over'
+      ? { ctx: 'X', label: 'ELIMINADO', finalReputation: g.reputation ?? 0 }
+      : computeStage5State(flags, budgetFinal, penFinal, g.hours, g.reputation ?? 100);
+    return { ...g, budgetFinal, penFinal, state };
+  }).sort((a, b) => {
+    const order = { A:0, B:1, C:2, D:3, X:4 };
+    const diff  = (order[a.state.ctx] ?? 4) - (order[b.state.ctx] ?? 4);
+    return diff !== 0 ? diff : b.budgetFinal - a.budgetFinal;
+  });
+  return ranked[0] || null;
+}
+
+const VERDICT_LABEL = { correct: '✓ CORRECTA', ok: '≈ TARDÍA', trap: '✗ TRAMPA' };
+
+function showWinnerPath() {
+  const overlay   = document.getElementById('winnerPathOverlay');
+  const winner    = determineWinner();
+  const summaryEl = document.getElementById('winnerPathSummary');
+  const stepsEl   = document.getElementById('winnerPathSteps');
+
+  if (!winner || !(winner.decision_log || []).length) {
+    document.getElementById('winnerPathLabel').textContent = 'Camino del Ganador';
+    summaryEl.innerHTML = `
+      <div class="prelim-section-label">// SIN DATOS</div>
+      <div class="prelim-narrative prelim-narrative-muted">
+        Todavía no hay decisiones registradas para mostrar el camino del equipo ganador.
+      </div>`;
+    stepsEl.innerHTML = '';
+    overlay.classList.remove('mp-hidden');
+    return;
+  }
+
+  document.getElementById('winnerPathLabel').textContent = `🥇 ${winner.name}`;
+
+  const log     = winner.decision_log || [];
+  const correct = log.filter(e => e.type === 'correct').length;
+  const traps   = log.filter(e => e.type === 'trap').length;
+  const effBreakdown = efficiencyBreakdown(winner.stage_durations || {}, winner.tools_owned || [], log);
+  const stars   = efficiencyStars(effBreakdown.total);
+  const starsHtml = Array.from({ length: 5 },
+    (_, i) => `<span style="color:${i < stars ? 'var(--gold)' : 'var(--border)'}">★</span>`).join('');
+
+  summaryEl.innerHTML = `
+    <div class="prelim-section-label">// LO QUE LOGRÓ ${winner.name.toUpperCase()}</div>
+    <div class="bp-summary">
+      <div class="prelim-stat">
+        <span class="prelim-stat-label">ESTADO FINAL</span>
+        <span class="prelim-stat-val" style="color:var(--gold)">${winner.state.label}</span>
+      </div>
+      <div class="prelim-stat">
+        <span class="prelim-stat-label">PRESUPUESTO RESTANTE</span>
+        <span class="prelim-stat-val" style="color:var(--gold)">${fmt(winner.budgetFinal)}</span>
+      </div>
+      <div class="prelim-stat">
+        <span class="prelim-stat-label">MULTAS/PENALIZACIONES</span>
+        <span class="prelim-stat-val">${fmt(winner.penFinal)}</span>
+      </div>
+      <div class="prelim-stat">
+        <span class="prelim-stat-label">REPUTACIÓN FINAL</span>
+        <span class="prelim-stat-val">${winner.state.finalReputation ?? winner.reputation ?? 100}%</span>
+      </div>
+      <div class="prelim-stat">
+        <span class="prelim-stat-label">HORAS USADAS</span>
+        <span class="prelim-stat-val">${winner.hours}h / 72h</span>
+      </div>
+      <div class="prelim-stat">
+        <span class="prelim-stat-label">EFICIENCIA</span>
+        <span class="prelim-stat-val">${starsHtml} (${effBreakdown.total})</span>
+      </div>
+    </div>
+    <div class="prelim-narrative prelim-narrative-muted">
+      ${winner.name} ganó con ${correct} decisión${correct === 1 ? '' : 'es'} correcta${correct === 1 ? '' : 's'}
+      y ${traps} trampa${traps === 1 ? '' : 's'} de ${log.length} decisiones totales. Cada tarjeta abajo
+      muestra exactamente lo que eligieron y la explicación que el juego les dio en ese momento — comparen
+      esto contra "★ Ver el mejor camino" para ver dónde ganaron terreno o dónde tuvieron suerte.
+    </div>`;
+
+  stepsEl.innerHTML = `<div class="prelim-section-label">// DECISIONES REALES, EN ORDEN</div>` +
+    log.map(e => {
+      const stage = STAGES[e.stage - 1];
+      const opt   = stage?.options?.find(o => o.letter === e.letter);
+      if (!opt) return '';
+      const toolsAtStage = (winner.tools_owned || [])
+        .filter(t => typeof t === 'object' && t && t.stage === e.stage - 1)
+        .map(t => findTool(t.id)).filter(Boolean);
+      const toolsHtml = toolsAtStage.length
+        ? `🛠 Herramientas con las que llegaron a esta decisión: ${toolsAtStage.map(t => t.name).join(', ')}`
+        : `🛠 No habían comprado herramientas nuevas para esta etapa`;
+      const verdictCls = e.type === 'correct' ? 'bp-step-verdict-correct'
+                        : e.type === 'ok'      ? 'bp-step-verdict-ok' : 'bp-step-verdict-trap';
+      const stepCls = e.type === 'correct' ? '' : e.type === 'ok' ? 'bp-step-ok' : 'bp-step-trap';
+      return `
+        <div class="bp-step ${stepCls}">
+          <div class="bp-step-head">
+            <span class="bp-step-stage">${stage.label} · ${stage.title}</span>
+            <span class="bp-step-cost">${fmt(e.cost)} · +${e.hours}h</span>
+          </div>
+          <div class="bp-step-title">
+            Opción ${opt.letter} — ${opt.text}
+            <span class="bp-step-verdict ${verdictCls}" style="margin-left:.5rem">${VERDICT_LABEL[e.type] || opt.typeLabel}</span>
+          </div>
+          <div class="bp-step-sub">${opt.sub}</div>
+          <div class="bp-step-tools">${toolsHtml}</div>
+          <div class="bp-step-why"><span class="bp-step-why-label">// QUÉ PASÓ</span>${opt.consequence}</div>
+        </div>`;
+    }).join('');
+
+  overlay.classList.remove('mp-hidden');
 }
 
 // ── Resultados preliminares ──────────────────
