@@ -22,7 +22,18 @@
       "Bash(mv ranking_OLD.js ranking_OLD.mjs)",
       "Bash(sed -i \"s#'./ranking_OLD.js'#'./ranking_OLD.mjs'#\" verify_ranking_old.mjs)",
       "Bash(node verify_ranking_old.mjs)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(node _simtest3.mjs)",
+      "Bash(rm -f _simtest3.mjs)",
+      "Bash(node --check js/game-data.js)",
+      "Bash(echo \"game-data exit:$?\")",
+      "Bash(echo \"facilitator exit:$?\")",
+      "Bash(sed -i \"s#from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'#from '@supabase/supabase-js'#\" _playtest.mjs)",
+      "Bash(node _playtest.mjs)",
+      "Bash(sed -i 's/facilitator.js?v=32/facilitator.js?v=33/' facilitator.html)",
+      "Bash(sed -i \"s/game-data.js?v=32/game-data.js?v=33/;s/ranking.js?v=32/ranking.js?v=33/\" js/facilitator.js)",
+      "Bash(sed -i 's/group.js?v=30/group.js?v=31/' group.html)",
+      "Bash(sed -i \"s/game-data.js?v=32/game-data.js?v=33/\" js/group.js)"
     ]
   },
   "enableAllProjectMcpServers": true,
