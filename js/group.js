@@ -9,7 +9,8 @@ import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          TOOLS_CATALOG, STAGE_TIME_TARGETS, findTool,
          toolsForStage, ownedIds,
          computeEfficiencyScore, efficiencyStars, efficiencyBreakdown,
-         computeDecisionQualityBonus } from './game-data.js?v=33';
+         computeDecisionQualityBonus,
+         REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT } from './game-data.js?v=34';
 
 // localStorage puede lanzar SecurityError en navegadores/perfiles con
 // almacenamiento restringido (modo privado, políticas de terceros, etc.) —
@@ -1097,13 +1098,13 @@ function showFinal() {
 
   // ── Reputación ────────────────────────────────
   const rep      = state.finalReputation;
-  const repColor = rep >= 70 ? 'var(--success)' : rep >= 40 ? 'var(--gold)' : 'var(--accent)';
-  const repLabel = rep >= 70 ? 'Reputación preservada' : rep >= 40 ? 'Reputación dañada' : rep >= 25 ? 'Reputación crítica' : 'Reputación destruida';
-  const repDesc  = rep >= 70
-    ? 'Las decisiones del equipo mantuvieron la confianza institucional. El banco conserva su credibilidad ante reguladores, clientes y mercado.'
-    : rep >= 40
-    ? 'Algunas decisiones comprometieron la imagen pública del banco. Se requiere trabajo activo para recuperar la confianza del mercado en los próximos meses.'
-    : rep >= 25
+  const repColor = rep >= REP_TIER_GOOD ? 'var(--success)' : rep >= REP_TIER_MID ? 'var(--gold)' : 'var(--accent)';
+  const repLabel = rep >= REP_TIER_GOOD ? 'Reputación preservada' : rep >= REP_TIER_MID ? 'Reputación dañada' : rep >= REP_TIER_CRIT ? 'Reputación crítica' : 'Reputación destruida';
+  const repDesc  = rep >= REP_TIER_GOOD
+    ? 'Las decisiones del equipo limitaron el daño institucional al mínimo posible tras un incidente de este tipo. El banco conserva credibilidad ante reguladores, clientes y mercado — pero incluso la mejor gestión de un ransomware con robo de datos deja una marca pública.'
+    : rep >= REP_TIER_MID
+    ? 'Algunas decisiones comprometieron la imagen pública del banco más allá del daño inevitable del incidente. Se requiere trabajo activo para recuperar la confianza del mercado en los próximos meses.'
+    : rep >= REP_TIER_CRIT
     ? 'El daño reputacional es severo y ha incidido directamente en el resultado final. La reconstrucción de la imagen institucional tomará años de gestión activa.'
     : 'La reputación institucional fue destruida. El banco ha perdido la confianza de sus clientes, el mercado y el regulador de forma casi irrecuperable.';
 

@@ -6,6 +6,17 @@
 
 export const BUDGET_INIT = 5000000;
 export const HOURS_LIMIT = 72;
+// Techo de reputación INSTITUCIONAL FINAL alcanzable tras el incidente,
+// sin importar qué tan bien se gestionó la crisis (ver computeStage5State).
+// Sufrir un ransomware con robo de datos ya es un evento público — no hay
+// gestión perfecta que borre ese daño reputacional por completo.
+export const MAX_FINAL_REPUTATION = 50;
+// Umbrales de color/etiqueta para la reputación FINAL (post Stage 5), en la
+// misma proporción que antes (70/40/25 sobre 100) pero reescalados al nuevo
+// techo — si MAX_FINAL_REPUTATION cambia, estos se recalculan solos.
+export const REP_TIER_GOOD = Math.round(MAX_FINAL_REPUTATION * 0.70);
+export const REP_TIER_MID  = Math.round(MAX_FINAL_REPUTATION * 0.40);
+export const REP_TIER_CRIT = Math.round(MAX_FINAL_REPUTATION * 0.25);
 
 export const fmt = n =>
   (n < 0 ? '-' : '') + '$' + Math.abs(Math.round(n)).toLocaleString('en-US');
@@ -487,7 +498,12 @@ export function computeStage5State(flags, budget, penalties, hours = 0, reputati
   if (!flags.openedMonday)                          reputationPenalty += 20;
   if (flags.licenseRevoked || flags.backupsDestroyed) reputationPenalty += 25;
   if (hours > HOURS_LIMIT)                          reputationPenalty += 5;
-  const finalReputation = Math.max(0, Math.min(100, reputation - reputationPenalty));
+  // Techo realista: haber sufrido un ransomware que llegó a robar datos y
+  // exigir rescate ya es, de por sí, un evento reputacional público. Ni la
+  // gestión más impecable devuelve la reputación institucional a un 100%
+  // intacto — el techo alcanzable es MAX_FINAL_REPUTATION, y de ahí para
+  // abajo según qué tan mal se manejó la crisis.
+  const finalReputation = Math.max(0, Math.min(MAX_FINAL_REPUTATION, reputation - reputationPenalty));
 
   // ── Construir resultado ─────────────────────────────────────
   const STATES = [

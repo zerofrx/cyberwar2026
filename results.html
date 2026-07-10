@@ -155,7 +155,7 @@
 
   <script type="module">
     import { supabase }              from './js/supabase-client.js';
-    import { fmt, computeStage5State } from './js/game-data.js';
+    import { fmt, computeStage5State, REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT } from './js/game-data.js?v=34';
 
     const params    = new URLSearchParams(location.search);
     const sessionId = params.get('session');
@@ -233,8 +233,8 @@
       if (winner && winner.state.ctx !== 'X') {
         const wColor = ctxColors[winner.state.ctx];
         const wRep   = winner.state.finalReputation;
-        const wRepColor = wRep >= 70 ? 'var(--success)' : wRep >= 40 ? 'var(--gold)' : 'var(--accent)';
-        const wRepLabel = wRep >= 70 ? 'Reputación preservada' : wRep >= 40 ? 'Reputación dañada' : 'Reputación crítica';
+        const wRepColor = wRep >= REP_TIER_GOOD ? 'var(--success)' : wRep >= REP_TIER_MID ? 'var(--gold)' : 'var(--accent)';
+        const wRepLabel = wRep >= REP_TIER_GOOD ? 'Reputación preservada' : wRep >= REP_TIER_MID ? 'Reputación dañada' : 'Reputación crítica';
         const storyEl = document.getElementById('resStory');
         storyEl.innerHTML = `
           <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.15em;color:${wColor};margin-bottom:.75rem">// HISTORIA FINAL — BANCO MERIDIAN</div>
@@ -257,8 +257,8 @@
       grid.innerHTML = ranked.map((g, i) => {
         const color    = ctxColors[g.state.ctx] || 'var(--muted)';
         const rep      = g.state.finalReputation;
-        const repColor = rep >= 70 ? 'var(--success)' : rep >= 40 ? 'var(--gold)' : 'var(--accent)';
-        const repLabel = rep >= 70 ? 'Preservada' : rep >= 40 ? 'Dañada' : rep >= 25 ? 'Crítica' : 'Destruida';
+        const repColor = rep >= REP_TIER_GOOD ? 'var(--success)' : rep >= REP_TIER_MID ? 'var(--gold)' : 'var(--accent)';
+        const repLabel = rep >= REP_TIER_GOOD ? 'Preservada' : rep >= REP_TIER_MID ? 'Dañada' : rep >= REP_TIER_CRIT ? 'Crítica' : 'Destruida';
         const chips = g.log.map(e =>
           `<span class="res-decision-chip res-chip-${e.type}" title="${e.text}">S${e.stage} ${e.letter}</span>`
         ).join('');
