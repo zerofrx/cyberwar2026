@@ -132,13 +132,17 @@
           .select()
           .single();
 
-        // Guardar en localStorage para reconexión
-        localStorage.setItem('cw_player_id',  player.id);
-        localStorage.setItem('cw_group_id',   group.id);
-        localStorage.setItem('cw_session_id', group.session_id);
-        localStorage.setItem('cw_role',       role);
-        localStorage.setItem('cw_name',       name);
-        localStorage.setItem('cw_code',       code);
+        // Guardar en localStorage para reconexión (no crítico: si el
+        // navegador bloquea el almacenamiento, igual se sigue a group.html
+        // vía parámetros de URL)
+        try {
+          localStorage.setItem('cw_player_id',  player.id);
+          localStorage.setItem('cw_group_id',   group.id);
+          localStorage.setItem('cw_session_id', group.session_id);
+          localStorage.setItem('cw_role',       role);
+          localStorage.setItem('cw_name',       name);
+          localStorage.setItem('cw_code',       code);
+        } catch {}
 
         window.location.href =
           `group.html?session=${group.session_id}&group=${group.id}&role=${role}`;
@@ -161,14 +165,16 @@
     }
 
     // Reconexión automática si ya hay sesión guardada
-    const savedCode = localStorage.getItem('cw_code');
-    if (savedCode) {
-      inputCode.value = savedCode;
-      const savedName = localStorage.getItem('cw_name');
-      const savedRole = localStorage.getItem('cw_role');
-      if (savedName) inputName.value = savedName;
-      if (savedRole) inputRole.value = savedRole;
-    }
+    try {
+      const savedCode = localStorage.getItem('cw_code');
+      if (savedCode) {
+        inputCode.value = savedCode;
+        const savedName = localStorage.getItem('cw_name');
+        const savedRole = localStorage.getItem('cw_role');
+        if (savedName) inputName.value = savedName;
+        if (savedRole) inputRole.value = savedRole;
+      }
+    } catch {}
   </script>
 </body>
 </html>

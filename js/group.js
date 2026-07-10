@@ -9,13 +9,18 @@ import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          TOOLS_CATALOG, STAGE_TIME_TARGETS, findTool,
          toolsForStage, ownedIds,
          computeEfficiencyScore, efficiencyStars, efficiencyBreakdown,
-         computeDecisionQualityBonus } from './game-data.js?v=28';
+         computeDecisionQualityBonus } from './game-data.js?v=33';
+
+// localStorage puede lanzar SecurityError en navegadores/perfiles con
+// almacenamiento restringido (modo privado, políticas de terceros, etc.) —
+// sin este wrapper, el error rompe la carga de todo el módulo.
+function safeStorageGet(key) { try { return localStorage.getItem(key); } catch { return null; } }
 
 // ── Parsear URL params ───────────────────────
 const params    = new URLSearchParams(location.search);
-const SESSION_ID = params.get('session') || localStorage.getItem('cw_session_id');
-const GROUP_ID   = params.get('group')   || localStorage.getItem('cw_group_id');
-const ROLE       = (params.get('role')   || localStorage.getItem('cw_role') || 'ciso').toLowerCase();
+const SESSION_ID = params.get('session') || safeStorageGet('cw_session_id');
+const GROUP_ID   = params.get('group')   || safeStorageGet('cw_group_id');
+const ROLE       = (params.get('role')   || safeStorageGet('cw_role') || 'ciso').toLowerCase();
 const IS_LEADER  = ROLE === 'ciso';
 
 // ── Estado local ─────────────────────────────

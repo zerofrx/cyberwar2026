@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="gm.css?v=25">
-  <link rel="stylesheet" href="css/multiplayer.css?v=27">
+  <link rel="stylesheet" href="css/multiplayer.css?v=31">
 </head>
 <body>
 
@@ -201,7 +201,7 @@
     </div>
   </div>
 
-  <script type="module" src="js/group.js?v=29"></script>
+  <script type="module" src="js/group.js?v=31"></script>
   <script>
     (function () {
       const btn  = document.getElementById('themeToggle');
@@ -221,11 +221,13 @@
         }
       }
 
-      apply(localStorage.getItem('cw-theme') || 'dark');
+      let savedTheme = 'dark';
+      try { savedTheme = localStorage.getItem('cw-theme') || 'dark'; } catch {}
+      apply(savedTheme);
 
       btn.addEventListener('click', () => {
         const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        localStorage.setItem('cw-theme', next);
+        try { localStorage.setItem('cw-theme', next); } catch {}
         apply(next);
       });
     })();

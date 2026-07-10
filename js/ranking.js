@@ -5,7 +5,7 @@
 
 import { STAGES, fmt, computeEfficiencyScore, efficiencyStars,
          computeAnticipationBonus, computeTimeScore,
-         computeDecisionQualityBonus, findTool } from './game-data.js?v=28';
+         computeDecisionQualityBonus, findTool } from './game-data.js?v=33';
 
 // ── Score compuesto ──────────────────────────
 // Presupuesto/20k + Reputación×20 + Eficiencia×10 + Calidad de decisión (directa).
