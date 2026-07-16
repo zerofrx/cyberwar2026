@@ -816,6 +816,23 @@ export function computeDecisionQualityBonus(decisionLog = []) {
   return bonus;
 }
 
+// Puntos de calidad de UNA sola decisión (para mostrarle al equipo el impacto
+// de lo que acaba de elegir, con la misma tabla que usa el score compuesto).
+export function decisionQualityPoints(type) {
+  return DECISION_QUALITY_POINTS[type] || 0;
+}
+
+// Tier de ritmo (ÁGIL/RÁPIDO/A TIEMPO/LENTO/DEMORADO) de UNA sola etapa —
+// misma escala de umbrales que computeTimeScore, para mostrarle al equipo
+// qué tan bien administró el tiempo en la decisión que acaba de tomar.
+const TIME_TIER_LABELS = { 20: 'ÁGIL', 10: 'RÁPIDO', 0: 'A TIEMPO', '-10': 'LENTO', '-20': 'DEMORADO' };
+export function stageTimeTier(stageNum, seconds) {
+  const target = STAGE_TIME_TARGETS[stageNum] || 600;
+  const ratio  = Number(seconds) / target;
+  const tier   = TIME_THRESHOLDS.find(t => ratio <= t.pct);
+  return { score: tier.score, label: TIME_TIER_LABELS[tier.score] };
+}
+
 // Score de eficiencia: base 100 + anticipación + tiempo + equipamiento − inútiles. Sin cap superior.
 export function computeEfficiencyScore(stageDurations = {}, toolsOwned = [], decisionLog = []) {
   return Math.max(0,

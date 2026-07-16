@@ -5,7 +5,34 @@
 
 import { STAGES, fmt, computeEfficiencyScore, efficiencyStars,
          computeAnticipationBonus, computeTimeScore,
-         computeDecisionQualityBonus, findTool } from './game-data.js?v=34';
+         computeDecisionQualityBonus, findTool, computeStage5State } from './game-data.js?v=35';
+
+// ── Presupuesto/reputación "de cierre" ───────
+// Una vez que un grupo completó la última etapa, su presupuesto y reputación
+// dejan de ser los valores crudos acumulados decisión a decisión: se les
+// aplica el mismo ajuste de cierre (cap de reputación institucional +
+// penalizaciones extra) que ven la pantalla final del equipo (group.js
+// showFinal) y los resultados del facilitador (results.html). Sin esto el
+// leaderboard mostraba reputación/presupuesto sin ese ajuste mientras las
+// demás pantallas sí lo aplicaban, y los rankings terminaban divergiendo.
+function isFinalized(g) {
+  return g.final_state === 'game_over' ||
+    (g.decision_log || []).some(e => e.stage === STAGES.length);
+}
+
+function resolveGroupStats(g) {
+  const flags = g.flags || {};
+  let budgetFinal = g.budget || 0;
+  let penFinal    = g.penalties || 0;
+  (flags.pendingPenalties || []).forEach(p => { budgetFinal -= p.amount; penFinal += p.amount; });
+
+  if (!isFinalized(g)) return { budgetFinal, reputation: g.reputation ?? 100 };
+  if (g.final_state === 'game_over') return { budgetFinal, reputation: 0 };
+
+  const state = computeStage5State(flags, budgetFinal, penFinal, g.hours, g.reputation ?? 100);
+  budgetFinal -= (state.extraPenalties || 0);
+  return { budgetFinal, reputation: state.finalReputation };
+}
 
 // ── Score compuesto ──────────────────────────
 // Presupuesto/20k + Reputación×20 + Eficiencia×10 + Calidad de decisión (directa).
@@ -19,10 +46,7 @@ export function compositeScore(g) {
   if (!g) return 0;
   // Sin decisiones confirmadas → marcador en 0
   if (!(g.decision_log || []).length) return 0;
-  const flags = g.flags || {};
-  const budgetFinal = (g.budget || 0)
-    - (flags.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
-  const rep         = g.reputation ?? 100;
+  const { budgetFinal, reputation: rep } = resolveGroupStats(g);
   const effScore     = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || [], g.decision_log || []);
   const qualityBonus = computeDecisionQualityBonus(g.decision_log || []);
   return Math.max(0, Math.round(
@@ -35,11 +59,8 @@ export function profileOf(g) {
   if (g?.final_state === 'game_over')
     return { icon: '☠', label: 'ELIMINADO', cls: 'lb-profile-dead' };
 
-  const flags     = g?.flags || {};
-  const budgetFin = (g?.budget || 0)
-    - (flags.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
+  const { budgetFinal: budgetFin, reputation: rep } = resolveGroupStats(g || {});
   const budgetPct = budgetFin / 5000000;
-  const rep       = g?.reputation ?? 100;
   const anticipation = computeAnticipationBonus(g?.tools_owned || []);
   const timeScore    = computeTimeScore(g?.stage_durations || {});
 
@@ -59,11 +80,8 @@ export function profileOf(g) {
 // ── Estado visual: 'good' | 'warn' | 'bad' | 'dead' ──
 export function groupStatusTier(g) {
   if (g?.final_state === 'game_over') return 'dead';
-  const flags = g?.flags || {};
-  const budgetFinal = (g?.budget || 0)
-    - (flags.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
+  const { budgetFinal, reputation: rep } = resolveGroupStats(g || {});
   const budgetPct = budgetFinal / 5000000;
-  const rep       = g?.reputation ?? 100;
   if (budgetPct > 0.60 && rep >= 70) return 'good';
   if (budgetPct < 0.30 || rep < 40)  return 'bad';
   return 'warn';
@@ -188,10 +206,7 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
       : `<span class="lb-trend lb-trend-flat">·</span>`;
 
     if (mode === 'public') {
-      const flags     = g.flags || {};
-      const budgetFin = (g.budget || 0)
-        - (flags.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
-      const rep       = g.reputation ?? 100;
+      const { budgetFinal: budgetFin, reputation: rep } = resolveGroupStats(g);
       const effScore  = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || [], g.decision_log || []);
       const quality   = computeDecisionQualityBonus(g.decision_log || []);
       const profile   = profileOf(g);
@@ -228,10 +243,7 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
         </tr>`;
     }
 
-    const flags      = g.flags || {};
-    const budgetFin  = (g.budget || 0)
-      - (flags.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
-    const rep        = g.reputation ?? 100;
+    const { budgetFinal: budgetFin, reputation: rep } = resolveGroupStats(g);
     const effScore   = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || [], g.decision_log || []);
     const quality    = computeDecisionQualityBonus(g.decision_log || []);
     const stars      = efficiencyStars(effScore);

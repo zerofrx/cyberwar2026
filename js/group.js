@@ -9,8 +9,8 @@ import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          TOOLS_CATALOG, STAGE_TIME_TARGETS, findTool,
          toolsForStage, ownedIds,
          computeEfficiencyScore, efficiencyStars, efficiencyBreakdown,
-         computeDecisionQualityBonus,
-         REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT } from './game-data.js?v=34';
+         computeDecisionQualityBonus, decisionQualityPoints, stageTimeTier,
+         REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT } from './game-data.js?v=35';
 
 // localStorage puede lanzar SecurityError en navegadores/perfiles con
 // almacenamiento restringido (modo privado, políticas de terceros, etc.) —
@@ -216,7 +216,17 @@ function render() {
   // Si ya confirmó y espera al facilitador para avanzar
   const waitingAdvance = group.revealed && (group.stage === session.current_stage);
   document.getElementById('stageWaitOverlay').classList.toggle('mp-hidden', !waitingAdvance);
-  if (waitingAdvance && group.chosen_option !== null) {
+  const isLastStage = group.stage === STAGES.length - 1;
+  const titleEl = document.getElementById('swoTitle');
+  const subEl   = document.getElementById('swoSub');
+  if (waitingAdvance && isLastStage) {
+    if (titleEl) titleEl.textContent = 'Esperando al facilitador';
+    if (subEl)   subEl.textContent   = 'Los puntajes finales están siendo calculados.';
+    const el = document.getElementById('swoNarrative');
+    if (el) { el.dataset.filled = ''; el.innerHTML = ''; el.classList.add('mp-hidden'); }
+  } else if (waitingAdvance && group.chosen_option !== null) {
+    if (titleEl) titleEl.textContent = 'Esperando al facilitador';
+    if (subEl)   subEl.textContent   = 'La siguiente etapa comenzará cuando el facilitador avance el juego.';
     const s = STAGES[group.stage];
     const opt = s?.options?.[group.chosen_option];
     if (opt) populateWaitOverlay(s, opt);
@@ -956,6 +966,28 @@ window.switchTab = function(tab) {
 function appendConsequenceReveal(opt, effectiveCost) {
   const main = document.getElementById('gameMain');
   if (main.querySelector('.consequence-reveal')) return; // ya existe
+
+  // ── Impacto en el puntaje: por qué el marcador sube o baja ──
+  // Traduce a texto los 3 componentes de compositeScore (ranking.js) que
+  // esta decisión afectó, además del costo — el equipo solo veía el
+  // presupuesto y no entendía por qué el puntaje del leaderboard subía o
+  // bajaba pese a haber "ahorrado" dinero.
+  const repChange   = -(opt.repCost ?? 0); // positivo = ganancia de reputación
+  const repSign     = repChange > 0 ? '+' : '';
+  const repCls      = repChange > 0 ? 'cr2-green' : repChange < 0 ? 'cr2-red' : '';
+
+  const qualityPts  = decisionQualityPoints(opt.type);
+  const qualitySign = qualityPts > 0 ? '+' : '';
+  const qualityCls  = qualityPts > 0 ? 'cr2-green' : qualityPts < 0 ? 'cr2-red' : '';
+
+  const stageNum  = group.stage + 1;
+  const elapsedS  = group.stage_durations?.[stageNum];
+  const pace      = elapsedS !== undefined ? stageTimeTier(stageNum, elapsedS) : null;
+  const paceCls   = pace ? (pace.score > 0 ? 'cr2-green' : pace.score < 0 ? 'cr2-red' : '') : '';
+  const paceRow   = pace
+    ? `<div class="cr2-brow"><span>Ritmo de resolución</span><span class="cr2-val ${paceCls}">${pace.label}${pace.score !== 0 ? ` (${pace.score > 0 ? '+' : ''}${pace.score})` : ''}</span></div>`
+    : '';
+
   const html = `
   <div class="consequence-reveal">
     <div class="cr2-header">
@@ -967,6 +999,12 @@ function appendConsequenceReveal(opt, effectiveCost) {
         <div class="cr2-brow"><span>Costo de decisión</span><span class="cr2-val cr2-red">${effectiveCost > 0 ? '-'+fmt(effectiveCost) : '$0'}</span></div>
         <div class="cr2-brow total"><span>Presupuesto actual</span><span class="cr2-val cr2-blue">${fmt(group.budget)}</span></div>
         <div class="cr2-brow"><span>Horas consumidas</span><span class="cr2-val">${group.hours}h / ${HOURS_LIMIT}h</span></div>
+      </div>
+      <div class="cr2-budget-box">
+        <div class="cr2-label">// IMPACTO EN EL PUNTAJE — ${opt.typeLabel || ''}</div>
+        <div class="cr2-brow"><span>Calidad de la decisión</span><span class="cr2-val ${qualityCls}">${qualityPts !== 0 ? `${qualitySign}${qualityPts} pts` : 'sin impacto'}</span></div>
+        <div class="cr2-brow"><span>Reputación institucional</span><span class="cr2-val ${repCls}">${repChange !== 0 ? `${repSign}${repChange}%` : 'sin cambios'}</span></div>
+        ${paceRow}
       </div>
     </div>
   </div>`;

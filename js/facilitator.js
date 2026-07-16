@@ -6,8 +6,8 @@ import { supabase }                              from './supabase-client.js';
 import { STAGES, fmt, computeStage5State,
          computeEfficiencyScore, efficiencyStars,
          applyDecision, findTool, BUDGET_INIT,
-         computeDecisionQualityBonus, efficiencyBreakdown } from './game-data.js?v=34';
-import { buildLeaderboardTable }                  from './ranking.js?v=34';
+         computeDecisionQualityBonus, efficiencyBreakdown } from './game-data.js?v=35';
+import { buildLeaderboardTable }                  from './ranking.js?v=35';
 
 const NUM_GROUPS  = 6;
 const ROLES       = ['ciso', 'analyst', 'legal', 'comms', 'ops'];
