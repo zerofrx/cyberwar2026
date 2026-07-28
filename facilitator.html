@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Facilitador — Crisis Cibernética Bancaria</title>
-  <link rel="stylesheet" href="css/multiplayer.css?v=34">
+  <link rel="stylesheet" href="css/multiplayer.css?v=35">
 </head>
 <body>
 
@@ -160,6 +160,18 @@
             </a>
           </div>
           <div id="resultsGrid" class="fac-results-grid"></div>
+
+          <!-- Debrief: resumen de aprendizajes por equipo (para cerrar la sesión) -->
+          <div id="learningsBlock" style="margin-top:1.75rem">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;gap:.75rem;flex-wrap:wrap">
+              <div class="fac-section-title" style="margin-bottom:0">📋 Resumen de aprendizajes (debrief)</div>
+              <div style="display:flex;gap:.5rem">
+                <button id="btnCopyLearnings" class="fac-btn fac-btn-shortcut" style="font-size:.72rem;padding:.4rem .8rem">Copiar</button>
+                <button id="btnDownloadLearnings" class="fac-btn fac-btn-shortcut" style="font-size:.72rem;padding:.4rem .8rem">Descargar .txt</button>
+              </div>
+            </div>
+            <div id="learningsOutput" class="fac-learnings"></div>
+          </div>
         </div>
       </main>
 
@@ -252,6 +264,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/facilitator.js?v=37"></script>
+  <script type="module" src="js/facilitator.js?v=38"></script>
 </body>
 </html>

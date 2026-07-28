@@ -551,6 +551,93 @@ function renderResults() {
       </div>
     </div>`;
   }).join('');
+
+  renderLearnings(ranked);
+}
+
+// ── Debrief: resumen de aprendizajes por equipo (#5) ──────────
+// Deriva lecciones concretas del decision_log de cada equipo, comparando
+// lo que eligieron contra la opción óptima (BEST_PATH) y las herramientas
+// que respaldaban cada acierto. Pensado para que el facilitador cierre la
+// sesión leyendo, por equipo, qué salió bien y qué caro costó cada error.
+let _learningsText = '';
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"]/g, c =>
+    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+}
+function firstSentence(str = '') {
+  const parts = String(str).split(/(?<=\.)\s+/);
+  return parts[0] || String(str);
+}
+function ownedToolIds(g) {
+  return (g.tools_owned || []).map(t => typeof t === 'string' ? t : t?.id).filter(Boolean);
+}
+
+function decisionLesson(g, e) {
+  const stageIdx = e.stage - 1;
+  const stage = STAGES[stageIdx];
+  if (!stage) return null;
+  const chosen = stage.options.find(o => o.letter === e.letter);
+  const best   = (BEST_PATH[stageIdx] && stage.options[BEST_PATH[stageIdx].optIdx])
+    || stage.options.find(o => o.type === 'correct' || o.type === 'lifesaver');
+  const tag = `Etapa ${e.stage} · ${stage.title}`;
+
+  if (e.type === 'trap') {
+    return `  ✗ ${tag}: eligieron "${e.text}". ${firstSentence(chosen?.consequence)} La acción óptima era "${best?.text}".`;
+  }
+  if (e.type === 'ok') {
+    return `  ◐ ${tag}: "${e.text}" fue recuperable pero tardía/subóptima. ${firstSentence(chosen?.consequence)}`;
+  }
+  // correct / lifesaver — ¿la respaldaron con herramientas al confirmarla?
+  const needed = chosen?.correctTools || [];
+  const tb = e.toolBonus;
+  if (needed.length && (!tb || tb.matched < needed.length)) {
+    const names = needed.map(id => findTool(id)?.name).filter(Boolean);
+    const got = tb?.matched || 0;
+    return `  ✓ ${tag}: acierto con "${e.text}", pero al confirmarlo tenían ${got}/${needed.length} de las herramientas que lo respaldaban (${names.join(', ')}) → pagaron más caro y perdieron parte del bono de equipamiento.`;
+  }
+  return `  ✓ ${tag}: acierto con "${e.text}"${needed.length ? ' y con las herramientas que lo respaldaban' : ''}.`;
+}
+
+function buildTeamLearnings(g) {
+  const lines = [];
+  lines.push(`▐ ${g.name} — ${g.state.label}`);
+  lines.push(`  Resultado: ${g.correct} óptimas · ${g.traps} trampas · presupuesto ${fmt(g.budgetFinal)} · ${g.hours}h/72h · reputación ${g.reputation ?? 100}%`);
+  lines.push(`  ${g.flags?.openedMonday ? '✓ Abrieron el lunes.' : '✗ No lograron abrir el lunes.'}`);
+  lines.push('');
+  (g.log || []).forEach(e => { const l = decisionLesson(g, e); if (l) lines.push(l); });
+  if (!(g.log || []).length) lines.push('  (Sin decisiones registradas.)');
+  return lines;
+}
+
+function renderLearnings(ranked) {
+  const out = document.getElementById('learningsOutput');
+  if (!out) return;
+  const blocks = ranked.map(buildTeamLearnings);
+  const header = `DEBRIEF — ${session?.room_code ? 'Sala ' + session.room_code + ' · ' : ''}Banco Meridian\n${'='.repeat(48)}\n`;
+  _learningsText = header + blocks.map(b => b.join('\n')).join('\n\n');
+
+  out.innerHTML = blocks
+    .map(b => `<pre class="fac-learnings-team">${b.map(escapeHtml).join('\n')}</pre>`)
+    .join('');
+
+  const copyBtn = document.getElementById('btnCopyLearnings');
+  const dlBtn   = document.getElementById('btnDownloadLearnings');
+  if (copyBtn) copyBtn.onclick = async () => {
+    try { await navigator.clipboard.writeText(_learningsText); copyBtn.textContent = '✓ Copiado'; }
+    catch { copyBtn.textContent = 'No se pudo copiar'; }
+    setTimeout(() => { copyBtn.textContent = 'Copiar'; }, 2000);
+  };
+  if (dlBtn) dlBtn.onclick = () => {
+    const blob = new Blob([_learningsText], { type: 'text/plain;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `debrief-${session?.room_code || 'sesion'}.txt`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  };
 }
 
 // ── El mejor camino ───────────────────────────
