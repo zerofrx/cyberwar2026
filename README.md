@@ -9,8 +9,8 @@ Simulacro de crisis cibernética bancaria multijugador para uso en aula. 6 grupo
 ```
 cyberwar2026/
 │
-├── gm.html              # Modo single-player (sin cambios)
-├── gm.js                # Lógica del modo single-player (sin cambios)
+├── gm.html              # Modo single-player (facilitador con GM view)
+├── gm.js                # Lógica del single-player — MÓDULO que consume js/game-data.js
 ├── gm.css               # Estilos base del juego (compartido)
 │
 ├── index.html           # Login de participantes

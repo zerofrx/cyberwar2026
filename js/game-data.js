@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════
-// game-data.js — Datos puros del juego
-// Importado por group.js y facilitator.js
-// gm.js mantiene su propia copia inline
+// game-data.js — Datos puros del juego (ÚNICA fuente de verdad)
+// Importado por group.js y facilitator.js (multijugador) y por gm.js
+// (single-player). Ya no hay copias inline que puedan desincronizarse.
 // ══════════════════════════════════════════
 
 export const BUDGET_INIT = 5000000;

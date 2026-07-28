@@ -10,7 +10,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="gm.css">
+<!-- multiplayer.css primero: aporta los estilos del toolkit y del glosario
+     (que no están en gm.css). gm.css va después para ganar en los selectores
+     base compartidos (body, .topbar, .game-layout, .final-screen). -->
+<link rel="stylesheet" href="css/multiplayer.css?v=35">
+<link rel="stylesheet" href="gm.css?v=26">
 </head>
 <body>
 
@@ -146,6 +150,15 @@
           </div>
         </div>
         <div>
+          <div class="sb-label">Reputación institucional</div>
+          <div style="display:flex;align-items:center;gap:.55rem">
+            <div style="flex:1;height:8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;overflow:hidden">
+              <div id="repBar" style="height:100%;width:100%;background:var(--success);transition:width .4s"></div>
+            </div>
+            <span id="repVal" style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;color:var(--success)">100%</span>
+          </div>
+        </div>
+        <div>
           <div class="sb-label">Contexto actual</div>
           <div id="contextBox" style="font-family:'DM Mono',monospace;font-size:.7rem;color:var(--muted);padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;">Sin bifurcación aún</div>
         </div>
@@ -222,7 +235,7 @@
 <!-- Toast de presupuesto -->
 <div id="budgetToast"></div>
 
-<!-- Lógica del juego -->
-<script src="gm.js"></script>
+<!-- Lógica del juego (módulo: comparte game-data.js con el multijugador) -->
+<script type="module" src="gm.js?v=2"></script>
 </body>
 </html>
