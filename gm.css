@@ -10,8 +10,10 @@
   --surface: #261f18;
   --border:  #38302a;
 
-  --text:  #d4c9be;
-  --muted: #7a6e65;
+  /* Aclarados para accesibilidad: el texto de cuerpo y secundario pasa
+     WCAG AA sobre los fondos oscuros (antes ~2.8:1, ahora >5:1). */
+  --text:  #e6ddd1;
+  --muted: #9d9084;
 
   --accent:        #c0392b;
   --accent-border: #d95040;
@@ -394,9 +396,12 @@ html, body {
   line-height: 1.35;
 }
 .do-sub {
-  font-size: .76rem;
-  color: var(--accent);
-  line-height: 1.4;
+  /* Antes: rojo (--accent) sobre fondo oscuro = ~2.3:1, ilegible como
+     texto de cuerpo. Ahora usa el color de texto: la jerarquía con el
+     título la da el peso (.do-text es 600, esto 400). */
+  font-size: .83rem;
+  color: var(--text);
+  line-height: 1.45;
 }
 
 /* ── SIDEBAR ── */
@@ -576,7 +581,7 @@ html, body {
 .opt-meta { display: flex; gap: .4rem; margin-top: .35rem; flex-wrap: wrap; }
 .opt-cost {
   font-family: 'DM Mono', monospace;
-  font-size: .65rem;
+  font-size: .72rem;
   font-weight: 700;
   padding: .18rem .45rem;
   border-radius: 3px;
@@ -587,7 +592,7 @@ html, body {
 .opt-cost.zero { color: var(--success); }
 .opt-hours {
   font-family: 'DM Mono', monospace;
-  font-size: .65rem;
+  font-size: .72rem;
   padding: .18rem .45rem;
   border-radius: 3px;
   background: var(--bg);

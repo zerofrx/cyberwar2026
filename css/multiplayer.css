@@ -15,8 +15,8 @@
   --bg:      #1e1812;
   --surface: #261f18;
   --border:  #38302a;
-  --text:    #d4c9be;
-  --muted:   #7a6e65;
+  --text:    #e6ddd1;  /* aclarado para WCAG AA sobre fondos oscuros */
+  --muted:   #9d9084;  /* aclarado para WCAG AA sobre fondos oscuros */
   --accent:  #c0392b;
   --success: #2e9e60;
   --info:    #4a90d9;
