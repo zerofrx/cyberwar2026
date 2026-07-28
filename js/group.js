@@ -5,12 +5,12 @@
 
 import { supabase }                          from './supabase-client.js';
 import { STAGES, BUDGET_INIT, HOURS_LIMIT,
-         fmt, applyDecision, computeStage5State,
+         fmt, glossarize, applyDecision, computeStage5State,
          TOOLS_CATALOG, STAGE_TIME_TARGETS, findTool,
          toolsForStage, ownedIds,
          computeEfficiencyScore, efficiencyStars, efficiencyBreakdown,
          computeDecisionQualityBonus, decisionQualityPoints, stageTimeTier,
-         REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT } from './game-data.js?v=35';
+         REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT } from './game-data.js?v=36';
 
 // localStorage puede lanzar SecurityError en navegadores/perfiles con
 // almacenamiento restringido (modo privado, políticas de terceros, etc.) —
@@ -341,7 +341,7 @@ function buildToolkitPanel() {
           <span class="tk-cat">${t.category}</span>
         </div>
         <div class="tk-name">${t.name}</div>
-        ${t.description ? `<div class="tk-desc">${t.description}</div>` : ''}
+        ${t.description ? `<div class="tk-desc">${glossarize(t.description)}</div>` : ''}
         <div class="tk-cost">${fmt(t.cost)}</div>
         <button class="tk-buy" data-tool="${t.id}"
           ${(isOwned || locked || !canAfford) ? 'disabled' : ''}
@@ -619,8 +619,8 @@ function buildIncidentCard(s, variant, state5) {
     <div class="ic-body">
       <div class="ic-eyebrow">${s.label} · ${s.timestamp}</div>
       <h2 class="ic-title">${s.title}</h2>
-      <p class="ic-narrative">${variant.narrative}</p>
-      ${variant.update ? `<div class="ic-update"><div class="ic-update-label">// ACTUALIZACIÓN</div>${variant.update}</div>` : ''}
+      <p class="ic-narrative">${glossarize(variant.narrative)}</p>
+      ${variant.update ? `<div class="ic-update"><div class="ic-update-label">// ACTUALIZACIÓN</div>${glossarize(variant.update)}</div>` : ''}
       ${state5 ? `<div style="margin-top:.75rem;padding:.65rem;background:var(--gold-light);border:1px solid #e0c880;border-radius:6px;font-size:.78rem;color:var(--gold)">
         <div style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.1em;margin-bottom:.2rem">// ESTADO CALCULADO</div>
         <strong>Estado: ${state5.label}</strong> — ${state5.reason}
@@ -659,7 +659,7 @@ function buildDecisionCard(s, ctx) {
         <div class="do-key">${opt.letter}</div>
         <div class="do-content">
           <div class="do-text">${opt.text}</div>
-          <div class="do-sub">${opt.sub}</div>
+          <div class="do-sub">${glossarize(opt.sub)}</div>
           <div class="opt-meta">
             <span class="opt-cost ${costClass}">${costStr}</span>
             ${opt.hours > 0
@@ -688,7 +688,7 @@ function buildRolePanel(opt, panel, effectiveCost) {
   let content = '';
 
   if (ROLE === 'ciso') {
-    content = opt.consequence;
+    content = glossarize(opt.consequence);
   } else if (ROLE === 'legal') {
     // Penalizaciones cuantitativas ocultas: solo riesgos cualitativos
     const items = [];
@@ -923,7 +923,7 @@ function updateSidebar() {
     }
     document.getElementById('notifFeed').innerHTML = allAlerts.length
       ? [...allAlerts].reverse()
-          .map(n => `<div class="notif-item notif-${n.type}"><div class="ni-title">${n.title}</div><div class="ni-body">${n.body}</div></div>`)
+          .map(n => `<div class="notif-item notif-${n.type}"><div class="ni-title">${n.title}</div><div class="ni-body">${glossarize(n.body)}</div></div>`)
           .join('')
       : '<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:1rem">Sin alertas</div>';
   }

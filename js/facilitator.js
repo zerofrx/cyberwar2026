@@ -3,10 +3,10 @@
 // ══════════════════════════════════════════
 
 import { supabase }                              from './supabase-client.js';
-import { STAGES, fmt, computeStage5State,
+import { STAGES, fmt, glossarize, computeStage5State,
          computeEfficiencyScore, efficiencyStars,
          applyDecision, findTool, BUDGET_INIT,
-         computeDecisionQualityBonus, efficiencyBreakdown } from './game-data.js?v=35';
+         computeDecisionQualityBonus, efficiencyBreakdown } from './game-data.js?v=36';
 import { buildLeaderboardTable }                  from './ranking.js?v=35';
 
 const NUM_GROUPS  = 6;
@@ -704,9 +704,9 @@ function showBestPath() {
             <span class="bp-step-cost">${fmt(s.effectiveCost)} · +${s.effectiveHours}h</span>
           </div>
           <div class="bp-step-title">Opción ${s.opt.letter} — ${s.opt.text}</div>
-          <div class="bp-step-sub">${s.opt.sub}</div>
+          <div class="bp-step-sub">${glossarize(s.opt.sub)}</div>
           <div class="bp-step-tools">${toolsHtml}</div>
-          <div class="bp-step-why"><span class="bp-step-why-label">// POR QUÉ ES LA MEJOR OPCIÓN</span>${s.why}</div>
+          <div class="bp-step-why"><span class="bp-step-why-label">// POR QUÉ ES LA MEJOR OPCIÓN</span>${glossarize(s.why)}</div>
         </div>`;
     }).join('');
 
@@ -826,9 +826,9 @@ function showWinnerPath() {
             Opción ${opt.letter} — ${opt.text}
             <span class="bp-step-verdict ${verdictCls}" style="margin-left:.5rem">${VERDICT_LABEL[e.type] || opt.typeLabel}</span>
           </div>
-          <div class="bp-step-sub">${opt.sub}</div>
+          <div class="bp-step-sub">${glossarize(opt.sub)}</div>
           <div class="bp-step-tools">${toolsHtml}</div>
-          <div class="bp-step-why"><span class="bp-step-why-label">// QUÉ PASÓ</span>${opt.consequence}</div>
+          <div class="bp-step-why"><span class="bp-step-why-label">// QUÉ PASÓ</span>${glossarize(opt.consequence)}</div>
         </div>`;
     }).join('');
 
@@ -873,7 +873,7 @@ function showPreliminary() {
 
     leaderEl.innerHTML = `
       <div class="prelim-section-label">// SITUACIÓN DEL EQUIPO LÍDER</div>
-      <div class="prelim-narrative">${narrative}</div>
+      <div class="prelim-narrative">${glossarize(narrative)}</div>
       <div class="prelim-leader-stats">
         <div class="prelim-stat">
           <span class="prelim-stat-label">PRESUPUESTO</span>
@@ -910,7 +910,7 @@ function showPreliminary() {
       <div class="prelim-section-label">// SE APROXIMA — ${nextStage.label}</div>
       <div class="prelim-next-time">${nextStage.timestamp}</div>
       <div class="prelim-next-title">${nextStage.title}</div>
-      ${nextVariant ? `<div class="prelim-narrative prelim-narrative-muted">${nextVariant.narrative}</div>` : ''}`;
+      ${nextVariant ? `<div class="prelim-narrative prelim-narrative-muted">${glossarize(nextVariant.narrative)}</div>` : ''}`;
   } else {
     nextEl.innerHTML = `
       <div class="prelim-divider"></div>

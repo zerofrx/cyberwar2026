@@ -21,6 +21,93 @@ export const REP_TIER_CRIT = Math.round(MAX_FINAL_REPUTATION * 0.25);
 export const fmt = n =>
   (n < 0 ? '-' : '') + '$' + Math.abs(Math.round(n)).toLocaleString('en-US');
 
+// ── Glosario técnico ──────────────────────────
+// Para que roles no técnicos (RRHH, sucursales, atención al cliente, etc.)
+// entiendan la jerga sin tener que salir a buscarla. glossarize() envuelve
+// la primera aparición de cada término en un <span> con tooltip, saltando
+// el contenido que ya está dentro de etiquetas HTML.
+// Nota: las claves se usan como expresión regular (por eso el punto escapado
+// en LockBit 3\.0). Se puede usar alternancia/opcionales para cubrir variantes
+// de una palabra en una sola entrada (ej. backups?, cifrad[oa]s?).
+export const GLOSSARY = {
+  // ── Programas y ataques ─────────────────────
+  'ransomware':         'Programa malicioso que le pone candado (cifra) a los archivos de una computadora y pide un pago —un rescate— para devolverlos.',
+  'malware':            'Cualquier programa creado para dañar, espiar o tomar el control de un equipo. El ransomware es un tipo de malware.',
+  'LockBit 3\\.0':       'El nombre específico del programa malicioso (ransomware) que atacó al banco en este simulacro.',
+  'payload':            'La parte dañina de un programa malicioso: el "cargamento" que ejecuta el ataque una vez que logró entrar al equipo.',
+  'phishing':           'Correo o mensaje falso diseñado para engañar a alguien y robarle datos o accesos.',
+  'backdoors?':         'Puerta trasera oculta que un atacante deja en el sistema para poder volver a entrar más adelante sin ser detectado.',
+  'doble extorsión':    'Táctica en la que el atacante no solo secuestra los archivos, sino que además amenaza con publicar los datos robados si no se paga.',
+  'movimiento lateral': 'La técnica del atacante para, una vez adentro, ir saltando de un equipo a otro hasta llegar a los sistemas más importantes.',
+  'vector de entrada':  'La puerta por la que el atacante logró entrar. En este caso, una app descargada por un empleado.',
+  'exfiltración':       'Robo de información: copiar y sacar datos del banco hacia los servidores del atacante, normalmente sin que nadie lo note.',
+
+  // ── Acciones técnicas ───────────────────────
+  'cifrad[oa]s?':       'Archivos "con candado": el ransomware los bloqueó con una clave secreta y quedan ilegibles hasta que se tenga esa clave.',
+  'cifrar':             'Ponerle un candado digital a los archivos con una clave secreta, de modo que nadie pueda leerlos sin ella.',
+  'AES-256':            'Un método de cifrado muy fuerte. Cuando el ransomware lo usa, es casi imposible recuperar los archivos sin la clave del atacante.',
+  'aislar':             'Desconectar una parte de la red del resto para que un ataque no se propague, como cerrar una puerta cortafuego.',
+  'segmento':           'Una parte separada de la red del banco. Aislar un segmento es "cerrarle las puertas" para que un ataque no llegue al resto.',
+
+  // ── Herramientas y equipos de defensa ───────
+  'EDR':                'Programa que vigila cada computadora del banco y avisa en tiempo real cuando detecta algo sospechoso. Como una cámara de seguridad por equipo.',
+  'XDR':                'Tecnología que combina la vigilancia de las computadoras, la red y el correo en una sola herramienta para detectar y frenar ataques.',
+  'SIEM':               'Sistema que junta todas las alertas de seguridad de la empresa en un solo tablero, para verlas de forma centralizada.',
+  'SOC':                'Centro de Operaciones de Seguridad: el equipo (o la sala) que vigila las alertas de seguridad del banco de forma permanente.',
+  'MDR':                'Servicio externo contratado que vigila la red y responde a amenazas las 24 horas, en lugar de tener ese equipo dentro del banco.',
+  'firewall':           'Barrera digital que filtra el tráfico de internet y bloquea conexiones no autorizadas hacia la red del banco.',
+  'sandbox':            'Cuarto aislado y seguro donde se puede abrir un archivo sospechoso sin riesgo de que contamine el resto de la red.',
+  'Incident Response':  'Respuesta a Incidentes: el equipo especializado que se activa para contener y resolver un ciberataque mientras está ocurriendo.',
+  'Threat Hunting':     'Salir a buscar activamente amenazas escondidas en la red, en vez de esperar a que una alarma avise.',
+  'Threat Intel':       'Inteligencia de amenazas: información recopilada sobre atacantes activos —quiénes son, cómo operan y qué suelen pedir.',
+  'PAM':                'Control de las cuentas de "administrador", las que pueden cambiarlo todo. Son las llaves maestras del banco y hay que protegerlas.',
+
+  // ── Datos, evidencia y recuperación ─────────
+  'RAM':                'Memoria temporal de la computadora. Mientras el equipo está encendido, ahí quedan huellas de lo que hizo el atacante — por eso es tan valiosa antes de apagar nada.',
+  'forense':            'El proceso de investigar técnicamente qué pasó durante el ataque: cómo entraron, qué tocaron y desde cuándo.',
+  'backups?':           'Copia de respaldo: una copia guardada de los datos del banco para poder restaurarlos si los originales se dañan o se pierden.',
+  'credenciales':       'Las llaves de acceso a un sistema: usuario y contraseña (y a veces un código extra).',
+  'endpoints?':         'Cada equipo conectado a la red del banco: computadoras, laptops, servidores. Son los puntos donde suele empezar un ataque.',
+  'Core Bancario':      'El sistema central que procesa las cuentas, saldos y transacciones de todos los clientes del banco.',
+  'modo degradado':     'Operar solo con los servicios esenciales, a capacidad reducida, mientras se termina de recuperar el resto.',
+  'DRP':                'Plan de Recuperación de Desastres: el procedimiento preparado de antemano para volver a operar tras una falla grave.',
+
+  // ── Dinero digital del rescate ──────────────
+  'Bitcoin':            'Moneda digital que se usa por internet sin bancos de por medio. Es difícil de rastrear, por eso los atacantes suelen pedir el rescate en Bitcoin.',
+  'USDT':               'Una moneda digital atada al valor del dólar, usada para pagos por internet difíciles de rastrear.',
+  'blockchain':         'El registro público y digital donde quedan anotadas todas las operaciones hechas con monedas como Bitcoin.',
+
+  // ── Regulación y normas ─────────────────────
+  'SGSI':               'Sistema de Gestión de Seguridad de la Información: el protocolo interno del banco para prevenir y responder a incidentes de seguridad.',
+  'BCP':                'La Superintendencia / Banco Central: el regulador que supervisa que el banco cumpla las normas.',
+  'ISO 27001':          'Norma internacional que define las buenas prácticas para proteger la información de una organización.',
+
+  // ── Consecuencias de negocio ────────────────
+  'lucro cesante':      'El dinero que el banco deja de ganar mientras sus sistemas están detenidos y no puede operar.',
+  'corrida bancaria':   'Cuando muchos clientes, por miedo, intentan sacar su dinero al mismo tiempo. Puede poner en riesgo al banco aunque el problema original fuera otro.',
+};
+
+export function glossarize(html) {
+  if (!html) return html;
+  const parts = html.split(/(<[^>]+>)/);
+  const used  = new Set();
+  return parts.map(part => {
+    if (part.startsWith('<')) return part; // no tocar etiquetas HTML
+    let out = part;
+    for (const [term, def] of Object.entries(GLOSSARY)) {
+      if (used.has(term)) continue;
+      const re = new RegExp(`\\b(${term})\\b`, 'i');
+      if (re.test(out)) {
+        used.add(term);
+        const safeDef = def.replace(/"/g, '&quot;');
+        out = out.replace(re, (m) =>
+          `<span class="glossary-term" tabindex="0" title="${safeDef}" data-def="${safeDef}">${m}</span>`);
+      }
+    }
+    return out;
+  }).join('');
+}
+
 // ── 5 Etapas del simulacro ───────────────────
 export const STAGES = [
 
@@ -68,7 +155,7 @@ export const STAGES = [
       penalty:0, nextCtx:'B'
     },
     {
-      letter:'C', text:'Contención Lógica',
+      letter:'C', text:'Aislar y Preservar Evidencia',
       sub:'Aislar los segmentos afectados, capturar imagen de RAM y preservar evidencia forense',
       cost:120000, hours:6,
       type:'correct', typeLabel:'CORRECTA', repCost:0,
@@ -90,7 +177,7 @@ export const STAGES = [
       penalty:0, nextCtx:'B'
     },
     {
-      letter:'E', text:'Despliegue MDR Empresarial',
+      letter:'E', text:'Vigilancia Externa 24/7 (MDR)',
       sub:'Contratar un servicio gestionado (MDR) de emergencia que prometen desplegar en menos de 24 horas',
       cost:220000, hours:18,
       type:'trap', typeLabel:'PREMATURA', repCost:5,
@@ -129,7 +216,7 @@ export const STAGES = [
   ],
   options: [
     {
-      letter:'A', text:'Restaurar Backup',
+      letter:'A', text:'Restaurar desde Copias de Respaldo',
       sub:'Activar la restauración desde los últimos backups del sistema para recuperar los archivos',
       cost:80000, hours:4,
       type:'trap', typeLabel:'TRAMPA', repCost:10,
@@ -141,7 +228,7 @@ export const STAGES = [
       destroysBackups:true, nextCtx:'B'
     },
     {
-      letter:'B', text:'Contención Lógica Tardía',
+      letter:'B', text:'Aislar y Preservar Evidencia (Tardío)',
       sub:'Aislar sectores y capturar evidencia aunque sea de forma tardía',
       cost:200000, hours:10,
       type:'recycled', typeLabel:'TARDÍA', repCost:5,
@@ -152,7 +239,7 @@ export const STAGES = [
       penalty:0, ctxBMultiplier:3, nextCtx:'A'
     },
     {
-      letter:'C', text:'Equipo IR / Ganar Tiempo',
+      letter:'C', text:'Equipo Externo de Respuesta y Ganar Tiempo',
       sub:'Contratar un equipo de Incident Response externo y negociar tiempo con el atacante',
       cost:150000, hours:8,
       type:'correct', typeLabel:'CORRECTA', repCost:0,
@@ -235,7 +322,7 @@ export const STAGES = [
       penalty:3000000, isPendingPenalty:false, silentCorp:true, nextCtx:'B'
     },
     {
-      letter:'C', text:'Comunicación SGSI',
+      letter:'C', text:'Comunicación por Protocolo Oficial (SGSI)',
       sub:'Activar el protocolo de comunicación del Sistema de Gestión de Seguridad de la Información',
       cost:180000, hours:6,
       type:'correct', typeLabel:'CORRECTA', repCost:-5,
@@ -246,7 +333,7 @@ export const STAGES = [
       penalty:0, nextCtx:'A'
     },
     {
-      letter:'D', text:'Threat Hunting Activo',
+      letter:'D', text:'Búsqueda Activa de Intrusos',
       sub:'Lanzar una operación intensiva para identificar y eliminar todas las puertas traseras de la red',
       cost:250000, hours:18,
       type:'correct', typeLabel:'CORRECTA', repCost:0,
@@ -296,7 +383,7 @@ export const STAGES = [
   ],
   options: [
     {
-      letter:'A', text:'Script Milagroso',
+      letter:'A', text:'Programa Milagroso de un Foro',
       sub:'Ejecutar un script de recuperación automatizado descargado de un foro técnico sin auditar',
       cost:20000, hours:12,
       type:'trap', typeLabel:'TRAMPA', repCost:20,
@@ -306,7 +393,7 @@ export const STAGES = [
       penalty:0, nextCtx:'C'
     },
     {
-      letter:'B', text:'Degradación Aceptable / DRP',
+      letter:'B', text:'Apertura en Modo Reducido (Plan DRP)',
       sub:'Activar el Plan de Recuperación de Desastres: Core básico + cajeros al 60% de capacidad',
       cost:500000, hours:18,
       type:'correct', typeLabel:'CORRECTA', repCost:-5,
@@ -317,7 +404,7 @@ export const STAGES = [
       penalty:0, openedMonday:true, nextCtx:'A'
     },
     {
-      letter:'C', text:'Recovery Broker',
+      letter:'C', text:'Intermediario de Recuperación',
       sub:'Contratar un intermediario que promete descifrar los archivos por $400,000 en 5 horas',
       cost:400000, hours:5,
       type:'trap', typeLabel:'TRAMPA / ESTAFA', repCost:15,
@@ -327,7 +414,7 @@ export const STAGES = [
       penalty:0, nextCtx:'C'
     },
     {
-      letter:'D', text:'Parche Suicida',
+      letter:'D', text:'Parche Directo sin Aislar',
       sub:'Aplicar un parche de seguridad directamente sobre los servidores infectados sin aislar primero',
       cost:80000, hours:8,
       type:'fatal', typeLabel:'FATAL', repCost:35,
@@ -337,7 +424,7 @@ export const STAGES = [
       penalty:0, fatalIfCtxB:true, destroysBackups:true, nextCtx:'D'
     },
     {
-      letter:'E', text:'Threat Hunting Tardío',
+      letter:'E', text:'Limpieza Total de la Red (Tardía)',
       sub:'Dedicar las próximas 24 horas a limpiar la red antes de intentar cualquier recuperación',
       cost:450000, hours:24,
       type:'recycled', typeLabel:'TARDÍA', repCost:10,
@@ -397,7 +484,7 @@ export const STAGES = [
       penalty:3000000
     },
     {
-      letter:'B', text:'Transparencia SGSI',
+      letter:'B', text:'Transparencia Total (Informe SGSI)',
       sub:'Presentar el informe completo del SGSI con todas las decisiones, errores y aprendizajes',
       cost:100000, hours:0,
       type:'correct', typeLabel:'CORRECTA', repCost:-10,
@@ -626,63 +713,63 @@ export function applyDecision(groupState, stageIndex, optionIndex) {
 // Shape de tools_owned: Array<{id:string, stage:number}>  (stage 0-indexed)
 export const TOOLS_CATALOG = [
   // ── Stage 1 reveal (5) ─────────────────────────
-  { id:'edr', name:'EDR (Endpoint Detection)', category:'Detección',
+  { id:'edr', name:'Vigilancia de Equipos (EDR)', category:'Detección',
     cost: 150000, revealedAt: 1, idealStage: 1,
     description:'Como una cámara de seguridad para cada computador del banco. Detecta comportamientos sospechosos en tiempo real.',
     reveals:{ type:'info', title:'// EDR — Procesos activos',
               body:'Detectado un binario firmado por un certificado no confiable ejecutándose con privilegios elevados en una estación de TI. Patrón consistente con LockBit en fase de cifrado.' } },
-  { id:'siem', name:'SIEM (Correlación de logs)', category:'Detección',
+  { id:'siem', name:'Monitoreo Central de Alertas (SIEM)', category:'Detección',
     cost: 100000, revealedAt: 1, idealStage: 1,
     description:'Sala de monitoreo central que junta todas las alarmas del banco en un solo tablero para ver qué está pasando.',
     reveals:{ type:'info', title:'// SIEM — Movimiento lateral',
               body:'No se observa propagación hacia el segmento del Core Bancario. La actividad maliciosa está confinada al segmento de TI y archivos corporativos.' } },
-  { id:'memforensics', name:'Forensia de Memoria (RAM)', category:'Forense',
+  { id:'memforensics', name:'Análisis de Memoria (RAM)', category:'Forense',
     cost: 250000, revealedAt: 1, idealStage: 1,
     description:'Toma una fotografía completa de lo que un computador está haciendo ahora mismo, antes de que esa evidencia se borre.',
     reveals:{ type:'info', title:'// FORENSIA — Vector de entrada',
               body:'En la imagen de memoria de la estación origen aparece un proceso "ai-helper.exe" cargado desde la carpeta de usuario de un desarrollador. Firma digital no oficial. Ejecutado hace 18 días.' } },
-  { id:'sandbox', name:'Sandbox de Análisis', category:'Forense',
+  { id:'sandbox', name:'Cuarto Aislado de Pruebas (Sandbox)', category:'Forense',
     cost: 80000, revealedAt: 1, idealStage: 1,
     description:'Cuarto aislado donde se abre un archivo sospechoso sin riesgo para el banco, para ver qué hace realmente.',
     reveals:{ type:'info', title:'// SANDBOX — Familia de malware',
               body:'Detonación controlada confirma: LockBit 3.0 variante modificada. Capacidades: cifrado AES-256, doble extorsión, exfiltración previa al cifrado.' } },
-  { id:'backupverify', name:'Verificación Backup Offline', category:'Recuperación',
+  { id:'backupverify', name:'Verificación de Copias de Respaldo', category:'Recuperación',
     cost: 180000, revealedAt: 1, idealStage: 4,
     description:'Confirma que las copias de respaldo están sanas y se pueden usar para restaurar el banco si algo se cifra. Su utilidad real llega cuando hay que reabrir.',
     reveals:{ type:'info', title:'// BACKUPS — Estado verificado',
               body:'Backups offline de las últimas 72h íntegros y verificados. Restauración del Core Bancario viable en ~12h si se requiere. Aislamiento físico confirmado.' } },
 
   // ── Stage 2 reveal (+2) ────────────────────────
-  { id:'threatintel', name:'Threat Intel Feed', category:'Inteligencia',
+  { id:'threatintel', name:'Reporte de Inteligencia de Amenazas', category:'Inteligencia',
     cost: 120000, revealedAt: 2, idealStage: 2,
     description:'Reporte de inteligencia externo: quién está atacando últimamente, cómo opera y qué suele pedir como rescate.',
     reveals:{ type:'info', title:'// THREAT INTEL — Perfil del actor',
               body:'TTP coincide con grupo conocido. Rescate típico: $1,500–3,500 USD por endpoint cifrado. Pago no garantiza desencriptado funcional (40% de casos con pérdida parcial reportada).' } },
-  { id:'negociador', name:'Negociador Externo Certificado', category:'Servicios',
+  { id:'negociador', name:'Negociador Profesional de Rescate', category:'Servicios',
     cost: 500000, revealedAt: 2, idealStage: 2,
     description:'Profesional especializado en negociar con ciberatacantes para reducir el monto del rescate o ganar tiempo de respuesta.',
     reveals:{ type:'info', title:'// NEGOCIADOR — Evaluación táctica',
               body:'Margen estimado de negociación: reducción del 30–50% del monto inicial si se demuestra evidencia de pago previo. Tiempo de contacto inicial: 4–6 horas. Confidencialidad cubierta por NDA.' } },
 
   // ── Stage 3 reveal (+1) ────────────────────────
-  { id:'threathunt', name:'Threat Hunting Especializado', category:'Forense',
+  { id:'threathunt', name:'Búsqueda Especializada de Intrusos', category:'Forense',
     cost: 400000, revealedAt: 3, idealStage: 3,
     description:'Equipo experto que busca activamente accesos ocultos del atacante que pudieron quedar en la red tras la primera contención.',
     reveals:{ type:'info', title:'// THREAT HUNTING — Persistencia detectada',
               body:'Encontradas tres credenciales de servicio con accesos elevados creadas en las últimas 72h por procesos del atacante. Sin remediación activa, el actor podría retornar incluso tras pagar el rescate.' } },
-  { id:'credrotation', name:'Rotación de Credenciales Privilegiadas (PAM)', category:'Recuperación',
+  { id:'credrotation', name:'Cambio de Contraseñas de Administrador (PAM)', category:'Recuperación',
     cost: 150000, revealedAt: 3, idealStage: 3,
     description:'Fuerza el reseteo inmediato de credenciales de administrador de dominio y cuentas de servicio antes de reconectar sistemas. El vector de entrada fue una cuenta con permisos elevados — sin esto, el atacante puede volver a entrar con las mismas llaves aunque el malware ya esté eliminado.',
     reveals:{ type:'info', title:'// PAM — Rotación completada',
               body:'127 cuentas privilegiadas rotadas, incluyendo la cuenta del desarrollador origen del ataque. Ninguna sesión ni token activo sobrevive al reseteo. Cualquier acceso remanente del atacante queda cortado antes de la recuperación.' } },
 
   // ── Stage 4 reveal (+2) ────────────────────────
-  { id:'legalbcp', name:'Asesoría Legal Regulatoria (BCP)', category:'Servicios',
+  { id:'legalbcp', name:'Asesoría Legal ante el Regulador (BCP)', category:'Servicios',
     cost: 300000, revealedAt: 4, idealStage: 5,
     description:'Bufete especializado en comunicación obligatoria al regulador bancario. Define qué reportar, cuándo y en qué formato.',
     reveals:{ type:'info', title:'// LEGAL BCP — Marco regulatorio',
               body:'El BCP exige notificación formal dentro de 24h del descubrimiento de un incidente material. La narrativa debe documentar acciones técnicas concretas sin caza de brujas individual.' } },
-  { id:'crisiscomms', name:'Crisis Communications Firm', category:'Servicios',
+  { id:'crisiscomms', name:'Agencia de Comunicación de Crisis', category:'Servicios',
     cost: 300000, revealedAt: 4, idealStage: 5,
     description:'Agencia de comunicación de crisis. Maneja declaraciones públicas, relación con prensa y redes sociales en escenarios catastróficos.',
     reveals:{ type:'info', title:'// CRISIS COMMS — Estrategia narrativa',
