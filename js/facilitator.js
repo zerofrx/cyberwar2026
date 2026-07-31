@@ -5,9 +5,9 @@
 import { supabase }                              from './supabase-client.js';
 import { STAGES, fmt, glossarize, computeStage5State,
          computeEfficiencyScore, efficiencyStars,
-         applyDecision, findTool, BUDGET_INIT,
+         applyDecision, findTool, BUDGET_INIT, computeToolsCost,
          computeDecisionQualityBonus, efficiencyBreakdown } from './game-data.js?v=36';
-import { buildLeaderboardTable }                  from './ranking.js?v=35';
+import { buildLeaderboardTable, compositeScore }  from './ranking.js?v=35';
 
 const NUM_GROUPS  = 6;
 const ROLES       = ['ciso', 'analyst', 'legal', 'comms', 'ops'];
@@ -495,9 +495,12 @@ function renderResults() {
 
   if (!isFinished) return;
 
-  // Link de proyección
+  // Link de proyección — se muestra la clasificación (misma pantalla que ya
+  // se proyectó en vivo durante toda la sesión), no la vista narrativa de
+  // results.html: en pruebas de uso no quedaba claro por qué ganó cada
+  // equipo, mientras que la clasificación ya trae el desglose por puntaje.
   document.getElementById('btnProject').href =
-    `results.html?session=${sessionId}`;
+    `leaderboard.html?session=${sessionId}`;
 
   // Calcular resultado de cada grupo
   const ranked = groups.map(g => {
@@ -508,18 +511,17 @@ function renderResults() {
 
     const state   = g.final_state === 'game_over'
       ? { ctx: 'X', label: 'ELIMINADO' }
-      : computeStage5State(flags, budgetFinal, penFinal, g.hours, g.reputation ?? 100);
+      : computeStage5State(flags, budgetFinal, penFinal, g.hours, g.reputation ?? 100, computeToolsCost(g));
 
     const log     = g.decision_log || [];
     const correct = log.filter(e => e.type === 'correct').length;
     const traps   = log.filter(e => e.type === 'trap').length;
 
-    return { ...g, budgetFinal, penFinal, state, correct, traps, log };
-  }).sort((a, b) => {
-    const order = { A:0, B:1, C:2, D:3, X:4 };
-    const diff  = (order[a.state.ctx] ?? 4) - (order[b.state.ctx] ?? 4);
-    return diff !== 0 ? diff : b.budgetFinal - a.budgetFinal;
-  });
+    // Mismo criterio que leaderboard.html/results.html (compositeScore), para
+    // que el facilitador nunca vea un "ganador" distinto al de esas pantallas.
+    const score = compositeScore(g);
+    return { ...g, budgetFinal, penFinal, state, correct, traps, log, score };
+  }).sort((a, b) => b.score - a.score);
 
   const ctxColors = { A:'var(--success)', B:'var(--info)', C:'var(--gold)', D:'var(--accent)', X:'var(--muted)' };
   const ctxLabels = {
@@ -537,7 +539,7 @@ function renderResults() {
     <div class="fac-result-card" style="border-color:${color}">
       <div class="fac-result-rank">${medals[i]}</div>
       <div class="fac-result-body">
-        <div class="fac-result-name">${g.name}</div>
+        <div class="fac-result-name">${g.name} <span style="float:right;font-family:'DM Mono',monospace;font-size:.75rem;color:var(--muted)">${g.score} pts</span></div>
         <div class="fac-result-outcome" style="color:${color}">${ctxLabels[g.state.ctx]}</div>
         <div class="fac-result-stats">
           <span class="fac-result-stat">💰 ${fmt(g.budgetFinal)}</span>
@@ -663,19 +665,21 @@ const BEST_PATH = [
   },
   {
     stageIdx: 4, optIdx: 1, buyTools: [],
-    why: 'Presentar el informe completo de transparencia ante el regulador reduce la multa a $0 en los estados LEVE/MEDIO (y limita el daño incluso en estados peores). La Asesoría Legal BCP comprada en la Etapa 4 ya respalda esta decisión con parte del bonus de herramientas; sumar Crisis Communications Firm ($300k) daría el bonus completo, pero ese gasto extra es justo lo que empuja el presupuesto total sobre el 55% y degrada el resultado de LEVE a MEDIO — se prioriza el documento legal formal, que es lo que el regulador exige. Buscar un chivo expiatorio o prometer inversiones sin evidencia agrava las sanciones cuando el regulador lo descubre; ocultar información u obstruir la investigación son las dos únicas formas de terminar con la licencia revocada.'
+    why: 'Presentar el informe completo de transparencia ante el regulador reduce la multa a $0 en los estados LEVE/MEDIO (y limita el daño incluso en estados peores). La Asesoría Legal BCP comprada en la Etapa 4 ya respalda esta decisión con parte del bonus de herramientas. Buscar un chivo expiatorio o prometer inversiones sin evidencia agrava las sanciones cuando el regulador lo descubre; ocultar información u obstruir la investigación son las dos únicas formas de terminar con la licencia revocada.'
   },
 ];
 
-// Nota: tres compras que SÍ dan bonus de costo/tiempo se dejan fuera a propósito
-// porque no se pagan solas — Negociador Externo ($500k, Etapa 2), Sandbox de
-// Análisis ($80k, Etapa 1) y Crisis Communications Firm ($300k, Etapa 5). Cada
-// una, sumada al resto, empuja el gasto total por encima del 55% del
-// presupuesto — el umbral que separa el estado LEVE del MEDIO en
-// computeStage5State(). En cambio Threat Hunting Especializado y Rotación de
-// Credenciales Privilegiadas SÍ entran, aunque cuestan más juntas ($550k),
-// porque respaldan la Etapa 4 (DRP) y representan el paso de erradicación que
-// un IR real no puede saltarse antes de reconectar sistemas recuperados.
+// Nota: Negociador Externo (Etapa 2), Sandbox de Análisis (Etapa 1) y Crisis
+// Communications Firm (Etapa 5) dan bonus de costo/tiempo pero se dejan fuera
+// de esta ruta de referencia porque, aun sin costar nada en horas, su gasto
+// no es indispensable para llegar al mejor estado posible — a diferencia de
+// Threat Hunting Especializado y Rotación de Credenciales Privilegiadas
+// (Etapa 3), que sí entran porque respaldan la Etapa 4 (DRP) y representan el
+// paso de erradicación que un IR real no puede saltarse antes de reconectar
+// sistemas recuperados. (Antes se dejaban fuera además porque su costo empujaba
+// el gasto total sobre el umbral del 55% y degradaba LEVE a MEDIO en
+// computeStage5State() — ese efecto ya no aplica: el gasto en herramientas
+// del catálogo no cuenta para ese umbral.)
 
 function simulateBestPath() {
   let state = {
@@ -711,7 +715,7 @@ function simulateBestPath() {
   let budgetFinal = state.budget;
   let penFinal    = state.penalties;
   (state.flags.pendingPenalties || []).forEach(p => { budgetFinal -= p.amount; penFinal += p.amount; });
-  const finalState = computeStage5State(state.flags, budgetFinal, penFinal, state.hours, state.reputation);
+  const finalState = computeStage5State(state.flags, budgetFinal, penFinal, state.hours, state.reputation, computeToolsCost(state));
   budgetFinal -= finalState.extraPenalties;
   penFinal    += finalState.extraPenalties;
 
@@ -814,13 +818,12 @@ function determineWinner() {
     (flags.pendingPenalties || []).forEach(p => { budgetFinal -= p.amount; penFinal += p.amount; });
     const state = g.final_state === 'game_over'
       ? { ctx: 'X', label: 'ELIMINADO', finalReputation: g.reputation ?? 0 }
-      : computeStage5State(flags, budgetFinal, penFinal, g.hours, g.reputation ?? 100);
-    return { ...g, budgetFinal, penFinal, state };
-  }).sort((a, b) => {
-    const order = { A:0, B:1, C:2, D:3, X:4 };
-    const diff  = (order[a.state.ctx] ?? 4) - (order[b.state.ctx] ?? 4);
-    return diff !== 0 ? diff : b.budgetFinal - a.budgetFinal;
-  });
+      : computeStage5State(flags, budgetFinal, penFinal, g.hours, g.reputation ?? 100, computeToolsCost(g));
+    // Mismo criterio que renderResults()/results.html/leaderboard.html
+    // (compositeScore) — el "camino del ganador" debe ser el del mismo
+    // equipo que aparece como #1 en todas las demás pantallas.
+    return { ...g, budgetFinal, penFinal, state, score: compositeScore(g) };
+  }).sort((a, b) => b.score - a.score);
   return ranked[0] || null;
 }
 

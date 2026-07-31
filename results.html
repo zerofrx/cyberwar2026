@@ -150,15 +150,22 @@
     CARGANDO RESULTADOS...
   </div>
 
+  <div id="resNotFinished" class="res-loading" style="display:none">
+    <div style="font-size:1.5rem">⏳</div>
+    <div id="resNotFinishedText"></div>
+  </div>
+
   <div id="resStory" style="display:none;max-width:780px;margin:0 auto 2.5rem;padding:0 1.5rem"></div>
   <div id="resGrid" class="res-grid" style="display:none"></div>
 
   <script type="module">
     import { supabase }              from './js/supabase-client.js';
-    import { fmt, computeStage5State, REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT } from './js/game-data.js?v=36';
+    import { fmt, computeStage5State, computeToolsCost, REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT, STAGES } from './js/game-data.js?v=36';
+    import { compositeScore } from './js/ranking.js?v=35';
 
     const params    = new URLSearchParams(location.search);
     const sessionId = params.get('session');
+    let subscribed  = false;
 
     if (!sessionId) {
       document.getElementById('resLoading').textContent = 'Falta el parámetro ?session=';
@@ -168,7 +175,7 @@
 
     async function load() {
       const [{ data: ses }, { data: grps }] = await Promise.all([
-        supabase.from('sessions').select('room_code').eq('id', sessionId).single(),
+        supabase.from('sessions').select('room_code, status, current_stage').eq('id', sessionId).single(),
         supabase.from('groups').select('*').eq('session_id', sessionId).order('slot')
       ]);
 
@@ -177,15 +184,35 @@
           `Resultados — Sala ${ses.room_code}`;
       }
 
-      render(grps || []);
+      if (!subscribed) {
+        subscribed = true;
+        // Realtime: recargar si cambia algún grupo o el estado de la sesión
+        supabase.channel(`results-${sessionId}`)
+          .on('postgres_changes', {
+            event: 'UPDATE', schema: 'public', table: 'groups',
+            filter: `session_id=eq.${sessionId}`
+          }, () => load())
+          .on('postgres_changes', {
+            event: 'UPDATE', schema: 'public', table: 'sessions',
+            filter: `id=eq.${sessionId}`
+          }, () => load())
+          .subscribe();
+      }
 
-      // Realtime: actualizar si cambia algún grupo
-      supabase.channel(`results-${sessionId}`)
-        .on('postgres_changes', {
-          event: 'UPDATE', schema: 'public', table: 'groups',
-          filter: `session_id=eq.${sessionId}`
-        }, () => load())
-        .subscribe();
+      if (ses && ses.status !== 'finished') {
+        document.getElementById('resLoading').style.display = 'none';
+        document.getElementById('resStory').style.display = 'none';
+        document.getElementById('resGrid').style.display = 'none';
+        document.getElementById('resNotFinishedText').textContent =
+          `La sesión aún no ha finalizado (Etapa ${ses.current_stage + 1} de ${STAGES.length}). ` +
+          `Esta pantalla muestra el resultado final del simulacro y solo debe proyectarse después de que el facilitador finalice la sesión — antes de eso, el ranking puede ser engañoso para los equipos que aún no han decidido. ` +
+          `Usa "Ver resultados preliminares" en el panel del facilitador para un avance sin ranking.`;
+        document.getElementById('resNotFinished').style.display = 'flex';
+        return;
+      }
+
+      document.getElementById('resNotFinished').style.display = 'none';
+      render(grps || []);
     }
 
     const FINAL_STORIES = {
@@ -214,19 +241,19 @@
 
         const state = g.final_state === 'game_over'
           ? { ctx: 'X', label: 'ELIMINADO', extraPenalties: 0, finalReputation: 0 }
-          : computeStage5State(flags, budgetFinal, penFinal, g.hours, g.reputation ?? 100);
+          : computeStage5State(flags, budgetFinal, penFinal, g.hours, g.reputation ?? 100, computeToolsCost(g));
         budgetFinal -= (state.extraPenalties || 0);
         penFinal    += (state.extraPenalties || 0);
 
         const log     = g.decision_log || [];
         const correct = log.filter(e => e.type === 'correct').length;
         const traps   = log.filter(e => e.type === 'trap').length;
-        return { ...g, budgetFinal, penFinal, state, correct, traps, log };
-      }).sort((a, b) => {
-        const order = { A:0, B:1, C:2, D:3, X:4 };
-        const diff  = (order[a.state.ctx] ?? 4) - (order[b.state.ctx] ?? 4);
-        return diff !== 0 ? diff : b.budgetFinal - a.budgetFinal;
-      });
+        // Mismo criterio que leaderboard.html/facilitator.js (compositeScore),
+        // para que el "ganador" nunca contradiga el ranking que se vio en vivo
+        // durante toda la sesión.
+        const score = compositeScore(g);
+        return { ...g, budgetFinal, penFinal, state, correct, traps, log, score };
+      }).sort((a, b) => b.score - a.score);
 
       // ── Historia final del ganador ─────────────
       const winner = ranked[0];
@@ -269,6 +296,10 @@
             <div class="res-card-info">
               <div class="res-card-name">${g.name}</div>
               <div class="res-card-outcome" style="color:${color}">${ctxLabels[g.state.ctx]}</div>
+            </div>
+            <div style="text-align:right;font-family:'DM Mono',monospace">
+              <div style="font-size:.55rem;letter-spacing:.1em;color:var(--muted)">PUNTAJE</div>
+              <div style="font-size:1.1rem;font-weight:700;color:var(--text)">${g.score}</div>
             </div>
           </div>
           <div class="res-card-bar" style="background:${color};opacity:.5"></div>

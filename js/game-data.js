@@ -528,8 +528,13 @@ export const STAGES = [
 
 // ── computeStage5State ───────────────────────
 // Versión pura: no lee G, recibe parámetros
-export function computeStage5State(flags, budget, penalties, hours = 0, reputation = 100) {
-  const budgetUsedPct = (BUDGET_INIT - budget) / BUDGET_INIT;
+// `toolsCost` (gasto en herramientas del catálogo) se resta del gasto total
+// antes de medir el umbral de severidad del 55%: comprar las herramientas
+// recomendadas da descuentos reales en las decisiones y el bono de equipo,
+// así que ese gasto no debe poder, por sí solo, empeorar el estado final del
+// equipo — de lo contrario el juego castiga exactamente lo que incentiva.
+export function computeStage5State(flags, budget, penalties, hours = 0, reputation = 100, toolsCost = 0) {
+  const budgetUsedPct = (BUDGET_INIT - budget - toolsCost) / BUDGET_INIT;
   const reasons = [];
   let extraPenalties = 0;
 
@@ -793,6 +798,16 @@ export function toolsForStage(stageIdx) {
 // Buscar una herramienta por id (inventario persistente)
 export function findTool(toolId) {
   return TOOLS_CATALOG.find(t => t.id === toolId) || null;
+}
+// Suma el costo de catálogo de las herramientas adquiridas por un grupo —
+// usado para excluir ese gasto del cálculo de severidad en computeStage5State
+// (comprar las herramientas recomendadas no debe poder empeorar el estado
+// final; ver nota en computeStage5State).
+export function computeToolsCost(group) {
+  return ownedIds(group).reduce((sum, id) => {
+    const tool = findTool(id);
+    return sum + (tool ? tool.cost : 0);
+  }, 0);
 }
 
 // Aplica multiplicadores de costo/horas según herramientas que respaldan la opción

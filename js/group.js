@@ -7,7 +7,7 @@ import { supabase }                          from './supabase-client.js';
 import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          fmt, glossarize, applyDecision, computeStage5State,
          TOOLS_CATALOG, STAGE_TIME_TARGETS, findTool,
-         toolsForStage, ownedIds,
+         toolsForStage, ownedIds, computeToolsCost,
          computeEfficiencyScore, efficiencyStars, efficiencyBreakdown,
          computeDecisionQualityBonus, decisionQualityPoints, stageTimeTier,
          REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT } from './game-data.js?v=36';
@@ -252,7 +252,7 @@ function renderStage() {
 
   if (s.isStage5) {
     const flags  = group.flags || {};
-    const state5 = computeStage5State(flags, group.budget, group.penalties, group.hours, group.reputation ?? 100);
+    const state5 = computeStage5State(flags, group.budget, group.penalties, group.hours, group.reputation ?? 100, computeToolsCost(group));
     const v5     = s.variants[state5.ctx];
     html += buildIncidentCard(s, v5, state5);
   } else {
@@ -777,9 +777,18 @@ function hideCyberConfirm() {
   if (!overlay || overlay.classList.contains('mp-hidden')) return;
   clearTimeout(overlay._hideTimer);
   overlay.classList.add('cco-leaving');
-  overlay.addEventListener('animationend', () => {
+
+  const finish = () => {
     overlay.classList.add('mp-hidden');
     overlay.classList.remove('cco-leaving');
+  };
+  // Respaldo: si la animación CSS no dispara animationend (pestaña en segundo
+  // plano, prefers-reduced-motion, etc.), el overlay quedaría atascado
+  // cubriendo la pantalla y bloqueando todos los clics — cerrar por tiempo.
+  const fallback = setTimeout(finish, 500);
+  overlay.addEventListener('animationend', () => {
+    clearTimeout(fallback);
+    finish();
   }, { once: true });
 }
 
@@ -1054,7 +1063,7 @@ function showFinal() {
   let penFinal    = group.penalties;
   (flags.pendingPenalties || []).forEach(p => { budgetFinal -= p.amount; penFinal += p.amount; });
 
-  const state = computeStage5State(flags, budgetFinal, penFinal, group.hours, group.reputation ?? 100);
+  const state = computeStage5State(flags, budgetFinal, penFinal, group.hours, group.reputation ?? 100, computeToolsCost(group));
   budgetFinal -= state.extraPenalties;
   penFinal    += state.extraPenalties;
 

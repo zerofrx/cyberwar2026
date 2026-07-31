@@ -5,7 +5,8 @@
 
 import { STAGES, fmt, computeEfficiencyScore, efficiencyStars,
          computeAnticipationBonus, computeTimeScore,
-         computeDecisionQualityBonus, findTool, computeStage5State } from './game-data.js?v=36';
+         computeDecisionQualityBonus, findTool, computeStage5State,
+         computeToolsCost } from './game-data.js?v=36';
 
 // ── Presupuesto/reputación "de cierre" ───────
 // Una vez que un grupo completó la última etapa, su presupuesto y reputación
@@ -29,7 +30,7 @@ function resolveGroupStats(g) {
   if (!isFinalized(g)) return { budgetFinal, reputation: g.reputation ?? 100 };
   if (g.final_state === 'game_over') return { budgetFinal, reputation: 0 };
 
-  const state = computeStage5State(flags, budgetFinal, penFinal, g.hours, g.reputation ?? 100);
+  const state = computeStage5State(flags, budgetFinal, penFinal, g.hours, g.reputation ?? 100, computeToolsCost(g));
   budgetFinal -= (state.extraPenalties || 0);
   return { budgetFinal, reputation: state.finalReputation };
 }

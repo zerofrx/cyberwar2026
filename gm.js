@@ -11,7 +11,7 @@
 import {
   STAGES, BUDGET_INIT, HOURS_LIMIT, fmt, glossarize,
   applyDecision, computeStage5State, MAX_FINAL_REPUTATION,
-  TOOLS_CATALOG, findTool,
+  TOOLS_CATALOG, findTool, computeToolsCost,
   efficiencyBreakdown, efficiencyStars,
   computeDecisionQualityBonus, decisionQualityPoints, stageTimeTier
 } from './js/game-data.js?v=36';
@@ -95,7 +95,7 @@ function renderStage() {
   if (s.isStage5) {
     // Estado final se evalúa automáticamente con la MISMA función que el
     // multijugador (incluye horas, reputación, penalizaciones diferidas).
-    const st = computeStage5State(G.flags, G.budget, G.penalties, G.hours, G.reputation);
+    const st = computeStage5State(G.flags, G.budget, G.penalties, G.hours, G.reputation, computeToolsCost(G));
     G.ctx = st.ctx;
     const v = s.variants[G.ctx];
     html += `
@@ -413,7 +413,7 @@ function showFinal() {
   (G.flags.pendingPenalties || []).forEach(p => { G.budget -= p.amount; G.penalties += p.amount; });
 
   // Estado final + penalizaciones extra + reputación final (game-data.js)
-  const st = computeStage5State(G.flags, G.budget, G.penalties, G.hours, G.reputation);
+  const st = computeStage5State(G.flags, G.budget, G.penalties, G.hours, G.reputation, computeToolsCost(G));
   G.budget    -= st.extraPenalties;
   G.penalties += st.extraPenalties;
   G.reputation = st.finalReputation;
