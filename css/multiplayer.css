@@ -2634,6 +2634,20 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
 .lb-profile-crisis     { color: var(--accent); }
 .lb-profile-balanced   { color: var(--text); opacity: .8; }
 .lb-profile-dead       { color: var(--muted); opacity: .5; text-decoration: line-through; }
+.lb-profile-precise    { color: var(--success); }
+.lb-profile-reckless   { color: var(--accent); }
+
+/* Puntos de decisión por etapa (●/✕/○), debajo del nombre del equipo */
+.lb-decision-dots {
+  margin-top: .3rem;
+  font-size: .85rem;
+  letter-spacing: .15em;
+  line-height: 1;
+}
+.lb-dot-mini { margin-right: .15rem; }
+.lb-dot-mini-ok      { color: var(--success); }
+.lb-dot-mini-trap    { color: var(--accent); }
+.lb-dot-mini-pending { color: var(--muted); opacity: .4; }
 
 /* Número PUNTOS + mini-barra de desglose debajo */
 .lb-public .lb-pts {
@@ -2673,15 +2687,32 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
 .lb-delta-up   { color: var(--success); }
 .lb-delta-down { color: var(--accent); }
 .lb-delta-flat { color: var(--muted); }
+/* Motivo del delta: tipo de la decisión que se acaba de confirmar */
+.lb-pts-delta-reason {
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  letter-spacing: .1em;
+  color: var(--muted);
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  padding: .1rem .4rem;
+}
+/* Contenedor de ancho fijo (100% = el mejor equipo) que sostiene la barra
+   de ancho VARIABLE — así el largo de la barra es comparable entre filas */
+.lb-pts-breakdown-wrap {
+  width: 100%;
+  max-width: 240px;
+}
 .lb-pts-breakdown {
   display: flex;
   gap: 2px;
   height: 8px;
-  width: 100%;
-  max-width: 240px;
+  min-width: 6%;
   border-radius: 2px;
   overflow: hidden;
   opacity: .9;
+  transition: width .4s ease;
 }
 .lb-pts-bar {
   height: 100%;
@@ -2692,6 +2723,40 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
 .lb-pts-bar-rep     { background: var(--success); }
 .lb-pts-bar-eff     { background: var(--info); }
 .lb-pts-bar-quality { background: var(--cat-servicios, #d97757); }
+
+/* Puntos de calidad NEGATIVOS: no caben en la barra (no hay ancho negativo),
+   así que se muestran aparte, en rojo, para que nunca queden invisibles */
+.lb-quality-penalty {
+  display: block;
+  margin-top: .3rem;
+  font-family: 'DM Mono', monospace;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  color: var(--accent);
+}
+
+/* Desglose numérico exacto debajo de la barra — siempre visible, sin
+   depender de hover (el leaderboard se proyecta, nadie puede hacer hover) */
+.lb-pts-breakdown-nums {
+  display: flex;
+  gap: .7rem;
+  justify-content: center;
+  margin-top: .35rem;
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  letter-spacing: .02em;
+}
+.lb-bd-item::before { opacity: .6; margin-right: .15rem; }
+.lb-bd-budget::before { content: '$'; }
+.lb-bd-rep::before    { content: '◆'; }
+.lb-bd-eff::before    { content: '⚡'; }
+.lb-bd-budget { color: var(--gold); }
+.lb-bd-rep    { color: var(--success); }
+.lb-bd-eff    { color: var(--info); }
+.lb-bd-pos    { color: var(--success); }
+.lb-bd-neg    { color: var(--accent); font-weight: 700; }
+.lb-bd-zero   { color: var(--muted); }
 
 .lb-public .lb-trend { font-size: 1.5rem; }
 

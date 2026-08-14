@@ -56,21 +56,32 @@ export function compositeScore(g) {
 }
 
 // ── Perfil del equipo (etiqueta gamificada según drivers dominantes) ──
+// La calidad de decisiones (acertar/caer en trampa) pesa más que cualquier
+// otro componente del score — por eso se evalúa antes que velocidad/ahorro,
+// para que la etiqueta que la gente lee en el leaderboard público apunte a
+// la causa real del puntaje y no solo a qué tan rápido decidió el equipo.
+const PRECISE_QUALITY_THRESHOLD = 2400; // ≈ 3 de 5 decisiones correctas netas
+
 export function profileOf(g) {
   if (g?.final_state === 'game_over')
     return { icon: '☠', label: 'ELIMINADO', cls: 'lb-profile-dead' };
 
   const { budgetFinal: budgetFin, reputation: rep } = resolveGroupStats(g || {});
-  const budgetPct = budgetFin / 5000000;
-  const anticipation = computeAnticipationBonus(g?.tools_owned || []);
-  const timeScore    = computeTimeScore(g?.stage_durations || {});
+  const budgetPct     = budgetFin / 5000000;
+  const anticipation  = computeAnticipationBonus(g?.tools_owned || []);
+  const timeScore     = computeTimeScore(g?.stage_durations || {});
+  const quality       = computeDecisionQualityBonus(g?.decision_log || []);
 
   if (rep < 40 || budgetPct < 0.30)
     return { icon: '🔥', label: 'EN CRISIS',  cls: 'lb-profile-crisis' };
-  if (timeScore < -5)
-    return { icon: '🐌', label: 'DEMORADO',   cls: 'lb-profile-slow' };
+  if (quality < 0)
+    return { icon: '⚠', label: 'IMPRUDENTE', cls: 'lb-profile-reckless' };
   if (anticipation > 5 && timeScore > 5)
     return { icon: '🎯⚡', label: 'COMPLETO', cls: 'lb-profile-complete' };
+  if (quality >= PRECISE_QUALITY_THRESHOLD)
+    return { icon: '✓', label: 'PRECISO',    cls: 'lb-profile-precise' };
+  if (timeScore < -5)
+    return { icon: '🐌', label: 'DEMORADO',   cls: 'lb-profile-slow' };
   if (anticipation > 5)
     return { icon: '🎯', label: 'ESTRATEGA',  cls: 'lb-profile-strategist' };
   if (timeScore > 5)
@@ -159,6 +170,25 @@ export function trendForGroup(groupId, groups, currentStageNum) {
   return { dir: 'flat', delta: 0 };
 }
 
+// ── Puntos de decisión por etapa (● correcta/ok, ✕ trampa, ○ pendiente) ──
+// No revela QUÉ opción eligió el equipo, solo si acertó o cayó en trampa —
+// da contexto inmediato de por qué la "calidad" pesa lo que pesa sin exponer
+// el detalle que ve el facilitador.
+function decisionDots(g, totalStages) {
+  const log = g.decision_log || [];
+  let html = '';
+  for (let s = 1; s <= totalStages; s++) {
+    const entry = log.find(e => e.stage === s);
+    if (!entry) {
+      html += `<span class="lb-dot-mini lb-dot-mini-pending" title="Etapa ${s}: pendiente">○</span>`;
+      continue;
+    }
+    const isTrap = entry.type === 'trap';
+    html += `<span class="lb-dot-mini ${isTrap ? 'lb-dot-mini-trap' : 'lb-dot-mini-ok'}" title="Etapa ${s}: ${entry.typeLabel || entry.type}">${isTrap ? '✕' : '●'}</span>`;
+  }
+  return html;
+}
+
 // ── HTML de la tabla. mode = 'detailed' | 'public' ──
 export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum = 1) {
   if (!groups?.length) return '';
@@ -172,6 +202,22 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
 
   // Snapshot en vivo: incluye decisiones confirmadas del stage actual
   const ranked = rankingAtStage(groups, currentStageNum);
+
+  // Escala compartida para la mini-barra pública: el total de puntos
+  // "positivos" del líder define el 100% del ancho. Así el largo de la
+  // barra de cada equipo es comparable entre filas (antes cada barra se
+  // normalizaba a sí misma y siempre llenaba el mismo ancho, aunque el
+  // equipo tuviera 10x menos puntos que el líder).
+  let scaleMax = 1;
+  if (mode === 'public') {
+    for (const g of groups) {
+      const { budgetFinal: bf, reputation: rp } = resolveGroupStats(g);
+      const eff = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || [], g.decision_log || []);
+      const q   = computeDecisionQualityBonus(g.decision_log || []);
+      const posTotal = Math.max(0, bf / 20000) + rp * 20 + eff * 10 + Math.max(0, q);
+      if (posTotal > scaleMax) scaleMax = posTotal;
+    }
+  }
 
   // Delta de puntos vs el stage anterior.
   // En el stage 1 el baseline es la referencia de 3,250 (budget/rep/eficiencia
@@ -198,6 +244,12 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
       : scoreDelta < 0 ? `<span class="lb-pts-delta lb-delta-down">${scoreDelta}</span>`
       : `<span class="lb-pts-delta lb-delta-flat">±0</span>`;
 
+    // Motivo del delta: la decisión que el equipo acaba de confirmar en este stage
+    const lastDecision = (g.decision_log || []).find(e => e.stage === currentStageNum) || null;
+    const deltaReasonHtml = (scoreDelta !== null && lastDecision)
+      ? `<span class="lb-pts-delta-reason">${lastDecision.typeLabel || lastDecision.type}</span>`
+      : '';
+
     const trendHtml = trend
       ? (trend.dir === 'up'
           ? `<span class="lb-trend lb-trend-up">▲${trend.delta}</span>`
@@ -216,12 +268,24 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
       const budgetPts  = Math.max(0, budgetFin / 20000);
       const repPts     = rep * 20;
       const effPts     = effScore * 10;
-      const qualityPts = Math.max(0, quality);
+      const qualityPtsPos = Math.max(0, quality); // solo la parte positiva entra a la barra
+      const posTotal   = budgetPts + repPts + effPts + qualityPtsPos;
+
+      // Ancho absoluto de la barra: proporción respecto al mejor equipo (scaleMax),
+      // no respecto a sí misma — así dos equipos SÍ son comparables a simple vista.
+      const barWidthPct = Math.max(2, Math.min(100, (posTotal / scaleMax) * 100));
+
+      const qualityNeg = quality < 0
+        ? `<span class="lb-quality-penalty" title="Puntos perdidos por decisiones trampa">▼ ${Math.round(quality)}</span>`
+        : '';
 
       return `
         <tr class="lb-row lb-row-${tier}" data-gid="${g.id}">
           <td class="lb-rank">${r.position}</td>
-          <td class="lb-team">${g.name || `Equipo ${g.slot}`}</td>
+          <td class="lb-team">
+            ${g.name || `Equipo ${g.slot}`}
+            <div class="lb-decision-dots">${decisionDots(g, totalStages)}</div>
+          </td>
           <td class="lb-profile-cell">
             <span class="lb-profile ${profile.cls}">
               <span class="lb-profile-icon">${profile.icon}</span>
@@ -232,12 +296,22 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
             <div class="lb-pts-row">
               <span class="lb-pts-value">${r.score}</span>
               ${deltaHtml}
+              ${deltaReasonHtml}
             </div>
-            <div class="lb-pts-breakdown" title="Presupuesto · Reputación · Eficiencia · Calidad de decisiones">
-              <div class="lb-pts-bar lb-pts-bar-budget"  style="flex:${budgetPts}"></div>
-              <div class="lb-pts-bar lb-pts-bar-rep"     style="flex:${repPts}"></div>
-              <div class="lb-pts-bar lb-pts-bar-eff"     style="flex:${effPts}"></div>
-              <div class="lb-pts-bar lb-pts-bar-quality" style="flex:${qualityPts}"></div>
+            <div class="lb-pts-breakdown-wrap">
+              <div class="lb-pts-breakdown" style="width:${barWidthPct}%">
+                <div class="lb-pts-bar lb-pts-bar-budget"  style="flex:${budgetPts}"  title="Presupuesto: ${Math.round(budgetPts)} pts"></div>
+                <div class="lb-pts-bar lb-pts-bar-rep"     style="flex:${repPts}"     title="Reputación: ${Math.round(repPts)} pts"></div>
+                <div class="lb-pts-bar lb-pts-bar-eff"     style="flex:${effPts}"     title="Eficiencia: ${Math.round(effPts)} pts"></div>
+                ${qualityPtsPos > 0 ? `<div class="lb-pts-bar lb-pts-bar-quality" style="flex:${qualityPtsPos}" title="Calidad de decisiones: +${Math.round(qualityPtsPos)} pts"></div>` : ''}
+              </div>
+              ${qualityNeg}
+            </div>
+            <div class="lb-pts-breakdown-nums">
+              <span class="lb-bd-item lb-bd-budget">${Math.round(budgetPts)}</span>
+              <span class="lb-bd-item lb-bd-rep">${Math.round(repPts)}</span>
+              <span class="lb-bd-item lb-bd-eff">${Math.round(effPts)}</span>
+              <span class="lb-bd-item ${quality > 0 ? 'lb-bd-pos' : quality < 0 ? 'lb-bd-neg' : 'lb-bd-zero'}">${quality > 0 ? '+' : ''}${Math.round(quality)}</span>
             </div>
           </td>
           <td class="lb-trend-cell">${trendHtml}</td>

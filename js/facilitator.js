@@ -7,7 +7,7 @@ import { STAGES, fmt, glossarize, computeStage5State,
          computeEfficiencyScore, efficiencyStars,
          applyDecision, findTool, BUDGET_INIT, computeToolsCost,
          computeDecisionQualityBonus, efficiencyBreakdown } from './game-data.js?v=36';
-import { buildLeaderboardTable, compositeScore }  from './ranking.js?v=35';
+import { buildLeaderboardTable, compositeScore }  from './ranking.js?v=36';
 
 const NUM_GROUPS  = 6;
 const ROLES       = ['ciso', 'analyst', 'legal', 'comms', 'ops'];

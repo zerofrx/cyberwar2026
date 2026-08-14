@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Outfit:wght@600;700&family=DM+Mono&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="gm.css?v=25">
-  <link rel="stylesheet" href="css/multiplayer.css?v=31">
+  <link rel="stylesheet" href="css/multiplayer.css?v=32">
   <style>
     body {
       margin: 0;
@@ -53,6 +53,16 @@
       color: var(--info);
       margin-top: .4rem;
     }
+    .lb-page-hint {
+      max-width: 900px;
+      margin: .6rem auto 0;
+      font-size: .62rem;
+      letter-spacing: .08em;
+      line-height: 1.6;
+      color: var(--muted);
+      opacity: .75;
+      text-transform: uppercase;
+    }
     #lbContainer {
       width: 100%;
       max-width: 1400px;
@@ -80,10 +90,15 @@
     <h1 class="lb-page-title">CLASIFICACIÓN</h1>
     <div class="lb-page-status" id="lbStatus">CONECTANDO…</div>
     <div class="lb-page-legend">
-      <span><i class="lb-legend-dot lb-legend-budget"></i>Presupuesto</span>
-      <span><i class="lb-legend-dot lb-legend-rep"></i>Reputación</span>
-      <span><i class="lb-legend-dot lb-legend-eff"></i>Eficiencia</span>
-      <span><i class="lb-legend-dot lb-legend-quality"></i>Calidad de decisiones</span>
+      <span><i class="lb-legend-dot lb-legend-budget"></i>Presupuesto <b>(máx. ~250 pts)</b></span>
+      <span><i class="lb-legend-dot lb-legend-rep"></i>Reputación <b>(máx. 2000 pts)</b></span>
+      <span><i class="lb-legend-dot lb-legend-eff"></i>Eficiencia <b>(típico 0–250 pts)</b></span>
+      <span><i class="lb-legend-dot lb-legend-quality"></i>Calidad de decisiones <b>(−3000 a +4000 pts)</b></span>
+    </div>
+    <div class="lb-page-hint">
+      El largo de la barra de cada equipo es comparable: 100% = el equipo líder ·
+      ●/✕ bajo el nombre = decisiones acertadas/trampa por etapa ·
+      la calidad de decisiones es, con diferencia, lo que más mueve el marcador
     </div>
   </div>
 
@@ -93,6 +108,6 @@
 
   <div class="lb-page-footer">ACTUALIZACIÓN EN TIEMPO REAL · BANCO MERIDIAN</div>
 
-  <script type="module" src="js/leaderboard.js?v=31"></script>
+  <script type="module" src="js/leaderboard.js?v=32"></script>
 </body>
 </html>
