@@ -4,7 +4,6 @@
 // ══════════════════════════════════════════
 
 import { STAGES, fmt, computeEfficiencyScore, efficiencyStars,
-         computeAnticipationBonus, computeTimeScore,
          computeDecisionQualityBonus, findTool, computeStage5State,
          computeToolsCost } from './game-data.js?v=36';
 
@@ -36,11 +35,11 @@ function resolveGroupStats(g) {
 }
 
 // ── Score compuesto ──────────────────────────
-// Presupuesto/20k + Reputación×20 + Eficiencia×10 + Calidad de decisión (directa).
+// Presupuesto/20k + Reputación×20 + Bonos de Equipo×10 + Calidad de decisión (directa).
 // El peso del presupuesto se redujo a propósito: conservar dinero por sí solo
 // NUNCA debe compensar una mala decisión. Lo que mueve el marcador con fuerza
 // es acertar/errar cada decisión (Calidad) y decidir bien informado y rápido
-// (Eficiencia) — no cuánto se ahorró en herramientas.
+// (Bonos de Equipo) — no cuánto se ahorró en herramientas.
 // El marcador muestra 0 hasta que el equipo confirma su primera decisión;
 // a partir de ahí parte de una base de referencia de 3,250 menos lo consumido.
 export function compositeScore(g) {
@@ -55,38 +54,30 @@ export function compositeScore(g) {
   ));
 }
 
-// ── Perfil del equipo (etiqueta gamificada según drivers dominantes) ──
-// La calidad de decisiones (acertar/caer en trampa) pesa más que cualquier
-// otro componente del score — por eso se evalúa antes que velocidad/ahorro,
-// para que la etiqueta que la gente lee en el leaderboard público apunte a
-// la causa real del puntaje y no solo a qué tan rápido decidió el equipo.
-const PRECISE_QUALITY_THRESHOLD = 2400; // ≈ 3 de 5 decisiones correctas netas
+// ── Estadísticas de desempate: tiempo total, presupuesto final, reputación ──
+function tieBreakStats(g) {
+  const totalTime = Object.values(g.stage_durations || {}).reduce((s, v) => s + (Number(v) || 0), 0);
+  const { budgetFinal, reputation } = resolveGroupStats(g);
+  return { totalTime, budgetFinal, reputation };
+}
 
-export function profileOf(g) {
-  if (g?.final_state === 'game_over')
-    return { icon: '☠', label: 'ELIMINADO', cls: 'lb-profile-dead' };
-
-  const { budgetFinal: budgetFin, reputation: rep } = resolveGroupStats(g || {});
-  const budgetPct     = budgetFin / 5000000;
-  const anticipation  = computeAnticipationBonus(g?.tools_owned || []);
-  const timeScore     = computeTimeScore(g?.stage_durations || {});
-  const quality       = computeDecisionQualityBonus(g?.decision_log || []);
-
-  if (rep < 40 || budgetPct < 0.30)
-    return { icon: '🔥', label: 'EN CRISIS',  cls: 'lb-profile-crisis' };
-  if (quality < 0)
-    return { icon: '⚠', label: 'IMPRUDENTE', cls: 'lb-profile-reckless' };
-  if (anticipation > 5 && timeScore > 5)
-    return { icon: '🎯⚡', label: 'COMPLETO', cls: 'lb-profile-complete' };
-  if (quality >= PRECISE_QUALITY_THRESHOLD)
-    return { icon: '✓', label: 'PRECISO',    cls: 'lb-profile-precise' };
-  if (timeScore < -5)
-    return { icon: '🐌', label: 'DEMORADO',   cls: 'lb-profile-slow' };
-  if (anticipation > 5)
-    return { icon: '🎯', label: 'ESTRATEGA',  cls: 'lb-profile-strategist' };
-  if (timeScore > 5)
-    return { icon: '⚡', label: 'ÁGIL',       cls: 'lb-profile-agile' };
-  return { icon: '⚖', label: 'EQUILIBRADO', cls: 'lb-profile-balanced' };
+// ── Comparador de ranking: score desc → tiempo total asc → presupuesto final
+// desc → reputación desc.
+// compositeScore usa valores discretos y gruesos (qualityBonus en múltiplos de
+// 200-800, effScore en tramos de velocidad), así que dos equipos que juegan
+// igual de bien pueden terminar con el MISMO puntaje — sobre todo entre los
+// primeros puestos, donde converger en "la decisión correcta" es lo normal.
+// Sin desempate, un empate real se resolvía en silencio por el orden en que
+// llegaban los grupos (ej. Equipo 1 le "ganaba" a Equipo 2 sin motivo). Se usa
+// la misma información que ya ve cada equipo en pantalla: quién fue más
+// rápido, a quién le quedó más presupuesto y quién conservó más reputación.
+export function compareGroups(a, b) {
+  const scoreA = compositeScore(a), scoreB = compositeScore(b);
+  if (scoreB !== scoreA) return scoreB - scoreA;
+  const sa = tieBreakStats(a), sb = tieBreakStats(b);
+  if (sa.totalTime !== sb.totalTime) return sa.totalTime - sb.totalTime;
+  if (sb.budgetFinal !== sa.budgetFinal) return sb.budgetFinal - sa.budgetFinal;
+  return sb.reputation - sa.reputation;
 }
 
 // ── Estado visual: 'good' | 'warn' | 'bad' | 'dead' ──
@@ -148,12 +139,12 @@ function replayGroupAtStage(g, targetNum) {
 
 // ── Ranking ordenado por compositeScore al final del stage targetNum ──
 export function rankingAtStage(groups, targetNum) {
-  const scored = groups.map(g => {
-    const snapshot = targetNum >= (g.stage + 1) ? g : replayGroupAtStage(g, targetNum);
-    return { id: g.id, score: compositeScore(snapshot) };
-  });
-  scored.sort((a, b) => b.score - a.score);
-  return scored.map((r, i) => ({ ...r, position: i + 1 }));
+  const snapshots = groups.map(g => ({
+    id: g.id,
+    snapshot: targetNum >= (g.stage + 1) ? g : replayGroupAtStage(g, targetNum)
+  }));
+  snapshots.sort((x, y) => compareGroups(x.snapshot, y.snapshot));
+  return snapshots.map((r, i) => ({ id: r.id, score: compositeScore(r.snapshot), position: i + 1 }));
 }
 
 // ── Tendencia para un grupo ──
@@ -262,7 +253,6 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
       const { budgetFinal: budgetFin, reputation: rep } = resolveGroupStats(g);
       const effScore  = computeEfficiencyScore(g.stage_durations || {}, g.tools_owned || [], g.decision_log || []);
       const quality   = computeDecisionQualityBonus(g.decision_log || []);
-      const profile   = profileOf(g);
 
       // Componentes proporcionales para la mini-bar (misma escala que compositeScore)
       const budgetPts  = Math.max(0, budgetFin / 20000);
@@ -286,12 +276,6 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
             ${g.name || `Equipo ${g.slot}`}
             <div class="lb-decision-dots">${decisionDots(g, totalStages)}</div>
           </td>
-          <td class="lb-profile-cell">
-            <span class="lb-profile ${profile.cls}">
-              <span class="lb-profile-icon">${profile.icon}</span>
-              <span class="lb-profile-label">${profile.label}</span>
-            </span>
-          </td>
           <td class="lb-pts">
             <div class="lb-pts-row">
               <span class="lb-pts-value">${r.score}</span>
@@ -302,7 +286,7 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
               <div class="lb-pts-breakdown" style="width:${barWidthPct}%">
                 <div class="lb-pts-bar lb-pts-bar-budget"  style="flex:${budgetPts}"  title="Presupuesto: ${Math.round(budgetPts)} pts"></div>
                 <div class="lb-pts-bar lb-pts-bar-rep"     style="flex:${repPts}"     title="Reputación: ${Math.round(repPts)} pts"></div>
-                <div class="lb-pts-bar lb-pts-bar-eff"     style="flex:${effPts}"     title="Eficiencia: ${Math.round(effPts)} pts"></div>
+                <div class="lb-pts-bar lb-pts-bar-eff"     style="flex:${effPts}"     title="Bonos de Equipo: ${Math.round(effPts)} pts"></div>
                 ${qualityPtsPos > 0 ? `<div class="lb-pts-bar lb-pts-bar-quality" style="flex:${qualityPtsPos}" title="Calidad de decisiones: +${Math.round(qualityPtsPos)} pts"></div>` : ''}
               </div>
               ${qualityNeg}
@@ -347,7 +331,6 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
     <tr>
       <th class="lb-rank-h">#</th>
       <th class="lb-team-h">EQUIPO</th>
-      <th>PERFIL</th>
       <th class="lb-pts-h">PUNTOS</th>
       <th class="lb-trend-h">TENDENCIA</th>
     </tr>`;
@@ -359,7 +342,7 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
       <th>DECISIONES</th>
       <th>PRESUPUESTO</th>
       <th>REPUTACIÓN</th>
-      <th>EFICIENCIA</th>
+      <th>BONOS DE EQUIPO</th>
       <th>CALIDAD</th>
       <th class="lb-pts-h">PUNTOS</th>
       <th class="lb-trend-h">TENDENCIA</th>

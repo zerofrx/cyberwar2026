@@ -1091,7 +1091,7 @@ function showFinal() {
   const correct = log.filter(l => l.type === 'correct').length;
   const traps   = log.filter(l => l.type === 'trap').length;
   const ok      = log.filter(l => l.type === 'ok').length;
-  // ── Eficiencia (medalla + desglose) ───────────────
+  // ── Bonos de Equipo (medalla + desglose) ───────────────
   const effBreakdown = efficiencyBreakdown(group.stage_durations || {}, group.tools_owned || [], group.decision_log || []);
   const effScore     = effBreakdown.total;
   const stars        = efficiencyStars(effScore);
@@ -1110,14 +1110,14 @@ function showFinal() {
       <div class="fstat-val" style="color:${qualityColor}">${quality > 0 ? '+' : ''}${quality}</div>
       <div class="fstat-lbl">Calidad de decisiones</div>
       <div class="eff-breakdown">
-        ${correct ? `<div class="eff-row eff-good"><span>Correctas ×${correct}</span><span>+${correct * 80}</span></div>` : ''}
-        ${ok      ? `<div class="eff-row"><span>Aceptables ×${ok}</span><span>+${ok * 20}</span></div>` : ''}
-        ${traps   ? `<div class="eff-row eff-bad"><span>Trampas ×${traps}</span><span>−${traps * 60}</span></div>` : ''}
+        ${correct ? `<div class="eff-row eff-good"><span>Correctas ×${correct}</span><span>+${correct * 800}</span></div>` : ''}
+        ${ok      ? `<div class="eff-row"><span>Aceptables ×${ok}</span><span>+${ok * 200}</span></div>` : ''}
+        ${traps   ? `<div class="eff-row eff-bad"><span>Trampas ×${traps}</span><span>−${traps * 600}</span></div>` : ''}
       </div>
     </div>
     <div class="fstat eff-fstat">
       <div class="fstat-val eff-stars">${starsHtml}</div>
-      <div class="fstat-lbl">Eficiencia (${effScore} pts)</div>
+      <div class="fstat-lbl">Bonos de Equipo (${effScore} pts)</div>
       <div class="eff-breakdown">
         <div class="eff-row"><span>Base</span><span>+${effBreakdown.base}</span></div>
         ${effBreakdown.anticipation ? `<div class="eff-row eff-good"><span>Anticipación</span><span>+${effBreakdown.anticipation}</span></div>` : ''}

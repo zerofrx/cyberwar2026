@@ -184,32 +184,32 @@ El puntaje vive en `js/ranking.js` (`compositeScore`) y se nutre de funciones de
 ### Fórmula del puntaje compuesto (columna PUNTOS)
 
 ```
-PUNTOS = Presupuesto ÷ 20,000  +  Reputación × 20  +  Eficiencia × 10  +  Calidad de decisiones
+PUNTOS = Presupuesto ÷ 20,000  +  Reputación × 20  +  Bonos de Equipo × 10  +  Calidad de decisiones
 ```
 
 | Componente | Rango | Cómo se calcula |
 |-----------|-------|-----------------|
 | 💰 **Presupuesto** | 0 – 250 pts | `(budget − penalizaciones diferidas) ÷ 20,000`. Cada $20,000 conservados = 1 punto — el de menor peso, a propósito |
 | ❤ **Reputación** | 0 – 2,000 pts | `reputation × 20`. Cada 1 % de reputación = 20 puntos |
-| ⚡ **Eficiencia** | 0 – 3,000 pts | `efficiencyScore × 10` (ver abajo) |
-| 🎯 **Calidad de decisiones** | −300 a +400 pts | `computeDecisionQualityBonus` — directo, sin multiplicar (ver abajo) |
+| ⚡ **Bonos de Equipo** | 0 – 3,000 pts | `efficiencyScore × 10` (ver abajo) |
+| 🎯 **Calidad de decisiones** | −3,000 a +4,000 pts | `computeDecisionQualityBonus` — directo, sin multiplicar (ver abajo) |
 
 ### Calidad de decisiones (`computeDecisionQualityBonus`) — el componente más notorio
 
 Se suma **directo** al puntaje por cada decisión del `decision_log`, sin depender del presupuesto ni de las herramientas compradas:
 
 ```js
-correct (incl. lifesaver) → +80   // decisión correcta
-ok (tardía)               → +20   // decisión aceptable/recuperada
-trap                      → −60   // trampa (incluye fatal/extreme, que ya se registran como 'trap')
+correct (incl. lifesaver) → +800   // decisión correcta
+ok (tardía)               → +200   // decisión aceptable/recuperada
+trap                      → −600   // trampa (incluye fatal/extreme, que ya se registran como 'trap')
 ```
 
-Máximo en 5 etapas: **+400** (todas correctas) a **−300** (todas trampas). Es el componente que hace el impacto de cada acción obvio en el marcador, sin importar cuánto gastó el equipo.
+Máximo en 5 etapas: **+4,000** (todas correctas) a **−3,000** (todas trampas). Es el componente que hace el impacto de cada acción obvio en el marcador, sin importar cuánto gastó el equipo.
 
-### Eficiencia (`computeEfficiencyScore`)
+### Bonos de Equipo (`computeEfficiencyScore`)
 
 ```
-EFICIENCIA = 100 (base) + anticipación + tiempo + equipamiento − compras inútiles
+BONOS DE EQUIPO = 100 (base) + anticipación + tiempo + equipamiento − compras inútiles
 ```
 
 Sin cap superior. Cada factor:
@@ -235,20 +235,6 @@ Además del puntaje, tener las herramientas correctas abarata la decisión en el
 
 El leaderboard reconstruye el ranking al final de la etapa anterior (`rankingAtStage` reproduce el `decision_log`) y lo compara con el actual para mostrar cuántas posiciones subió o bajó cada equipo.
 
-### Perfil del equipo (`profileOf`)
-
-Etiqueta gamificada según los drivers dominantes, en orden de prioridad:
-
-| Perfil | Condición |
-|--------|-----------|
-| ☠ **ELIMINADO** | `final_state === 'game_over'` |
-| 🔥 **EN CRISIS** | reputación < 40 % o presupuesto < 30 % |
-| 🐌 **DEMORADO** | penalización de tiempo acumulada < −5 |
-| 🎯⚡ **COMPLETO** | anticipación > 5 **y** velocidad > 5 |
-| 🎯 **ESTRATEGA** | anticipación > 5 |
-| ⚡ **ÁGIL** | velocidad > 5 |
-| ⚖ **EQUILIBRADO** | ninguno de los anteriores |
-
 ### Estado final del banco (`computeStage5State`)
 
 Independiente del puntaje, resume la gestión de la crisis. Se agrava si exceden 72 h o terminan con reputación baja:
@@ -262,9 +248,9 @@ Independiente del puntaje, resume la gestión de la crisis. Se agrava si exceden
 
 ### Dónde se muestra
 
-- **`leaderboard.html`** — clasificación pública proyectable (en vivo): `# · EQUIPO · PERFIL · PUNTOS · TENDENCIA`, con barra tricolor que muestra la proporción presupuesto/reputación/eficiencia bajo cada puntaje. **No revela** los valores exactos.
-- **Resultados Preliminares** del facilitador — tabla detallada con todas las columnas (presupuesto, reputación, eficiencia, decisiones).
-- **Pantalla final del jugador** — desglose completo de su eficiencia (base, anticipación, equipamiento, velocidad).
+- **`leaderboard.html`** — clasificación pública proyectable (en vivo): `# · EQUIPO · PUNTOS · TENDENCIA`, con barra tricolor que muestra la proporción presupuesto/reputación/Bonos de Equipo bajo cada puntaje. **No revela** los valores exactos.
+- **Resultados Preliminares** del facilitador — tabla detallada con todas las columnas (presupuesto, reputación, Bonos de Equipo, decisiones).
+- **Pantalla final del jugador** — desglose completo de sus Bonos de Equipo (base, anticipación, equipamiento, velocidad).
 - **`guia.html`** — manual proyectable que explica todo esto a los participantes (atajo en el panel del facilitador).
 
 ---

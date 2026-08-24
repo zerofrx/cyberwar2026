@@ -449,9 +449,9 @@ function showFinal() {
   document.getElementById('finalStats').innerHTML = `
     <div class="fstat"><div class="fstat-val" style="color:var(--success)">${correct}</div><div class="fstat-lbl">Óptimas</div></div>
     <div class="fstat"><div class="fstat-val" style="color:var(--accent)">${traps}</div><div class="fstat-lbl">Trampas caídas</div></div>
-    <div class="fstat"><div class="fstat-val" style="color:var(--info)">${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}</div><div class="fstat-lbl">Eficiencia ${eff.total}</div></div>`;
+    <div class="fstat"><div class="fstat-val" style="color:var(--info)">${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}</div><div class="fstat-lbl">Bonos de Equipo ${eff.total}</div></div>`;
 
-  // Narrativa: registro + finanzas + eficiencia
+  // Narrativa: registro + finanzas + bonos de equipo
   let narrative = `<div class="story-narrative" style="margin-bottom:1.25rem"><div class="sn-title">REGISTRO DE DECISIONES</div>`;
   G.decision_log.forEach(e => {
     const tierCss = e.type === 'correct' ? 'sn-tier-best' : e.type === 'ok' ? 'sn-tier-good' : 'sn-tier-poor';
@@ -478,7 +478,7 @@ function showFinal() {
   </div>`;
 
   narrative += `<div class="budget-narrative" style="margin-top:1rem">
-    <div class="bn-title">EFICIENCIA — ${eff.total} pts (${'★'.repeat(stars)}${'☆'.repeat(5 - stars)})</div>
+    <div class="bn-title">BONOS DE EQUIPO — ${eff.total} pts (${'★'.repeat(stars)}${'☆'.repeat(5 - stars)})</div>
     <div class="bn-sheet">
       <div class="bn-row"><span>Base</span><span class="bn-val">${eff.base}</span></div>
       <div class="bn-row"><span>Anticipación (compras tempranas)</span><span class="bn-val bn-blue">+${eff.anticipation}</span></div>

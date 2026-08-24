@@ -7,7 +7,7 @@ import { STAGES, fmt, glossarize, computeStage5State,
          computeEfficiencyScore, efficiencyStars,
          applyDecision, findTool, BUDGET_INIT, computeToolsCost,
          computeDecisionQualityBonus, efficiencyBreakdown } from './game-data.js?v=36';
-import { buildLeaderboardTable, compositeScore }  from './ranking.js?v=36';
+import { buildLeaderboardTable, compositeScore, compareGroups }  from './ranking.js?v=39';
 
 const NUM_GROUPS  = 6;
 const ROLES       = ['ciso', 'analyst', 'legal', 'comms', 'ops'];
@@ -517,11 +517,12 @@ function renderResults() {
     const correct = log.filter(e => e.type === 'correct').length;
     const traps   = log.filter(e => e.type === 'trap').length;
 
-    // Mismo criterio que leaderboard.html/results.html (compositeScore), para
+    // Mismo criterio que leaderboard.html/results.html (compositeScore +
+    // desempate por tiempo/presupuesto/reputación vía compareGroups), para
     // que el facilitador nunca vea un "ganador" distinto al de esas pantallas.
     const score = compositeScore(g);
     return { ...g, budgetFinal, penFinal, state, correct, traps, log, score };
-  }).sort((a, b) => b.score - a.score);
+  }).sort(compareGroups);
 
   const ctxColors = { A:'var(--success)', B:'var(--info)', C:'var(--gold)', D:'var(--accent)', X:'var(--muted)' };
   const ctxLabels = {
@@ -757,7 +758,7 @@ function showBestPath() {
         <span class="prelim-stat-val">${sim.state.hours}h / 72h</span>
       </div>
       <div class="prelim-stat">
-        <span class="prelim-stat-label">EFICIENCIA</span>
+        <span class="prelim-stat-label">BONOS DE EQUIPO</span>
         <span class="prelim-stat-val">${starsHtml} (${sim.effBreakdown.total})</span>
       </div>
     </div>
@@ -820,10 +821,10 @@ function determineWinner() {
       ? { ctx: 'X', label: 'ELIMINADO', finalReputation: g.reputation ?? 0 }
       : computeStage5State(flags, budgetFinal, penFinal, g.hours, g.reputation ?? 100, computeToolsCost(g));
     // Mismo criterio que renderResults()/results.html/leaderboard.html
-    // (compositeScore) — el "camino del ganador" debe ser el del mismo
-    // equipo que aparece como #1 en todas las demás pantallas.
+    // (compositeScore + compareGroups) — el "camino del ganador" debe ser el
+    // del mismo equipo que aparece como #1 en todas las demás pantallas.
     return { ...g, budgetFinal, penFinal, state, score: compositeScore(g) };
-  }).sort((a, b) => b.score - a.score);
+  }).sort(compareGroups);
   return ranked[0] || null;
 }
 
@@ -881,7 +882,7 @@ function showWinnerPath() {
         <span class="prelim-stat-val">${winner.hours}h / 72h</span>
       </div>
       <div class="prelim-stat">
-        <span class="prelim-stat-label">EFICIENCIA</span>
+        <span class="prelim-stat-label">BONOS DE EQUIPO</span>
         <span class="prelim-stat-val">${starsHtml} (${effBreakdown.total})</span>
       </div>
     </div>

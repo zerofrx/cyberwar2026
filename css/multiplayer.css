@@ -2232,7 +2232,7 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
 }
 
 /* ══════════════════════════════════════════
-   Eficiencia (medalla final)
+   Bonos de Equipo (medalla final)
    ══════════════════════════════════════════ */
 .eff-stars {
   display: inline-flex;
@@ -2601,41 +2601,6 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
   max-width: 60ch;
 }
 .lb-public .lb-dot { font-size: 2rem; }
-
-/* Columna PERFIL en la vista pública (badge gamificado) */
-.lb-public .lb-profile-cell {
-  text-align: center;
-  width: 240px;
-}
-.lb-profile {
-  display: inline-flex;
-  align-items: center;
-  gap: .55rem;
-  padding: .5rem 1rem;
-  border-radius: 22px;
-  border: 1.5px solid currentColor;
-  font-family: 'DM Mono', monospace;
-  font-size: .82rem;
-  font-weight: 600;
-  letter-spacing: .12em;
-  background: rgba(255,255,255,.02);
-}
-.lb-profile-icon {
-  font-size: 1.1em;
-  filter: saturate(.85);
-}
-.lb-profile-label { line-height: 1; }
-
-/* Colores por perfil */
-.lb-profile-strategist { color: #9b6dd9; }
-.lb-profile-agile      { color: var(--info); }
-.lb-profile-complete   { color: var(--gold); }
-.lb-profile-slow       { color: var(--muted); opacity: .85; }
-.lb-profile-crisis     { color: var(--accent); }
-.lb-profile-balanced   { color: var(--text); opacity: .8; }
-.lb-profile-dead       { color: var(--muted); opacity: .5; text-decoration: line-through; }
-.lb-profile-precise    { color: var(--success); }
-.lb-profile-reckless   { color: var(--accent); }
 
 /* Puntos de decisión por etapa (●/✕/○), debajo del nombre del equipo */
 .lb-decision-dots {

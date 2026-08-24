@@ -237,7 +237,7 @@
         <tr><td class="num">4</td><td>La Carrera de Recuperación</td><td class="num">4 minutos</td></tr>
         <tr><td class="num">5</td><td>El Día de Cuentas</td><td class="num">2 minutos</td></tr>
       </table>
-      <div class="tip">El cronómetro no corta el juego al llegar a cero — pero el tiempo consumido afecta su puntaje de eficiencia.</div>
+      <div class="tip">El cronómetro no corta el juego al llegar a cero — pero el tiempo consumido afecta sus Bonos de Equipo.</div>
     </div>
   </section>
 
@@ -261,7 +261,7 @@
         otras valen oro <strong>etapas más adelante</strong>.
         <br><br>
         Comprar una herramienta <strong>antes</strong> de la etapa donde es ideal otorga <strong>bonus de anticipación</strong>:
-        +3 puntos de eficiencia por cada etapa de adelanto. El equipo que piensa a futuro gana más.
+        +3 puntos de Bonos de Equipo por cada etapa de adelanto. El equipo que piensa a futuro gana más.
         <br><br>
         Y lo más importante: si al confirmar una <strong>decisión correcta</strong> poseen las herramientas que la respaldan,
         ganan un <strong>bonus de equipamiento</strong> (hasta +50 puntos por decisión) además de ejecutarla con
@@ -294,7 +294,7 @@
       deciden</strong>, no en cuánto ahorran: conservar presupuesto pesa poco y nunca compensa una mala decisión.
       Cada decisión puede mover <strong>cientos de puntos</strong>:
       <div class="formula">
-        PUNTOS = <span class="gold">Presupuesto ÷ 20,000</span> + <span class="green">Reputación × 20</span> + <span class="blue">Eficiencia × 10</span> + <span style="color:#d97757">Calidad de decisiones</span>
+        PUNTOS = <span class="gold">Presupuesto ÷ 20,000</span> + <span class="green">Reputación × 20</span> + <span class="blue">Bonos de Equipo × 10</span> + <span style="color:#d97757">Calidad de decisiones</span>
       </div>
       <table>
         <tr><th>Componente</th><th>Fórmula</th><th>Rango posible</th><th>Qué lo mueve</th></tr>
@@ -311,9 +311,9 @@
           <td>Cada 1% de reputación perdida cuesta 20 puntos directamente. Bajar de 100% a 80% ya es −400 pts.</td>
         </tr>
         <tr>
-          <td><span style="color:var(--info)">⚡ Eficiencia</span></td>
+          <td><span style="color:var(--info)">⚡ Bonos de Equipo</span></td>
           <td class="num" style="font-size:.82rem">score × 10</td>
-          <td class="num">0 – 3,000+ pts</td>
+          <td class="num">0 – 2,550 pts</td>
           <td>Herramientas compradas a tiempo, velocidad de decisión y equipamiento correcto. <em>El más flexible del juego.</em></td>
         </tr>
         <tr>
@@ -340,9 +340,9 @@
     </div>
 
     <div class="card">
-      <h3>⚡ Eficiencia (velocidad y estrategia)</h3>
+      <h3>⚡ Bonos de Equipo (velocidad y estrategia)</h3>
       <div class="formula">
-        EFICIENCIA = 100 <span class="green">+ anticipación + equipamiento</span> <span class="blue">± velocidad</span> <span class="neg">− compras inútiles</span>
+        BONOS DE EQUIPO = 100 <span class="green">+ anticipación + equipamiento</span> <span class="blue">± velocidad</span> <span class="neg">− compras inútiles</span>
       </div>
       <table>
         <tr><th>Factor</th><th>Efecto</th><th>Detalle</th></tr>
@@ -380,7 +380,7 @@
           <td class="num">55%<br><span class="pos">= +1,100 pts</span></td>
         </tr>
         <tr>
-          <td><strong>⚡ Eficiencia</strong><br><span style="font-size:.8rem;color:var(--muted)">× 10</span></td>
+          <td><strong>⚡ Bonos de Equipo</strong><br><span style="font-size:.8rem;color:var(--muted)">× 10</span></td>
           <td>
             <span style="font-size:.8rem;color:var(--muted)">Base 100 + anticip. +15 + velocidad +25 + equip. +40 = <strong>180</strong></span><br>
             <span class="pos">= +1,800 pts</span>
@@ -424,7 +424,7 @@
       <ol style="margin:.8rem 0 0 1.2rem;line-height:2">
         <li><strong>Presupuesto:</strong> tomen el dinero que les queda y divídanlo entre 20,000 → ese es el componente más pequeño</li>
         <li><strong>Reputación:</strong> su % actual × 20 → si están al 80%, eso son 1,600 puntos</li>
-        <li><strong>Eficiencia:</strong> arrancan en 1,000 (100×10). Suman +80 por cada herramienta anticipada, +200/+100 si decidieron muy rápido/rápido por etapa, +80 por decisión correcta con herramientas. Restan si tardaron.</li>
+        <li><strong>Bonos de Equipo:</strong> arrancan en 1,000 (100×10). Suman +80 por cada herramienta anticipada, +200/+100 si decidieron muy rápido/rápido por etapa, +80 por decisión correcta con herramientas. Restan si tardaron.</li>
         <li><strong>Calidad:</strong> cuenten decisiones correctas × 800, aceptables × 200, trampas × −600 → eso se suma directo. Cada decisión mueve el marcador ~±800 pts</li>
       </ol>
       <div class="tip">El componente que más duele perder es Calidad: una trampa (−600 pts) equivale a perder $12,000,000 de presupuesto o a bajar 30% de reputación. Una decisión correcta (+800 pts) es lo más valioso que pueden hacer en el juego.</div>

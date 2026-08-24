@@ -161,7 +161,7 @@
   <script type="module">
     import { supabase }              from './js/supabase-client.js';
     import { fmt, computeStage5State, computeToolsCost, REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT, STAGES } from './js/game-data.js?v=36';
-    import { compositeScore } from './js/ranking.js?v=36';
+    import { compositeScore, compareGroups } from './js/ranking.js?v=39';
 
     const params    = new URLSearchParams(location.search);
     const sessionId = params.get('session');
@@ -248,12 +248,12 @@
         const log     = g.decision_log || [];
         const correct = log.filter(e => e.type === 'correct').length;
         const traps   = log.filter(e => e.type === 'trap').length;
-        // Mismo criterio que leaderboard.html/facilitator.js (compositeScore),
-        // para que el "ganador" nunca contradiga el ranking que se vio en vivo
-        // durante toda la sesión.
+        // Mismo criterio que leaderboard.html/facilitator.js (compositeScore +
+        // compareGroups), para que el "ganador" nunca contradiga el ranking
+        // que se vio en vivo durante toda la sesión.
         const score = compositeScore(g);
         return { ...g, budgetFinal, penFinal, state, correct, traps, log, score };
-      }).sort((a, b) => b.score - a.score);
+      }).sort(compareGroups);
 
       // ── Historia final del ganador ─────────────
       const winner = ranked[0];

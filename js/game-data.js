@@ -904,9 +904,9 @@ export function computeEquipBonus(decisionLog = []) {
 // Hace que acertar o caer en trampa sea notorio en el marcador sin depender
 // de cuánto se gastó en herramientas. Se suma tal cual al puntaje compuesto
 // (no se multiplica x10 como los demás componentes).
-//   correct (incl. lifesaver) → +80   decisión correcta
-//   ok (recycled)             → +20   decisión aceptable/recuperada
-//   trap                      → −60   trampa (incluye fatal/extreme, que ya
+//   correct (incl. lifesaver) → +800  decisión correcta
+//   ok (recycled)             → +200  decisión aceptable/recuperada
+//   trap                      → −600  trampa (incluye fatal/extreme, que ya
 //                                     se registran como 'trap' en el log)
 const DECISION_QUALITY_POINTS = { correct: 800, ok: 200, trap: -600 };
 
