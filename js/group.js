@@ -29,6 +29,9 @@ let group    = null;   // fila de la tabla groups
 let session  = null;   // fila de la tabla sessions
 let unread   = 0;
 let currentTab = 'info';
+// IDs de alertas ya "leídas" (mouse por encima o clic) — solo en memoria,
+// es un detalle de UI por-viewer, no estado de juego que deba persistirse.
+const readAlerts = new Set();
 
 const ROLE_LABELS = {
   ciso: 'CISO', analyst: 'ANALISTA', legal: 'LEGAL',
@@ -196,6 +199,12 @@ function render() {
   updateSidebar();
 
   if (session.status === 'lobby') {
+    // El facilitador puede "Reiniciar sesión" (vuelve a 'lobby' y limpia
+    // notif_log de todos los grupos) mientras esta pestaña sigue abierta —
+    // sin esto, los ids de alertas ya leídas de la partida anterior seguían
+    // en el Set y las alertas nuevas (mismo stage+título) nacían marcadas
+    // como leídas sin que el jugador las hubiera visto.
+    readAlerts.clear();
     showScreen('screenLobby');
     setupLobbyNameField();
     startLobbyFeed();
@@ -215,13 +224,15 @@ function render() {
 
   // Si ya confirmó y espera al facilitador para avanzar
   const waitingAdvance = group.revealed && (group.stage === session.current_stage);
-  document.getElementById('stageWaitOverlay').classList.toggle('mp-hidden', !waitingAdvance);
+  const overlayEl = document.getElementById('stageWaitOverlay');
+  overlayEl.classList.toggle('mp-hidden', !waitingAdvance);
   const isLastStage = group.stage === STAGES.length - 1;
   const titleEl = document.getElementById('swoTitle');
   const subEl   = document.getElementById('swoSub');
+  overlayEl.classList.toggle('swo-final', waitingAdvance && isLastStage);
   if (waitingAdvance && isLastStage) {
     if (titleEl) titleEl.textContent = 'Esperando al facilitador';
-    if (subEl)   subEl.textContent   = 'Los puntajes finales están siendo calculados.';
+    if (subEl)   subEl.textContent   = 'Un momento — tu puntaje final está siendo proyectado.';
     const el = document.getElementById('swoNarrative');
     if (el) { el.dataset.filled = ''; el.innerHTML = ''; el.classList.add('mp-hidden'); }
   } else if (waitingAdvance && group.chosen_option !== null) {
@@ -914,26 +925,38 @@ function updateSidebar() {
   document.getElementById('blAvailable').textContent = fmt(group.budget);
   document.getElementById('blAvailable').style.color = group.budget < 0 ? 'var(--accent)' : 'var(--info)';
 
-  // Notifications — combine stage hints + decision log
+  // Notifications — combine stage hints + decision log, agrupadas por etapa.
+  // stage queda 0-indexed (igual que STAGES[]) internamente; se muestra +1.
   const decisions = group.notif_log || [];
   const stageIdx  = group.stage ?? 0;
   const hints     = [];
   for (let i = 0; i <= Math.min(stageIdx, STAGES.length - 1); i++) {
-    (STAGES[i].hints || []).forEach(h => hints.push(h));
+    (STAGES[i].hints || []).forEach(h => hints.push({ ...h, stage: i }));
   }
-  const allAlerts = [...hints, ...decisions];
+  // id estable por alerta (title es único por hint/reveal en el catálogo) —
+  // se usa para rastrear qué alertas ya se "leyeron" (hover/clic).
+  const allAlerts = [...hints, ...decisions].map(a => ({ ...a, _id: `${a.stage}-${a.title}` }));
 
   {
-    const badge = document.getElementById('notifBadge');
-    if (allAlerts.length && currentTab !== 'alerts') {
-      unread = allAlerts.length;
-      badge.textContent = unread;
-      badge.style.display = 'inline';
-    }
+    paintNotifBadge(allAlerts.filter(a => !readAlerts.has(a._id)).length);
+
+    const byStage = {};
+    [...allAlerts].reverse().forEach(a => (byStage[a.stage] ??= []).push(a));
+    const stageNums = Object.keys(byStage).map(Number).sort((a, b) => b - a);
+
     document.getElementById('notifFeed').innerHTML = allAlerts.length
-      ? [...allAlerts].reverse()
-          .map(n => `<div class="notif-item notif-${n.type}"><div class="ni-title">${n.title}</div><div class="ni-body">${glossarize(n.body)}</div></div>`)
-          .join('')
+      ? stageNums.map(sNum => `
+          <div class="notif-stage-group">
+            <div class="notif-stage-header">ETAPA ${sNum + 1}</div>
+            ${byStage[sNum].map(n => `
+              <div class="notif-item notif-${n.type}${readAlerts.has(n._id) ? ' notif-read' : ''}" data-id="${n._id}">
+                <span class="ni-stage-badge">S${sNum + 1}</span>
+                <div class="ni-body-wrap">
+                  <div class="ni-title">${n.title}</div>
+                  <div class="ni-body">${glossarize(n.body)}</div>
+                </div>
+              </div>`).join('')}
+          </div>`).join('')
       : '<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:1rem">Sin alertas</div>';
   }
 
@@ -966,11 +989,29 @@ window.switchTab = function(tab) {
     document.getElementById(`tabPanel${t.charAt(0).toUpperCase()+t.slice(1)}`).classList.toggle('mp-hidden', t !== tab);
     document.getElementById(`tab${t.charAt(0).toUpperCase()+t.slice(1)}`).classList.toggle('active', t === tab);
   });
-  if (tab === 'alerts') {
-    unread = 0;
-    document.getElementById('notifBadge').style.display = 'none';
-  }
+  // El badge ya no se limpia solo por abrir la pestaña — cada alerta se
+  // marca leída individualmente (hover/clic), ver listener de #notifFeed.
 };
+
+function paintNotifBadge(count) {
+  unread = count;
+  const badge = document.getElementById('notifBadge');
+  badge.textContent = unread;
+  badge.style.display = unread > 0 ? 'inline' : 'none';
+}
+
+// ── Marcar alertas como leídas: primer mouseenter (hover, desktop) o click
+// (táctil/celular) que ocurra sobre cada ítem. Delegado en el contenedor
+// porque updateSidebar() reemplaza el innerHTML de #notifFeed en cada render.
+function markAlertRead(evt) {
+  const item = evt.target.closest('.notif-item');
+  if (!item || item.classList.contains('notif-read')) return;
+  readAlerts.add(item.dataset.id);
+  item.classList.add('notif-read');
+  paintNotifBadge(Math.max(0, unread - 1));
+}
+document.getElementById('notifFeed').addEventListener('mouseover', markAlertRead);
+document.getElementById('notifFeed').addEventListener('click', markAlertRead);
 
 function appendConsequenceReveal(opt, effectiveCost) {
   const main = document.getElementById('gameMain');
@@ -1222,6 +1263,15 @@ function showScreen(id) {
     const el = document.getElementById(s);
     if (el) el.classList.toggle('mp-hidden', s !== id);
   });
+  // El overlay de "esperando al facilitador" solo lo gestiona render() dentro
+  // del flujo de screenGame (según waitingAdvance) — en cualquier otra
+  // pantalla (lobby/game over/final) debe quedar oculto explícitamente, o
+  // se queda pegado por encima cubriendo la pantalla nueva (ej. el jugador
+  // termina la etapa 5 con el overlay visible, el facilitador finaliza la
+  // sesión, y sin esto el overlay tapa para siempre la pantalla final).
+  if (id !== 'screenGame') {
+    document.getElementById('stageWaitOverlay')?.classList.add('mp-hidden');
+  }
 }
 
 init();

@@ -247,6 +247,99 @@ body {
   border-top: 1px solid var(--border);
   margin: 1.75rem 0;
 }
+
+/* ── Overlay final (última etapa): estilo splash.html — el jugador ya
+   decidió, ahora espera a que el facilitador finalice y proyecte los
+   puntajes. Se activa agregando .swo-final al overlay (ver group.js). ── */
+.stage-wait-overlay.swo-final {
+  align-items: center;
+  justify-content: center;
+  background: var(--dark);
+}
+.stage-wait-overlay.swo-final::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(74,144,217,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74,144,217,.07) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+.stage-wait-overlay.swo-final::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(900px, 120vw);
+  height: min(600px, 80vh);
+  background: radial-gradient(ellipse at center, var(--info-light) 0%, rgba(74,144,217,.06) 40%, transparent 70%);
+  pointer-events: none;
+}
+.swo-scanbar {
+  display: none;
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, var(--info) 15%, var(--gold) 50%, var(--info) 85%, transparent 100%);
+}
+.stage-wait-overlay.swo-final .swo-scanbar {
+  display: block;
+  animation: swo-scanline 3s ease-in-out infinite alternate;
+}
+@keyframes swo-scanline { from { opacity: .55; } to { opacity: 1; } }
+.swo-corner {
+  display: none;
+  position: absolute;
+  width: clamp(30px, 4vw, 48px);
+  height: clamp(30px, 4vw, 48px);
+  opacity: .35;
+}
+.stage-wait-overlay.swo-final .swo-corner { display: block; }
+.swo-corner-tl { top: clamp(1rem,2.5vh,2rem); left: clamp(1rem,2.5vw,2rem); border-top: 1px solid var(--info); border-left: 1px solid var(--info); }
+.swo-corner-tr { top: clamp(1rem,2.5vh,2rem); right: clamp(1rem,2.5vw,2rem); border-top: 1px solid var(--info); border-right: 1px solid var(--info); }
+.swo-corner-bl { bottom: clamp(1rem,2.5vh,2rem); left: clamp(1rem,2.5vw,2rem); border-bottom: 1px solid var(--info); border-left: 1px solid var(--info); }
+.swo-corner-br { bottom: clamp(1rem,2.5vh,2rem); right: clamp(1rem,2.5vw,2rem); border-bottom: 1px solid var(--info); border-right: 1px solid var(--info); }
+@media (max-width: 400px) { .swo-corner { display: none !important; } }
+.stage-wait-overlay.swo-final .swo-content {
+  position: relative;
+  z-index: 1;
+  max-width: 560px;
+}
+.stage-wait-overlay.swo-final .swo-top { gap: 1.15rem; }
+.stage-wait-overlay.swo-final .waiting-icon {
+  width: 64px; height: 64px;
+  border-width: 3px;
+  border-top-color: var(--gold);
+  margin-bottom: .5rem;
+}
+.stage-wait-overlay.swo-final .waiting-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.7rem, 5vw, 2.6rem);
+  letter-spacing: .04em;
+  background: linear-gradient(135deg, var(--text) 0%, var(--info) 55%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.stage-wait-overlay.swo-final .waiting-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.05rem;
+  max-width: 440px;
+  color: var(--text);
+}
+.final-thanks {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .8rem;
+  letter-spacing: .05em;
+  color: var(--muted);
+  text-transform: uppercase;
+  max-width: 420px;
+}
 .swo-section {
   display: flex;
   flex-direction: column;
@@ -1021,17 +1114,55 @@ body {
 /* ══════════════════════════════════════════
    GROUP.HTML — Notification items
    ══════════════════════════════════════════ */
+.notif-stage-group { margin-bottom: .6rem; }
+.notif-stage-group:last-child { margin-bottom: 0; }
+.notif-stage-header {
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  letter-spacing: .12em;
+  color: var(--muted);
+  margin: 0 0 .35rem .1rem;
+  text-transform: uppercase;
+}
 .notif-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
   border-radius: 6px;
-  padding: .6rem .75rem;
+  padding: .6rem .75rem .6rem 1.1rem;
   font-family: 'Outfit', 'DM Sans', sans-serif;
   font-size: .9rem;
   line-height: 1.5;
   border-left: 3px solid;
+  margin-bottom: .35rem;
+  transition: opacity .2s;
+  cursor: default;
 }
+.notif-item:last-child { margin-bottom: 0; }
+/* Punto de "no leída" — desaparece al marcar la alerta como leída */
+.notif-item:not(.notif-read)::before {
+  content: '';
+  position: absolute;
+  left: .35rem;
+  top: .95rem;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.notif-item.notif-read { opacity: .55; }
 .notif-info  { background: var(--info-light);    border-color: var(--info);    color: var(--text); }
 .notif-warn  { background: var(--gold-light);    border-color: var(--gold);    color: var(--text); }
 .notif-error { background: var(--accent-light);  border-color: var(--accent);  color: var(--text); }
+.ni-stage-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: .58rem;
+  color: var(--muted);
+  flex-shrink: 0;
+  margin-top: .15rem;
+}
+.ni-body-wrap { flex: 1; min-width: 0; }
 .ni-title {
   font-family: 'DM Mono', monospace;
   font-size: .65rem;
