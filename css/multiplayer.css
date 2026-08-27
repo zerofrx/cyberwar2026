@@ -1136,11 +1136,11 @@ body {
   line-height: 1.5;
   border-left: 3px solid;
   margin-bottom: .35rem;
-  transition: opacity .2s;
   cursor: default;
 }
 .notif-item:last-child { margin-bottom: 0; }
-/* Punto de "no leída" — desaparece al marcar la alerta como leída */
+/* Punto de "no leída" — se reemplaza por un ícono de ojo al marcar la
+   alerta como leída (en vez de atenuar el texto). */
 .notif-item:not(.notif-read)::before {
   content: '';
   position: absolute;
@@ -1151,7 +1151,15 @@ body {
   border-radius: 50%;
   background: var(--accent);
 }
-.notif-item.notif-read { opacity: .55; }
+.notif-item.notif-read::before {
+  content: '👁';
+  position: absolute;
+  left: .28rem;
+  top: .58rem;
+  font-size: .65rem;
+  line-height: 1;
+  opacity: .5;
+}
 .notif-info  { background: var(--info-light);    border-color: var(--info);    color: var(--text); }
 .notif-warn  { background: var(--gold-light);    border-color: var(--gold);    color: var(--text); }
 .notif-error { background: var(--accent-light);  border-color: var(--accent);  color: var(--text); }
