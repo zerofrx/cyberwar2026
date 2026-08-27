@@ -161,7 +161,7 @@
   <script type="module">
     import { supabase }              from './js/supabase-client.js';
     import { fmt, computeStage5State, computeToolsCost, REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT, STAGES } from './js/game-data.js?v=37';
-    import { compositeScore, compareGroups } from './js/ranking.js?v=39';
+    import { compositeScore, compareGroups } from './js/ranking.js?v=41';
 
     const params    = new URLSearchParams(location.search);
     const sessionId = params.get('session');
@@ -223,6 +223,10 @@
     };
 
     function render(groups) {
+      // Esta función solo se llama cuando session.status === 'finished' (ver
+      // guarda más arriba) — el cap de reputación institucional siempre debe
+      // aplicarse acá (ver ranking.js: isFinalized).
+      groups.forEach(g => { g._sessionFinished = true; });
       const ctxColors = { A:'var(--success)', B:'var(--info)', C:'var(--gold)', D:'var(--accent)', X:'var(--muted)' };
       const ctxLabels = {
         A: 'GESTIÓN EXITOSA',

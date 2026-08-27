@@ -7,7 +7,7 @@ import { STAGES, fmt, glossarize, computeStage5State,
          computeEfficiencyScore, efficiencyStars,
          applyDecision, findTool, BUDGET_INIT, computeToolsCost,
          computeDecisionQualityBonus, efficiencyBreakdown } from './game-data.js?v=37';
-import { buildLeaderboardTable, compositeScore, compareGroups }  from './ranking.js?v=40';
+import { buildLeaderboardTable, compositeScore, compareGroups }  from './ranking.js?v=41';
 
 const NUM_GROUPS  = 6;
 const ROLES       = ['ciso', 'analyst', 'legal', 'comms', 'ops'];
@@ -299,6 +299,13 @@ async function resetSession() {
 
 // ── Render ───────────────────────────────────
 function renderAll() {
+  // El cap de reputación institucional (ver ranking.js: isFinalized) se
+  // activa para TODOS los grupos a la vez recién cuando la sesión completa
+  // está 'finished' — no por grupo individual apenas termina su etapa 5 —
+  // para que el leaderboard en vivo no cambie de orden solo porque un
+  // equipo confirmó su última decisión antes que otro.
+  const sessionFinished = session?.status === 'finished';
+  groups.forEach(g => { g._sessionFinished = sessionFinished; });
   renderStatus();
   renderStageDots();
   renderGroupsGrid();

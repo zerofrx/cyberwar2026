@@ -15,9 +15,17 @@ import { STAGES, fmt, computeEfficiencyScore, efficiencyStars,
 // showFinal) y los resultados del facilitador (results.html). Sin esto el
 // leaderboard mostraba reputación/presupuesto sin ese ajuste mientras las
 // demás pantallas sí lo aplicaban, y los rankings terminaban divergiendo.
+//
+// El ajuste se activa por SESIÓN (g._sessionFinished, que cada pantalla
+// marca según session.status === 'finished'), no por equipo individual. Si
+// se activara apenas cada equipo confirma su etapa 5, el techo de
+// reputación (MAX_FINAL_REPUTATION) se les aplicaría en momentos distintos
+// según quién termina primero, haciendo que el orden del leaderboard en
+// vivo cambie solo por eso — no porque un equipo haya jugado mejor. Al
+// activarse para todos a la vez recién al cerrar la sesión, ese salto sigue
+// existiendo pero les pasa a todos en el mismo instante.
 function isFinalized(g) {
-  return g.final_state === 'game_over' ||
-    (g.decision_log || []).some(e => e.stage === STAGES.length);
+  return g.final_state === 'game_over' || g._sessionFinished === true;
 }
 
 function resolveGroupStats(g) {

@@ -4,7 +4,7 @@
 
 import { supabase }                                      from './supabase-client.js';
 import { STAGES }                                        from './game-data.js?v=37';
-import { buildLeaderboardTable }                         from './ranking.js?v=40';
+import { buildLeaderboardTable }                         from './ranking.js?v=41';
 
 // ── Parsear sesión ───────────────────────────
 const params    = new URLSearchParams(location.search);
@@ -24,6 +24,12 @@ let groups  = [];
 function render() {
   if (!session) return;
   const stageIdx = session.current_stage ?? 0;
+
+  // El cap de reputación institucional se activa para todos los grupos a la
+  // vez recién cuando la sesión está 'finished' (ver ranking.js) — no por
+  // grupo individual apenas confirma su etapa 5.
+  const sessionFinished = session.status === 'finished';
+  groups.forEach(g => { g._sessionFinished = sessionFinished; });
 
   // Status header
   let status;
