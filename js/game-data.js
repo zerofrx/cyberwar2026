@@ -228,14 +228,14 @@ export const STAGES = [
       destroysBackups:true, nextCtx:'B'
     },
     {
-      letter:'B', text:'Aislar y Preservar Evidencia (Tardío)',
-      sub:'Aislar sectores y capturar evidencia aunque sea de forma tardía',
+      letter:'B', text:'Reforzar Contención con Evidencia Adicional',
+      sub:'Aislar los sectores restantes y capturar evidencia adicional para reconstruir el ataque',
       cost:200000, hours:10,
       type:'recycled', typeLabel:'TARDÍA', repCost:5,
       correctTools:['edr','siem'],
-      consequence:'Si están en Contexto B: el costo se triplica a $600,000 por el trabajo extra de reconstruir evidencia destruida. Logran identificar el ransomware y pasan al siguiente stage con evidencia parcial.',
-      waitStory:'Llegar tarde a la contención tiene su precio, pero el equipo demostró que un procedimiento correcto —aunque tardío— todavía puede salvar la situación. La imagen RAM parcial y los fragmentos de log recuperados permitieron al equipo forense reconstruir aproximadamente el 60% de la cadena de ataque. No es la evidencia ideal, pero es suficiente para trabajar con ella.\n\nSi venían del Contexto B, el costo fue significativamente mayor: reconstruir evidencia destruida requiere herramientas especializadas, tiempo en sala limpia y un peritaje externo que costó tres veces más de lo que habría costado hacerlo correctamente en el Stage 1. La factura refleja exactamente el precio de las decisiones anteriores: $400,000 de sobrecosto que no existiría si hubieran contenido primero.\n\nEntran al siguiente ciclo con evidencia parcial y el Core estabilizado. No es la posición ideal, pero es una posición gestionable. Recuerden que el próximo stage traerá presión mediática y regulatoria —y con evidencia parcial, la respuesta a esas preguntas será más difícil de dar. Piensen qué información tienen disponible y cómo pueden usarla.',
-      branchNote:'→ Stage 3, Contexto A (evidencia recuperada, costo elevado si Ctx B)',
+      consequence:'Si llegan sin evidencia previa asegurada, el costo se triplica a $600,000 por el trabajo extra de reconstruir evidencia destruida. Logran identificar el ransomware y pasan al siguiente stage con evidencia parcial.',
+      waitStory:'El equipo demostró que un procedimiento correcto todavía puede salvar la situación. La imagen RAM parcial y los fragmentos de log recuperados permitieron al equipo forense reconstruir aproximadamente el 60% de la cadena de ataque. No es la evidencia ideal, pero es suficiente para trabajar con ella.\n\nSi llegaban sin evidencia previa asegurada, el costo fue significativamente mayor: reconstruir evidencia destruida requiere herramientas especializadas, tiempo en sala limpia y un peritaje externo que costó tres veces más de lo que habría costado asegurarla desde el principio. La factura refleja exactamente el precio de las decisiones anteriores: $400,000 de sobrecosto que no existiría si hubieran contenido primero.\n\nEntran al siguiente ciclo con evidencia parcial y el Core estabilizado. No es la posición ideal, pero es una posición gestionable. Recuerden que el próximo stage traerá presión mediática y regulatoria —y con evidencia parcial, la respuesta a esas preguntas será más difícil de dar. Piensen qué información tienen disponible y cómo pueden usarla.',
+      branchNote:'→ Stage 3, evidencia recuperada (costo elevado si no había evidencia previa)',
       penalty:0, ctxBMultiplier:3, nextCtx:'A'
     },
     {

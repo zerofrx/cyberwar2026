@@ -5,7 +5,7 @@
 
 import { STAGES, fmt, computeEfficiencyScore, efficiencyStars,
          computeDecisionQualityBonus, findTool, computeStage5State,
-         computeToolsCost } from './game-data.js?v=36';
+         computeToolsCost } from './game-data.js?v=37';
 
 // ── Presupuesto/reputación "de cierre" ───────
 // Una vez que un grupo completó la última etapa, su presupuesto y reputación
