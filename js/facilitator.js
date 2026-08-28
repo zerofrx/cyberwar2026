@@ -6,7 +6,7 @@ import { supabase }                              from './supabase-client.js';
 import { STAGES, fmt, glossarize, computeStage5State,
          computeEfficiencyScore, efficiencyStars,
          applyDecision, findTool, BUDGET_INIT, computeToolsCost,
-         computeDecisionQualityBonus, efficiencyBreakdown } from './game-data.js?v=38';
+         computeDecisionQualityBonus, efficiencyBreakdown } from './game-data.js?v=39';
 import { buildLeaderboardTable, compositeScore, compareGroups }  from './ranking.js?v=42';
 
 const NUM_GROUPS  = 6;

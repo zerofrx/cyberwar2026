@@ -845,21 +845,29 @@ export function computeAnticipationBonus(toolsOwned = []) {
   return bonus;
 }
 
-// Bonus por comprar en el momento justo: +6 pts por cada herramienta
-// adquirida EXACTAMENTE en su idealStage (ni antes —eso ya lo cubre la
-// anticipación— ni después). Mutuamente excluyente con la anticipación
-// para una misma herramienta: en el momento de la compra solo puede ser
-// antes, justo, o después de su idealStage.
-export function computeExactStageBonus(toolsOwned = []) {
-  let bonus = 0;
+// Herramientas compradas EXACTAMENTE en su idealStage (ni antes —eso ya lo
+// cubre la anticipación— ni después). Devuelve el detalle (nombre + etapa)
+// para poder listarlas en la pantalla final, no solo el total de puntos.
+export function exactStageTools(toolsOwned = []) {
+  const list = [];
   for (const entry of toolsOwned) {
     if (typeof entry !== 'object' || !entry) continue;
     const tool = findTool(entry.id);
     if (!tool || !tool.idealStage) continue;
     // entry.stage es 0-indexed; idealStage es 1-indexed
-    if (entry.stage + 1 === tool.idealStage) bonus += 6;
+    if (entry.stage + 1 === tool.idealStage) {
+      list.push({ id: tool.id, name: tool.name, stage: entry.stage + 1 });
+    }
   }
-  return bonus;
+  return list;
+}
+
+// Bonus por comprar en el momento justo: +6 pts por cada herramienta
+// adquirida EXACTAMENTE en su idealStage. Mutuamente excluyente con la
+// anticipación para una misma herramienta: en el momento de la compra solo
+// puede ser antes, justo, o después de su idealStage.
+export function computeExactStageBonus(toolsOwned = []) {
+  return exactStageTools(toolsOwned).length * 6;
 }
 
 // Penalización por herramientas sin reveals (silenciosamente inútiles)
@@ -966,14 +974,15 @@ export function computeEfficiencyScore(stageDurations = {}, toolsOwned = [], dec
 
 // Desglose para la pantalla final
 export function efficiencyBreakdown(stageDurations = {}, toolsOwned = [], decisionLog = []) {
-  const base         = 100;
-  const anticipation = computeAnticipationBonus(toolsOwned);
-  const exactStage   = computeExactStageBonus(toolsOwned);
-  const timeScore    = computeTimeScore(stageDurations);   // signed
-  const equip        = computeEquipBonus(decisionLog);
-  const wasted       = computeWastedPenalty(toolsOwned);
-  const total        = Math.max(0, base + anticipation + exactStage + timeScore + equip - wasted);
-  return { base, anticipation, exactStage, timeScore, equip, wasted, total };
+  const base            = 100;
+  const anticipation     = computeAnticipationBonus(toolsOwned);
+  const exactStageList  = exactStageTools(toolsOwned);
+  const exactStage      = exactStageList.length * 6;
+  const timeScore       = computeTimeScore(stageDurations);   // signed
+  const equip           = computeEquipBonus(decisionLog);
+  const wasted          = computeWastedPenalty(toolsOwned);
+  const total           = Math.max(0, base + anticipation + exactStage + timeScore + equip - wasted);
+  return { base, anticipation, exactStage, exactStageList, timeScore, equip, wasted, total };
 }
 
 // Mapea score → estrellas (1–5)

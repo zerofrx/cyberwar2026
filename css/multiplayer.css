@@ -1396,6 +1396,12 @@ body {
 .bn-val  { font-family: 'DM Mono', monospace; font-size: .76rem; }
 .bn-blue { color: var(--info); }
 .bn-red  { color: var(--accent); }
+.bn-subrow {
+  color: var(--muted);
+  font-size: .68rem;
+  padding: 0 0 .3rem;
+  opacity: .85;
+}
 
 /* ── Responsive (group.html) ──────────── */
 @media (max-width: 860px) {
@@ -2466,6 +2472,13 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
 }
 .eff-row.eff-good   { color: var(--success); }
 .eff-row.eff-bad    { color: var(--accent); }
+.eff-subrow {
+  color: var(--muted);
+  font-size: .58rem;
+  letter-spacing: .02em;
+  margin: -.05rem 0 .3rem;
+  opacity: .85;
+}
 .eff-row.eff-total {
   border-top: 1px solid var(--border);
   padding-top: .25rem;

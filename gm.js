@@ -14,7 +14,7 @@ import {
   TOOLS_CATALOG, findTool, computeToolsCost,
   efficiencyBreakdown, efficiencyStars,
   computeDecisionQualityBonus, decisionQualityPoints, stageTimeTier
-} from './js/game-data.js?v=38';
+} from './js/game-data.js?v=39';
 
 let G = {};
 
@@ -483,6 +483,7 @@ function showFinal() {
       <div class="bn-row"><span>Base</span><span class="bn-val">${eff.base}</span></div>
       <div class="bn-row"><span>Anticipación (compras tempranas)</span><span class="bn-val bn-blue">+${eff.anticipation}</span></div>
       <div class="bn-row"><span>Momento justo (compra en su etapa ideal)</span><span class="bn-val bn-blue">+${eff.exactStage}</span></div>
+      ${eff.exactStageList.length ? `<div class="bn-subrow">${eff.exactStageList.map(t => `${t.name} (Etapa ${t.stage})`).join(' · ')}</div>` : ''}
       <div class="bn-row"><span>Equipamiento (aciertos equipados)</span><span class="bn-val bn-blue">+${eff.equip}</span></div>
       <div class="bn-row"><span>Ritmo de decisión</span><span class="bn-val" style="color:${eff.timeScore >= 0 ? 'var(--success)' : 'var(--accent)'}">${eff.timeScore >= 0 ? '+' : ''}${eff.timeScore}</span></div>
       <div class="bn-row"><span>Compras inútiles</span><span class="bn-val bn-red">-${eff.wasted}</span></div>
