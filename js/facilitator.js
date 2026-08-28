@@ -258,6 +258,18 @@ async function resetSession() {
       .update({ status: 'lobby', current_stage: 0, updated_at: new Date().toISOString() })
       .eq('id', sessionId);
 
+    // Los group.id no cambian al reiniciar, así que sin esto las filas de
+    // players de la partida anterior (nombre, is_online) seguían ahí y
+    // hacían aparecer roles como "en línea" en la grilla del facilitador
+    // aunque nadie estuviera conectado todavía. No hay policy de DELETE
+    // para ninguna tabla en supabase/schema.sql (solo SELECT/INSERT/UPDATE),
+    // así que un .delete() acá no borraría nada — RLS lo filtra en
+    // silencio, sin error. Se limpia con UPDATE, mismo patrón que sessions/
+    // groups un poco más abajo.
+    await supabase.from('players')
+      .update({ is_online: false, display_name: null, last_seen: null })
+      .eq('session_id', sessionId);
+
     for (const g of groups) {
       await supabase.from('groups')
         .update({

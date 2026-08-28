@@ -105,16 +105,40 @@ async function init() {
     .subscribe();
 
   // Presencia: marcar online
-  await supabase.from('players')
-    .update({ is_online: true, last_seen: new Date().toISOString() })
-    .eq('group_id', GROUP_ID)
-    .eq('role', ROLE);
+  await setPresence(true);
+
+  // Nada marcaba is_online:false al ocultar/cerrar la pestaña, así que el
+  // badge del facilitador quedaba "en línea" para siempre después de que el
+  // jugador se iba (o incluso después de un reinicio de sesión, si la fila
+  // de players sobrevivía). visibilitychange cubre el caso común (cambiar
+  // de pestaña, minimizar, cerrar) porque se dispara antes de que la
+  // página termine de descargarse; pagehide es un respaldo best-effort para
+  // el cierre real de la pestaña.
+  document.addEventListener('visibilitychange', () => {
+    setPresence(document.visibilityState === 'visible');
+  });
+  window.addEventListener('pagehide', () => { setPresence(false); });
 
   // Respaldo por polling: si se pierde un evento realtime (websocket caído,
   // suscripción todavía no activa cuando el facilitador avanzó, etc.) esto
   // igual sincroniza el estado en unos segundos en vez de dejar la pantalla
   // congelada indefinidamente.
   setInterval(syncState, 4000);
+}
+
+// El query builder de supabase-js es "thenable" perezoso: no dispara el
+// fetch hasta que se hace await/.then() sobre él. Los listeners de abajo
+// llaman a setPresence() sin esperarla (fire-and-forget) — por eso esta
+// función tiene que awaitear el builder ADENTRO para que el fetch realmente
+// salga, en vez de devolver la promesa sin resolver a un caller que nunca
+// la toca.
+async function setPresence(online) {
+  try {
+    await supabase.from('players')
+      .update({ is_online: online, last_seen: new Date().toISOString() })
+      .eq('group_id', GROUP_ID)
+      .eq('role', ROLE);
+  } catch { /* best-effort: un fallo acá no debe romper la partida */ }
 }
 
 async function syncState() {
