@@ -10,7 +10,7 @@ import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          toolsForStage, ownedIds, computeToolsCost,
          computeEfficiencyScore, efficiencyStars, efficiencyBreakdown,
          computeDecisionQualityBonus, decisionQualityPoints, stageTimeTier,
-         REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT } from './game-data.js?v=37';
+         REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT } from './game-data.js?v=38';
 
 // localStorage puede lanzar SecurityError en navegadores/perfiles con
 // almacenamiento restringido (modo privado, políticas de terceros, etc.) —
@@ -1186,6 +1186,7 @@ function showFinal() {
       <div class="eff-breakdown">
         <div class="eff-row"><span>Base</span><span>+${effBreakdown.base}</span></div>
         ${effBreakdown.anticipation ? `<div class="eff-row eff-good"><span>Anticipación</span><span>+${effBreakdown.anticipation}</span></div>` : ''}
+        ${effBreakdown.exactStage ? `<div class="eff-row eff-good"><span>Compra en el momento justo</span><span>+${effBreakdown.exactStage}</span></div>` : ''}
         ${effBreakdown.equip ? `<div class="eff-row eff-good"><span>Herramientas usadas</span><span>+${effBreakdown.equip}</span></div>` : ''}
         ${effBreakdown.timeScore > 0
           ? `<div class="eff-row eff-good"><span>Velocidad</span><span>+${effBreakdown.timeScore}</span></div>`
