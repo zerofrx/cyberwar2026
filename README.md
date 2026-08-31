@@ -191,7 +191,7 @@ PUNTOS = Presupuesto ÷ 20,000  +  Reputación × 20  +  Bonos de Equipo × 10  
 |-----------|-------|-----------------|
 | 💰 **Presupuesto** | 0 – 250 pts | `(budget − penalizaciones diferidas) ÷ 20,000`. Cada $20,000 conservados = 1 punto — el de menor peso, a propósito |
 | ❤ **Reputación** | 0 – 2,000 pts | `reputation × 20`. Cada 1 % de reputación = 20 puntos |
-| ⚡ **Bonos de Equipo** | 0 – 3,090 pts | `efficiencyScore × 10` (ver abajo) |
+| ⚡ **Bonos de Equipo** | 0 – 3,440 pts | `efficiencyScore × 10` (ver abajo) |
 | 🎯 **Calidad de decisiones** | −3,000 a +4,000 pts | `computeDecisionQualityBonus` — directo, sin multiplicar (ver abajo) |
 
 ### Calidad de decisiones (`computeDecisionQualityBonus`) — el componente más notorio
@@ -216,7 +216,7 @@ Sin cap superior. Cada factor:
 
 | Factor | Función | Efecto |
 |--------|---------|--------|
-| 🛠 **Equipamiento** | `computeEquipBonus` | **+8 por decisión correcta equipada** (proporcional si parcial). Máx +40. Premia tener las herramientas que respaldan la opción correcta al confirmarla |
+| 🛠 **Equipamiento** | `computeEquipBonus` | **+15 por decisión correcta equipada** (proporcional si parcial). Máx +75. Premia tener las herramientas que respaldan la opción correcta al confirmarla |
 | 🎯 **Anticipación** | `computeAnticipationBonus` | **+3 por etapa de adelanto** al comprar una herramienta antes de su `idealStage`. Máx +15 |
 | ⏰ **Momento justo** | `computeExactStageBonus` | **+6 por herramienta** comprada EXACTAMENTE en su `idealStage` (mutuamente excluyente con Anticipación para esa misma herramienta — o se compra antes, o justo a tiempo, no ambas). Máx +69 con el catálogo actual |
 | ⏱ **Tiempo** | `computeTimeScore` | Por etapa según % del tiempo objetivo: ≤50 % → **+20**, ≤80 % → **+10**, ≤100 % → 0, ≤130 % → **−10**, >130 % → **−20** |

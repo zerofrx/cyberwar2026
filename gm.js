@@ -14,7 +14,7 @@ import {
   TOOLS_CATALOG, findTool, computeToolsCost,
   efficiencyBreakdown, efficiencyStars,
   computeDecisionQualityBonus, decisionQualityPoints, stageTimeTier
-} from './js/game-data.js?v=39';
+} from './js/game-data.js?v=40';
 
 let G = {};
 

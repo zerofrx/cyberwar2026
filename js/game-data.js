@@ -913,14 +913,14 @@ export function computeTimePenalty(stageDurations = {}) {
 
 // Bonus por usar las herramientas correctas en decisiones correctas.
 // Lee el toolBonus congelado en cada entrada del decision_log al momento de decidir.
-// +8 eficiencia por decisión correcta totalmente equipada (proporcional si parcial).
+// +15 eficiencia por decisión correcta totalmente equipada (proporcional si parcial).
 export function computeEquipBonus(decisionLog = []) {
   let bonus = 0;
   for (const e of decisionLog) {
     if (e?.type !== 'correct') continue;          // solo decisiones correctas/lifesaver
     const tb = e.toolBonus;
     if (!tb || !tb.total || tb.matched <= 0) continue;
-    bonus += Math.round(8 * (tb.matched / tb.total));
+    bonus += Math.round(15 * (tb.matched / tb.total));
   }
   return bonus;
 }

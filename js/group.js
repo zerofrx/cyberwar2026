@@ -10,7 +10,7 @@ import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          toolsForStage, ownedIds, computeToolsCost,
          computeEfficiencyScore, efficiencyStars, efficiencyBreakdown,
          computeDecisionQualityBonus, decisionQualityPoints, stageTimeTier,
-         REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT } from './game-data.js?v=39';
+         REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT } from './game-data.js?v=40';
 
 // localStorage puede lanzar SecurityError en navegadores/perfiles con
 // almacenamiento restringido (modo privado, políticas de terceros, etc.) —
