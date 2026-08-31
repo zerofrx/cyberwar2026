@@ -1291,6 +1291,7 @@ body {
 }
 .final-stats {
   display: flex;
+  flex-wrap: wrap;
   gap: .65rem;
   margin-top: .5rem;
 }
