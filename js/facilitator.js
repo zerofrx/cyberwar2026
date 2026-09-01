@@ -7,7 +7,7 @@ import { STAGES, fmt, glossarize, computeStage5State,
          computeEfficiencyScore, efficiencyStars,
          applyDecision, findTool, BUDGET_INIT, computeToolsCost,
          computeDecisionQualityBonus, efficiencyBreakdown } from './game-data.js?v=40';
-import { buildLeaderboardTable, compositeScore, compareGroups }  from './ranking.js?v=43';
+import { buildLeaderboardTable, compositeScore, compareGroups }  from './ranking.js?v=44';
 
 const NUM_GROUPS  = 6;
 const ROLES       = ['ciso', 'analyst', 'legal', 'comms', 'ops'];
@@ -427,6 +427,20 @@ function buildGroupCard(g) {
     dsText  = `Opción ${optLetter} seleccionada`;
   }
 
+  // Herramientas compradas (nombre completo, no solo el conteo)
+  const toolNames = (g.tools_owned || [])
+    .map(t => findTool(typeof t === 'string' ? t : t?.id)?.name)
+    .filter(Boolean);
+
+  // Historial de decisiones: una etiqueta por etapa ya decidida, coloreada
+  // por tipo (correcta/aceptable/trampa), con el texto completo en el title
+  const decisionHistoryHtml = (g.decision_log || []).map(e => {
+    const cls = e.type === 'correct' ? 'fac-dh-correct'
+              : e.type === 'trap'    ? 'fac-dh-trap'
+              : 'fac-dh-ok';
+    return `<span class="fac-dh-item ${cls}" title="Etapa ${e.stage}: ${e.text} (${e.typeLabel || e.type})">S${e.stage} ${e.letter}</span>`;
+  }).join('');
+
   // Online players
   const groupPlayers = players.filter(p => p.group_id === g.id);
   const memberChips  = ROLES.map(role => {
@@ -486,9 +500,11 @@ function buildGroupCard(g) {
     </div>
 
     <div class="fac-mini-row">
-      <span title="Herramientas adquiridas">🛠 ${(g.tools_owned || []).length}</span>
+      <span title="Herramientas adquiridas">🛠 ${toolNames.length}</span>
       <span data-group-elapsed="${g.id}" title="Tiempo en el stage actual">⏱ ${formatStageElapsed(g)}</span>
     </div>
+    ${toolNames.length ? `<div class="fac-tools-list">${toolNames.join(' · ')}</div>` : ''}
+    ${decisionHistoryHtml ? `<div class="fac-decisions-history">${decisionHistoryHtml}</div>` : ''}
 
     <div class="fac-decision-state ${dsClass}">${dsText}</div>
   </div>`;

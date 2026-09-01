@@ -4,7 +4,7 @@
 
 import { supabase }                                      from './supabase-client.js';
 import { STAGES }                                        from './game-data.js?v=40';
-import { buildLeaderboardTable }                         from './ranking.js?v=43';
+import { buildLeaderboardTable }                         from './ranking.js?v=44';
 
 // ── Parsear sesión ───────────────────────────
 const params    = new URLSearchParams(location.search);

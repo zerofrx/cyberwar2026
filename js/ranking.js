@@ -243,12 +243,6 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
       : scoreDelta < 0 ? `<span class="lb-pts-delta lb-delta-down">${scoreDelta}</span>`
       : `<span class="lb-pts-delta lb-delta-flat">±0</span>`;
 
-    // Motivo del delta: la decisión que el equipo acaba de confirmar en este stage
-    const lastDecision = (g.decision_log || []).find(e => e.stage === currentStageNum) || null;
-    const deltaReasonHtml = (scoreDelta !== null && lastDecision)
-      ? `<span class="lb-pts-delta-reason">${lastDecision.typeLabel || lastDecision.type}</span>`
-      : '';
-
     const trendHtml = trend
       ? (trend.dir === 'up'
           ? `<span class="lb-trend lb-trend-up">▲${trend.delta}</span>`
@@ -288,7 +282,6 @@ export function buildLeaderboardTable(groups, mode = 'detailed', currentStageNum
             <div class="lb-pts-row">
               <span class="lb-pts-value">${r.score}</span>
               ${deltaHtml}
-              ${deltaReasonHtml}
             </div>
             <div class="lb-pts-breakdown-wrap">
               <div class="lb-pts-breakdown" style="width:${barWidthPct}%">

@@ -2403,6 +2403,28 @@ html[data-theme="light"] .stage-wait-overlay { background: var(--bg); }
   padding-top: .5rem;
   border-top: 1px dashed var(--border);
 }
+.fac-tools-list {
+  font-size: .62rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: -.15rem;
+}
+.fac-decisions-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+}
+.fac-dh-item {
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .04em;
+  padding: .15rem .4rem;
+  border-radius: 3px;
+  cursor: default;
+}
+.fac-dh-correct { background: var(--success-light); color: var(--success); }
+.fac-dh-ok      { background: var(--gold-light);    color: var(--gold); }
+.fac-dh-trap    { background: var(--accent-light);  color: var(--accent); }
 
 /* ══════════════════════════════════════════
    Toolkit — Estado "future" (todavía no revelada)
