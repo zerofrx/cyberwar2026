@@ -6,8 +6,8 @@ import { supabase }                              from './supabase-client.js';
 import { STAGES, fmt, glossarize, computeStage5State,
          computeEfficiencyScore, efficiencyStars,
          applyDecision, findTool, BUDGET_INIT, computeToolsCost,
-         computeDecisionQualityBonus, efficiencyBreakdown } from './game-data.js?v=40';
-import { buildLeaderboardTable, compositeScore, compareGroups }  from './ranking.js?v=44';
+         computeDecisionQualityBonus, efficiencyBreakdown } from './game-data.js?v=42';
+import { buildLeaderboardTable, compositeScore, compareGroups, resolveGroupStats }  from './ranking.js?v=46';
 
 const NUM_GROUPS  = 6;
 const ROLES       = ['ciso', 'analyst', 'legal', 'comms', 'ops'];
@@ -415,6 +415,9 @@ function buildGroupCard(g) {
   const hoursPct   = Math.min(100, (g.hours / 72) * 100);
   const ctxCss     = g.ctx && g.ctx !== 'default' ? `fac-ctx-${g.ctx.toLowerCase()}` : '';
   const ctxLabel   = g.ctx && g.ctx !== 'default' ? g.ctx : '—';
+  // Reputación "de cierre" (con el techo del Stage 5 ya aplicado si
+  // corresponde) — mismo número que verá el leaderboard, sin sorpresas.
+  const rep        = resolveGroupStats(g).reputation;
 
   // Estado de decisión
   let dsClass = 'fac-ds-waiting';
@@ -492,10 +495,10 @@ function buildGroupCard(g) {
     <div class="fac-bar-row">
       <div class="fac-bar-label">
         <span>Reputación</span>
-        <span>${g.reputation ?? 100}%</span>
+        <span>${rep}%</span>
       </div>
       <div class="fac-bar-track">
-        <div class="fac-bar-fill" style="width:${g.reputation ?? 100}%;background:${(g.reputation ?? 100) >= 70 ? '#4caf81' : (g.reputation ?? 100) >= 40 ? '#d4a843' : '#e05c5c'}"></div>
+        <div class="fac-bar-fill" style="width:${rep}%;background:${rep >= 70 ? '#4caf81' : rep >= 40 ? '#d4a843' : '#e05c5c'}"></div>
       </div>
     </div>
 
@@ -990,10 +993,10 @@ function showPreliminary() {
     const lCtx      = (leader.ctx && leader.ctx !== 'default') ? leader.ctx : 'A';
     const variant   = curStage.variants?.[lCtx] ?? curStage.variants?.['default'];
     const narrative = variant?.narrative || curStage.status;
-    const rep       = leader.reputation ?? 100;
-    const repColor  = rep >= 70 ? 'var(--success)' : rep >= 40 ? 'var(--gold)' : 'var(--accent)';
-    const budgetFinal = leader.budget -
-      (leader.flags?.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
+    const leaderStats = resolveGroupStats(leader);
+    const rep         = leaderStats.reputation;
+    const repColor    = rep >= 70 ? 'var(--success)' : rep >= 40 ? 'var(--gold)' : 'var(--accent)';
+    const budgetFinal = leaderStats.budgetFinal;
     const budgetColor = budgetFinal > 3000000 ? 'var(--success)'
                       : budgetFinal > 1500000 ? 'var(--gold)' : 'var(--accent)';
 
@@ -1055,11 +1058,11 @@ function showPreliminary() {
         <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;color:var(--muted)">ELIMINADO</div>
       </div>`;
     }
-    const flags      = g.flags || {};
-    const budgetFin  = g.budget - (flags.pendingPenalties || []).reduce((s, p) => s + p.amount, 0);
+    const stats      = resolveGroupStats(g);
+    const budgetFin  = stats.budgetFinal;
     const budgetPct  = Math.max(0, (budgetFin / 5000000) * 100);
     const hoursPct   = Math.min(100, (g.hours / 72) * 100);
-    const rep        = g.reputation ?? 100;
+    const rep        = stats.reputation;
     const repColor   = rep >= 70 ? 'var(--success)' : rep >= 40 ? 'var(--gold)' : 'var(--accent)';
     const budColor   = budgetPct > 60 ? 'var(--success)' : budgetPct > 30 ? 'var(--gold)' : 'var(--accent)';
     const log        = g.decision_log || [];

@@ -10,7 +10,7 @@ import { STAGES, BUDGET_INIT, HOURS_LIMIT,
          toolsForStage, ownedIds, computeToolsCost,
          computeEfficiencyScore, efficiencyStars, efficiencyBreakdown,
          computeDecisionQualityBonus, decisionQualityPoints, stageTimeTier,
-         REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT } from './game-data.js?v=40';
+         REP_TIER_GOOD, REP_TIER_MID, REP_TIER_CRIT } from './game-data.js?v=42';
 
 // localStorage puede lanzar SecurityError en navegadores/perfiles con
 // almacenamiento restringido (modo privado, políticas de terceros, etc.) —
@@ -293,6 +293,7 @@ function renderStage() {
     const state5 = computeStage5State(flags, group.budget, group.penalties, group.hours, group.reputation ?? 100, computeToolsCost(group));
     const v5     = s.variants[state5.ctx];
     html += buildIncidentCard(s, v5, state5);
+    ensureRepAdjustmentAlert(state5);
   } else {
     html += buildIncidentCard(s, variant, null);
   }
@@ -589,6 +590,31 @@ function statHit(el) {
 // Valores previos para detectar cambios entre renders
 let _prevBudget = null;
 let _prevRep    = null;
+// Evita reenviar la alerta de ajuste de reputación en cada re-render de esta pestaña
+let _repAlertSent = false;
+
+// Avisa una sola vez, al entrar al Stage 5, por qué la reputación institucional
+// se ajusta (techo + penalizaciones de cierre) — para que el equipo no se
+// entere recién al ver el resultado final. Guard optimista (mismo criterio
+// que ensureStageStartAt): tolera una carrera menor entre roles del mismo grupo.
+async function ensureRepAdjustmentAlert(state5) {
+  if (_repAlertSent || group.flags?.repAdjustedNotified) return;
+  if (state5.finalReputation === (group.reputation ?? 100)) return;
+  _repAlertSent = true;
+  const newNotif = [...(group.notif_log || []), {
+    type: 'warn',
+    title: '// REPUTACIÓN INSTITUCIONAL — Ajuste de cierre',
+    body: state5.repReason,
+    stage: group.stage
+  }];
+  const { data } = await supabase
+    .from('groups')
+    .update({ flags: { ...(group.flags || {}), repAdjustedNotified: true }, notif_log: newNotif })
+    .eq('id', GROUP_ID)
+    .select()
+    .maybeSingle();
+  if (data) group = { ...group, flags: data.flags, notif_log: data.notif_log };
+}
 
 // ── Modal de confirmación (fricción intencional para el CISO) ──
 function showConfirm(title, body, okLabel = 'Confirmar') {
@@ -926,7 +952,13 @@ function updateSidebar() {
   bar.style.background = pct > 85 ? 'var(--accent)' : pct > 60 ? 'var(--gold)' : 'var(--info)';
 
   // Reputation bar — shake + chip al recibir daño
-  const rep    = group.reputation ?? 100;
+  // A partir del Stage 5 se muestra la reputación "de cierre" (con el techo
+  // institucional ya aplicado) en vez de la cruda, para que el equipo vea
+  // su número real desde que entra a la última etapa, no recién al final.
+  const isFinalStage = group.stage === STAGES.length - 1 && group.final_state !== 'game_over';
+  const rep = isFinalStage
+    ? computeStage5State(group.flags || {}, group.budget, group.penalties, group.hours, group.reputation ?? 100, computeToolsCost(group)).finalReputation
+    : (group.reputation ?? 100);
   const repVal = document.getElementById('repVal');
   if (_prevRep !== null && _prevRep !== rep) {
     animateNumber(repVal, _prevRep, rep, 600, v => Math.round(v) + '%');

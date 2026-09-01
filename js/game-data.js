@@ -424,7 +424,7 @@ export const STAGES = [
       penalty:0, fatalIfCtxB:true, destroysBackups:true, nextCtx:'D'
     },
     {
-      letter:'E', text:'Limpieza Total de la Red (Tardía)',
+      letter:'E', text:'Limpieza Total de la Red',
       sub:'Dedicar las próximas 24 horas a limpiar la red antes de intentar cualquier recuperación',
       cost:450000, hours:24,
       type:'recycled', typeLabel:'TARDÍA', repCost:10,
@@ -597,6 +597,17 @@ export function computeStage5State(flags, budget, penalties, hours = 0, reputati
   // abajo según qué tan mal se manejó la crisis.
   const finalReputation = Math.max(0, Math.min(MAX_FINAL_REPUTATION, reputation - reputationPenalty));
 
+  // Explicación específica del ajuste de reputación (distinta de `reason`,
+  // que cubre presupuesto/multas) — para mostrarle al equipo por qué su
+  // reputación cambia al llegar al Stage 5, en vez de que se enteren recién
+  // al ver el resultado final.
+  const repReasons = [];
+  if (!flags.openedMonday) repReasons.push('no reabrieron operaciones el lunes (-20%)');
+  if (flags.licenseRevoked || flags.backupsDestroyed) repReasons.push('la crisis dejó licencia revocada o backups destruidos (-25%)');
+  if (hours > HOURS_LIMIT) repReasons.push('excedieron el límite de 72h operativas (-5%)');
+  const repReason = `Un incidente de esta magnitud (ransomware con robo de datos) deja una marca pública que ninguna gestión puede borrar del todo — la reputación institucional tiene un techo de ${MAX_FINAL_REPUTATION}%.` +
+    (repReasons.length ? ` Además: ${repReasons.join(', ')}.` : '');
+
   // ── Construir resultado ─────────────────────────────────────
   const STATES = [
     { ctx:'A', label:'LEVE',    baseReason:'Abrieron el lunes con presupuesto saludable y gestión sólida.' },
@@ -607,7 +618,7 @@ export function computeStage5State(flags, budget, penalties, hours = 0, reputati
   const s = STATES[level];
   const reason = reasons.length ? s.baseReason + ' ' + reasons.join(' ') : s.baseReason;
 
-  return { ctx: s.ctx, label: s.label, reason, extraPenalties, finalReputation };
+  return { ctx: s.ctx, label: s.label, reason, repReason, extraPenalties, finalReputation };
 }
 
 // ── applyDecision ────────────────────────────

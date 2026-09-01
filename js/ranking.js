@@ -5,30 +5,32 @@
 
 import { STAGES, fmt, computeEfficiencyScore, efficiencyStars,
          computeDecisionQualityBonus, findTool, computeStage5State,
-         computeToolsCost } from './game-data.js?v=40';
+         computeToolsCost } from './game-data.js?v=42';
 
 // ── Presupuesto/reputación "de cierre" ───────
-// Una vez que un grupo completó la última etapa, su presupuesto y reputación
-// dejan de ser los valores crudos acumulados decisión a decisión: se les
-// aplica el mismo ajuste de cierre (cap de reputación institucional +
-// penalizaciones extra) que ven la pantalla final del equipo (group.js
-// showFinal) y los resultados del facilitador (results.html). Sin esto el
-// leaderboard mostraba reputación/presupuesto sin ese ajuste mientras las
-// demás pantallas sí lo aplicaban, y los rankings terminaban divergiendo.
+// Una vez que un grupo llega al Stage 5 (o termina la sesión, o cae en
+// game over), su presupuesto y reputación dejan de ser los valores crudos
+// acumulados decisión a decisión: se les aplica el mismo ajuste de cierre
+// (cap de reputación institucional + penalizaciones extra) que ven la
+// pantalla final del equipo (group.js showFinal) y los resultados del
+// facilitador (results.html). Sin esto el leaderboard mostraba
+// reputación/presupuesto sin ese ajuste mientras las demás pantallas sí lo
+// aplicaban, y los rankings terminaban divergiendo.
 //
-// El ajuste se activa por SESIÓN (g._sessionFinished, que cada pantalla
-// marca según session.status === 'finished'), no por equipo individual. Si
-// se activara apenas cada equipo confirma su etapa 5, el techo de
-// reputación (MAX_FINAL_REPUTATION) se les aplicaría en momentos distintos
-// según quién termina primero, haciendo que el orden del leaderboard en
-// vivo cambie solo por eso — no porque un equipo haya jugado mejor. Al
-// activarse para todos a la vez recién al cerrar la sesión, ese salto sigue
-// existiendo pero les pasa a todos en el mismo instante.
+// Se activa apenas `g.stage` llega al Stage 5 (no solo al cerrar la
+// sesión) para que el equipo vea su puntaje "real" desde que entra a la
+// última etapa, en vez de sorprenderse recién al finalizar. Como el
+// facilitador avanza a todos los equipos activos juntos (mismo `update` en
+// `advanceStage()`), esto sigue siendo simultáneo para el caso normal.
+// Excepción aceptada: un equipo que salta directo al Stage 5 desde una
+// opción "extrema" del Stage 3 (`nextStage = 4` en `applyDecision`) puede
+// mostrar el techo aplicado antes que el resto — caso borde poco frecuente,
+// asumido a propósito para no retrasar el ajuste en el caso normal.
 function isFinalized(g) {
-  return g.final_state === 'game_over' || g._sessionFinished === true;
+  return g.final_state === 'game_over' || g._sessionFinished === true || g.stage >= STAGES.length - 1;
 }
 
-function resolveGroupStats(g) {
+export function resolveGroupStats(g) {
   const flags = g.flags || {};
   let budgetFinal = g.budget || 0;
   let penFinal    = g.penalties || 0;
