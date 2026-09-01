@@ -229,6 +229,7 @@ function render() {
     // en el Set y las alertas nuevas (mismo stage+título) nacían marcadas
     // como leídas sin que el jugador las hubiera visto.
     readAlerts.clear();
+    stopStageTimer();
     showScreen('screenLobby');
     setupLobbyNameField();
     startLobbyFeed();
@@ -236,10 +237,12 @@ function render() {
   }
   stopLobbyFeed();
   if (session.status === 'finished' || group.final_state) {
+    stopStageTimer();
     showFinal();
     return;
   }
   if (group.final_state === 'game_over') {
+    stopStageTimer();
     showScreen('screenOver');
     return;
   }
